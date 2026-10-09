@@ -2071,9 +2071,10 @@ function afvChipInnerHTML(v){
   var nc=(UNITS[v.nat]&&UNITS[v.nat].col)||'#8899aa';
   var afFront=v.afFront?(v.afFront.hull+(v.afFront.turret!=null?'/'+v.afFront.turret:'')):'?';
   var afSide=v.afSide?(v.afSide.hull+(v.afSide.turret!=null?'/'+v.afSide.turret:'')):'?';
+  if(v.unarmored){afFront='★';afSide='★';} /* v053 ASLFULL: 装甲なし=AF★ */
   var cal=(v.ma&&v.ma.cal!=null)?v.ma.cal:'?';
   var mp=(v.mp!=null)?v.mp:'?';
-  var category=v.turretType?'':T('自走砲/SP'); // 2026-09修正(マサヒコ指摘「VIティーガーI後期(L)AF11/14戦車の「戦車」の表記は必要ない」): 大半の車両は戦車であり「戦車」表記は冗長なため削除。例外である無砲塔の自走砲(SP)のみバッジ表示する。
+  var category=v.unarmored?T('装甲なし'):((v.ma&&!v.turretType)?T('自走砲/SP'):''); /* v053 ASLFULL */ // 2026-09修正(マサヒコ指摘「VIティーガーI後期(L)AF11/14戦車の「戦車」の表記は必要ない」): 大半の車両は戦車であり「戦車」表記は冗長なため削除。例外である無砲塔の自走砲(SP)のみバッジ表示する。
   var h='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:5px">';
   h+='<span style="display:inline-flex;flex-direction:column;align-items:center;background:#000000;border:1px solid '+nc+'66;border-radius:3px;padding:3px 5px;min-width:58px">';
   h+='<span style="font-size:10px;color:'+nc+';font-weight:bold;white-space:nowrap;letter-spacing:0.02em">'+T(v.lbl)+'</span>';
@@ -2083,7 +2084,7 @@ function afvChipInnerHTML(v){
   h+='</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px">';
   h+=afvGstat('MP',mp,nc);
-  h+=afvGstat(T('主砲'),cal+'mm',nc);
+  h+=afvGstat(T('主砲'),v.ma?cal+'mm':'—',nc); /* v053 ASLFULL: 主砲なし=— */
   h+=afvGstat('AF'+T('側面'),afSide,nc);
   h+=afvGstat(T('砲塔'),v.turretType||'—','#4499ee');
   h+=afvGstat('OT',v.ot?'○':'—','#8899aa');
@@ -8309,7 +8310,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.38"; // ASLFULL: ASLAKEXv145(ASLSK3M-v11.342)からフォーク(2026-10-06) // 2026-10: S27の勝利条件ヘクスからuG2・uH1を除外。
+var APP_VERSION="ASLFULL-v0.76"; // ASLFULL: ASLAKEXv145(ASLSK3M-v11.342)からフォーク(2026-10-06) // 2026-10: S27の勝利条件ヘクスからuG2・uH1を除外。
 var APP_VERSION_V11265_PREV="ASLSK3M-v11.265"; // 2026-09: ダルマ指示「装甲戦闘車両タブ 不具合、バグを確認修正実施」。弾薬供給月キー判定修正・SU-122/M4A3(105)/SU-85/M4A3(76)Wデータ修正・No IF実装。
 var APP_VERSION_V11264_PREV="ASLSK3M-v11.264"; // 2026-09: ダルマ指示「早見表 afv カウンターを追加」。早見表AFVサブタブに「カウンター」を追加(先頭・既定表示、GUN/LATWと同じ構成)。ASL_SK3_HistoricalNote12のCounter Front/Back凡例に基づき、表面4例(VIB・Sherman IIC(a)・IS-2m・T-34 M41)と裏面4例の模式図＋凡例22項目(Unit ID・車両名・MP赤字・前面/側面AFの○□・目標サイズ・AFV種別・ROF・口径・砲身長・MG・R#・固定式MG白点・Low Ammo・接地圧・砲塔旋回・HE/APDS/APCR欠乏ナンバー・sM/sN・ML:9・No IF)。CS#は扱わない方針のため除外(REF_AFV_COUNTER_DIAGRAM)。 // 2026-09: ダルマ指示「修正」。早見表GUN/LATW›破壊判定のMALF-CR説明「操作歩兵はCR（士気チェック）」を「操作歩兵は損耗（CR：Casualty Reduction）」に訂正(QRDC2 GUN DESTRUCTION TABLE「Manning Infantry suffer Casualty Reduction」)。英訳も同様に訂正。 // 2026-09: ダルマ指示「AFV(車両)タブを装甲戦闘車両タブに変更」「移動/運搬タブをボグ/人力/煙幕に変更」「早見表にSK2・SK3追加チャート追加」。(1)メインナビのタブ名を「装甲戦闘車両」「ボグ/人力/煙幕」に変更(ボタン初期値・NAV_LABELS・ヘルプ見出し。英語表示はAFV / Bog/Manhandling/Smoke) (2)早見表に新サブタブ「AFV」を追加し、SK3の車両用チャートを3画面で掲載: TH DRM・命中部位(Case 8〜11・13〜16・22・24・25、VEHICLE HIT LOCATION)、To Kill表(AP(APCR/APDS)全行＋MG/ATR/ATR r、TK#修正、HE&Flame TK、HEAT TKとHE相当FP)、破壊表・ボグ(AFV DESTRUCTION TABLE、BOG CHECK、BOG REMOVAL、DC PLACEMENT vs. AFV DR)。AP/HE/HEATの数値は判定と同じデータ(OFFICIAL_TK_ROWS/HE_TO_KILL_TABLE/HEAT_TO_KILL_TABLE)から描画(REF_AFV_CARD)。 // 2026-09: ダルマ指示「5分無操作の自動ALL CLEAR自体を廃止する」。判定後5分間操作が無いと全タブを自動でALL CLEARする機能を削除(checkIdleClearの呼び出しと定期実行を停止、関数は何もしない)。ヘルプの該当説明も削除。 // 2026-09: ダルマ指示「戦車(AFV)タブ・砲撃タブ・対戦車タブ・射撃タブ リセットボタン選択時タブ内の選択全てリセットする」。RESET(ALLCLR)で、doAllClear()の対象外だったため車両/砲を選び直すと復活していた状態もクリア: 車両ごとの状態S.mgStates(車載機銃の故障/Disabled/使用済み・Motion・Stun・Motion Status Attempt)と弾薬欠乏S.ammoDepletion(車両主砲・牽引砲)。シナリオ変更時(SSEL)と同じ扱い。5分無操作の自動ALL CLEARは従来どおり(これらは消さない)。あわせて、ROLL DICEのアニメーション中にRESETするとアニメーションの残りがダイス値を書き戻す不具合を修正(ROLL_GEN)。 // 2026-09: ダルマ指示「不具合あるのでジャッジボタン後リセットは廃止」。v11.258で追加した、ROFを維持しなかった判定の後に次の操作でタブ全体をリセットする機能(射撃・AFV・対戦車タブ、captureのclickリスナー)を削除。AFVタブのCLEAR TABが車両の射撃状態とその車両の状態を消す修正(resetAfvTabState)は残す。 // 2026-09: ダルマ指示「射撃タブ・戦車(AFV)タブ・対戦車タブ ジャッジをROFが発生しなかった場合には全てリセットする」「車両の情報、状態もリセットする」。1回の射撃の最後の判定(TH失敗/故障、またはTH命中後のIFT/TK/WP判定、車載機銃射撃、PFチェック不可、FT対車両)が終わりROFを維持していなければリセット待ちとし、次に結果カードより上の操作をした時点でタブ全体をクリアしてからその操作を実行(autoResetAnchorId/autoResetTabNow、captureのclickリスナー)。AFVタブは射撃状態に加えその車両の状態(車載機銃・Motion・Stun・MSA・弾薬欠乏・BFF/AFPh喪失マーカー)も消す(resetAfvTabState)。AFVタブのCLEAR TABが何も消していなかった不具合も同関数で修正。 // 2026-09: ダルマ確定2件を反映。(1)独37mm(PAK35/36・FlaK36/37)のHEAT(Stielgranate 41)はH_EXP1のSK補足どおりHE相当12FP(CH時24)・残留FPなし(gunHeatFp、ammo.heatFp/noResidual。旧: 6.2一般規定の1列下げで2FP) (2)対車両CCでもMMCが参加し修正前CC DR=2なら結果を問わず指揮官誕生判定(5.3、CCV_CARDに判定UIを追加。対人CCとS.cc.promoを共用、オッズ-1は無し)。対車両CCの第3のダイス(追加dr)の発生条件は変更なし。 // 2026-09: ダルマ指示「各タブごとに順番に不具合、ルールとの乖離がないか確認修正実施」。全45シナリオ×14タブの描画スイープ・ランダム操作(約5,000回)でJSエラー0件を確認のうえ、ASLSK4ルール/QRDC/QRDC2/SK3 To Hit Chart裏/シナリオカードと突合し次を修正: (1)回復: □印なしMMCの自己回復(3.1e)をターン裏(B)で一律ブロックしていた→ATTACKER=手番側(用語集)として対象ユニットの国籍が手番側陣営なら可(rallyMmcSelfSideOk) (2)砲撃/戦車: AP To Kill表の射程帯を「0|1-2」→QRDC2の「0-1|2」に(gunTKrange、射程1が1低いTK#だった) (3)砲撃: IFT列配列から存在しない3列を削除(IFT_FP_COLUMNS)、HE4FP砲のHEATが3(CH6)→2(CH4) (4)砲撃: ROF低下は無砲塔の砲のCA変更のみ(6.0)、ST/RST/1MT砲塔車両を除外(gunIsTurretedMA) (5)砲撃: ROFなし砲のCA変更後Intensive強制は非車両砲のみ (6)白兵戦: 不意打ちdrmのVehicle +2を防御側にも(旧+1) (7)S4 SSR1降雪をカード原文どおり妨害(Hindrance)として扱う(FFMO不適用・残留FP低下、scenSnowHind) (8)IFT最左列見出し0.5→1(表示のみ)。 // 2026-09: BAZ43のTH#を実物カウンター裏面の値(射程0-4: 11/9/8/7/4)に修正、誤った注記「赤TH#使用」を削除 // 2026-09: BAZ44のTH#をカウンター裏面の値(射程0-4: 11/9/8/7/4)に修正(旧BAZ43流用値) // 2026-09: ヘルプ全面改訂(各タブの手順とASLSK4準拠のルールポイント、上部ボタン・用語表、FAQ追加、英訳付き)。旧ヘルプの誤記(砲の命中でFP×2・TEM反転はCH時のみ、PF原DR12、B#は≥)を解消 // 2026-09: ソ連2-2-7[1](HS)の重複登録を1件に統合(自己回復なし、ダルマ確認) // 2026-09: ソ連6-2-8→5-2-7、3-2-8(HS)→2-2-7のELR低下先を追加(Nationality Chart) // 2026-09: 公式To Hit Chart(EX1優先・SK3)と全砲/車両主砲を照合: 露45L ATT13-24=8・CH19-24=2(v11.238の誤修正を訂正)、露57LL/独75*/露152*/独37のCH#、米57L・独37・独75LLのATT、独50LのITT 13-24を修正 // 2026-09: DC未熟兵X#-1を起爆成功表示・対AFVにも反映、LATW ATRの鹵獲/未熟兵使用時に赤TH#(7-12=8)、PIAT B#表記を「≥10」に修正 // 2026-09: 回復/士気/射撃/CC/潰走の指揮官修正に−3(10-3)を追加、損耗・指揮官誕生の国籍選択にPOL/SLOを追加、回復タブ損耗のSMC表記から乗員を除外(3.2.3) // 2026-09: ユニット監査: 損耗先の誤り(独4-3-6→2-3-6、ソ4-5-8→2-4-8)を修正、POL/SLOの損耗・ELRマップを追加、MF/PP表CX+CX指揮官列をIPC3で再計算 // 2026-09: 早見表監査: 未熟兵MF注記(新兵+指揮官は減算なし)、指揮官誕生drmに英・伊を明記、CX効果(TH+1・SW回収・MC/PTC対象外)、赤TH#条件を6章準拠(伊・波・スロバキア追加/未熟兵除外)、国別TH#表をGUN_DATAから算出、45mm PTP obr.32のATT 13-24を7に // 2026-09: LOS反映: 目標が繁み・果樹園・季節内の麦畑ならTEM「麦畑/果樹園/繁み」(FFMO無効)で反映、射撃タブのFFMOを自動OFF(1.1.1) // 2026-09: 移動タブIPC/MF計算: SMCの基本MFを6に修正(旧4)、負傷SMC(3MF・IPC0・急速歩不可)、SMCは2PP超携行不可・指揮官ボーナス非適用の注記(3.3.1/4.0) // 2026-09: CCでの指揮官誕生にオッズ1:1未満-1drmを追加(ルール例)、DC起動に未熟兵X#-1を追加(4.0) // 2026-09: PAATC +1の対象表記を3.7準拠に修正・S44 SSRとの二重加算を解消、煙幕手榴弾の原dr6でMPh終了の案内を追加(3.3.1) // 2026-09: ATR(射撃タブSW)のR#を1に設定(ダルマ確認) // 2026-09: 射撃タブにATR(1FP SW、4.4.4)を追加(遠距離射撃なし・残留FPなし・PP1・B#12)、LATWタブのATR対歩兵はTo Hitせず射撃タブへ誘導 // 2026-09: 射撃タブ監査2: SW使用時の固有FP喪失の例外にSFF・隣接への最終射撃を追加(4.0)、SMC2名のMG全FP(4.1)、過度の射撃/FPF切替でTPBF選択を保持 // 2026-09: 射撃タブ監査: AFPhの端数切上げをAssault Fire分隊のみに限定(3.5/3.2.2)、FPF NMC失敗時のELR交代判定・指揮官NMC注記を追加(3.3.3/5.1) // 2026-09: スクロール表示のSSR注記(S2/S4/S9/S10/S13/S17/S18)を英訳、LOSタブの季節表記(4-10月/6-9月)・「使用」を英語対応 // 2026-09: 英語表示の未訳を解消(AFV効果ラベル・NTC国籍/士気・車両主砲名・煙幕展張器種別・波軍SW・潰走タブ「なし」等)、NTC注記を付随攻撃欄への誘導に修正 // 2026-09: 対車両CCにOT AFV −2(7.13)を追加、原DR12の損耗条件を「Shock/Stunでない」に修正(3.8) // 2026-09: VTT/LATW/FT命中時のCE乗員付随攻撃(7.12)、ATT対車両のK/#+1判定(7.11)、HE/HEAT TK試行の残留FP・射手側TH DRMの列低下(3.3.5) // 2026-09: 歩兵射撃タブにTPBF(同ヘクス×3、3.2.2.1)を追加、TK表示「DR ≤」→「DR <」・撃破パネル値をFinal TK#−1に(7.10) // 2026-09: HE対車両TK#を砲口径(mm)で引くよう修正(旧: HE FPで引いていた重大バグ、7.9) // 2026-09: 射程0 ITT TH#8/CH#3、車両主砲ATT TH#をチャート行別に、IFEにPBF×2/TPBF×3 // 2026-09: 車両主砲ITT TH#を全ctrCodeへ拡大、ITTのCH#を射程別化(6.1)、独37/英40L MAのHE FP行別化、赤TH#を2012版で牽引砲・車両とも統一 // 2026-09: MG/ATR Ordnance TH#をチャート準拠(MG 10/9/6、ATR 10/9)に修正、牽引砲のTH配列をVTT/ITTに分離(9門のVTT修正、赤TH#整理) // 2026-09: ダルマ「車両・対戦車兵器のルール乖離確認」→「修正実施」。監査[A]AP To Killを砲身長コード/国籍別公式行(OFFICIAL_TK_ROWS/tkRowFor)で参照、[B]HEAT 95=16/105=15、[C]35(t)=GER_37・PSW234/2=GER_50L(TH行新設)、[D]judgeAFVEffects(=TK#で砲塔Shock、TK#+1でPossible Shockを命中部位不問、MG Stunを車体にも適用)とLATWのTK判定をDR<TK#撃破+7.10表へ、[E]MG/ATR TK#をQRDC2値へ、[F]ATRのTK#を独/波7-6-6-5・ソ連8-7-7-6へ。未修正(要確認): FT=TK#でELIM、LATW赤TH#、英40L HE FP、牽引砲VTT TH#、MG/ATR Ordnance TH#。
 var APP_VERSION_HIST_v11219="ASLSK3M-v11.219"; // 2026-09: Kato報告バグ「AFPhにおけるFT(火炎放射器)のFP半減ルール」に対応(ASLルール4.2、Tutorial2、ASL First Fire解説記事等の複数一次資料で確認: 「FTはDCと同様、瞬間的な攻撃のためAFPh(前進射撃)による通常のFP半減を一切受けない(移動後のAFPhでも全火力24FP)。半減されるのは2ヘクス射撃時のみ(24→12FP、ルール4.2固有の規定)」)。既存の射撃計算コア(fireCalcF、AFPh分岐)はFT選択時のグループも他のSW(支援火器)と全く同じ計算式を通っていたため、通常(1ヘクス)AFPh射撃時に24→12FPへ、2ヘクスAFPh射撃時に24→6FPへと、いずれも誤って追加半減されていた。isFTGroup(g,m)(既存ヘルパー)でFT選択グループを判定し、AFPh分岐の最後でf=(g.sh==="long")?sf/2:sf;として上書き、FT自身の2ヘクス射程による固定半減のみを残しAFPhによる追加半減を無効化する形で修正。あわせてFTタブの注記文言「PBF/TPBF/AFPh半減」がAFPhについて誤った説明のままだったため「AFPh(前進射撃フェイズ)でも半減されない(全火力)」に訂正(PBF/TPBFはFT本来1ヘクス射程のため元々影響なし、日英対訳とも修正)。TEM/指揮官修正無効・PIN状態選択不可の既存ロジックは無変更。node --checkで構文検証済み、タグ総数(div/button/svg)完全一致確認済み(JS内の計算式上書き1行+コメント追加、表示文言の訂正のみ)。
@@ -10660,7 +10661,7 @@ function isAllFT(f){
 // 目標が高所(elev==="target") かつ 他のプラスTEMを受けていない(tem<=0) かつ 稜線越え例外に該当しない場合のみtrue。
 // GUNのgunHeightAdvActive()と同じ考え方だが、FIREタブは迫撃砲を扱わないため迫撃砲除外は不要。
 function fireHeightAdvActive(f){
-  return !!(f&&(f.elev||"same")==="target"&&(f.tem||0)<=0&&!f.justCrossedRidge);
+  return !!(f&&(f.elev||"same")==="target"&&(f.tem||0)<=0&&!f.justCrossedRidge&&!(f.aslSnap&&(f.aslSnapHex||0)>0)); /* v044 ASLFULL B10.31: Snap Shot の辺の DRM は正の TEM */
 }
 // 2026-08追加(ダルマ指示「負傷指揮官が唯一の場合には士気値と指揮能力修正が各1悪化する」):
 // 射撃タブ「選択中」リストに含まれるSMC(指揮官)が唯一かつ負傷(Wound)状態の場合、指揮官修正
@@ -12928,7 +12929,7 @@ function FIRE_PAGE(){
     h+='</div>';
   }
   // 高度優位TEM注記：目標が高所で他のプラスTEMを受けない場合、+1丘TEMが自動適用・FFMO/阻止不適用
-  if(fElev==="target"&&fst.tem<=0&&!fst.justCrossedRidge){
+  if(fElev==="target"&&fst.tem<=0&&!fst.justCrossedRidge&&!(fst.aslSnap&&(fst.aslSnapHex||0)>0)){ /* v044 ASLFULL */
     h+='<div class="infobox gld" style="color:#c8a032">'+T('高度優位 +1 自動適用中 → DRMへ算入。この目標にFFMO/阻止は不適用（自動で無効化）。')+'</div>';
   }
   h+='</div>';
@@ -26464,12 +26465,12 @@ function losEnemyHexOverlaySVG(dispLayout){
     if(allMode){
       S_LOS.route.hexes.forEach(function(originHex){
         var origin=losColRowToGlobalCanon(originHex.boardId,originHex.col,originHex.row);
-        if(origin)originPts.push(origin);
+        if(origin)originPts.push({x:origin.x,y:origin.y,fl:+(originHex.floor||0)}); /* v070: 行軍マーカーの階 */
       });
     }else{
       var leadHex=S_LOS.route.hexes[S_LOS.route.hexes.length-1];
       var origin=losColRowToGlobalCanon(leadHex.boardId,leadHex.col,leadHex.row);
-      if(origin)originPts.push(origin);
+      if(origin)originPts.push({x:origin.x,y:origin.y,fl:+(leadHex.floor||0)}); /* v070: 行軍マーカーの階 */
     }
   }
   if(allMode&&S_LOS.pxA){
@@ -26479,7 +26480,7 @@ function losEnemyHexOverlaySVG(dispLayout){
     S_LOS.enemyHexes.forEach(function(eh){
       var target=losColRowToGlobalCanon(eh.boardId,eh.col,eh.row);
       if(!target)return;
-      var res=losCheckLOSGlobal(origin.x,origin.y,target.x,target.y,S_LOS.orchardSeason,S_LOS.grainSeason);
+      var res=losCheckLOSGlobal(origin.x,origin.y,target.x,target.y,S_LOS.orchardSeason,S_LOS.grainSeason,origin.fl?{floorA:origin.fl,roofA:(origin.fl%1!==0)}:undefined); /* v070 */
       if(!res||res.error||res.blocked)return; // 遮断・未読込・盤外は表示しない
       // 2026-09再修正(ダルマ報告「敵軍 LOSが表示しない」): 前方(VCA)外の対象へのLOSラインを非表示にしたため、矢印を設定すると
       // LOSラインが消えて見えていた。非表示はやめ、矢印の前方内は従来の濃い線、前方外は薄く細い線で表示して「矢印の反映」を区別する。
@@ -27484,7 +27485,7 @@ function losHexTerrainInfoGlobal(hexId){
   return losTerrainInfoAt(hexId.boardId,cx,cy);
 }
 // LOS判定コア(グローバル連結座標系ベース、los_engine.py check_los()のJS移植)
-function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
+function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason,opt){
   for(var bi=0;bi<S_LOS.boards.length;bi++){
     if(!LOS_BOARD_DATA[S_LOS.boards[bi].id])return {error:'notLoaded'};
   }
@@ -27494,6 +27495,13 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
   var elevA=losElevAtGlobal(Math.floor(ax),Math.floor(ay)),elevB=losElevAtGlobal(Math.floor(bx),Math.floor(by));
   if(elevA===null||elevB===null)return {error:'outOfBoard'};
   var idA=losHexIdentityAtGlobal(ax,ay),idB=losHexIdentityAtGlobal(bx,by);
+  /* v040 ASLFULL Snap Shot(A8.15・B9.42): 頂点の手前の点への LOS */
+  var snapO=(opt&&opt.toPoint)?opt:null, snapCross=[], snapRubble=[];
+  function snapSideHex(h){ return !!(snapO&&snapO.sideIds&&h&&snapO.sideIds.indexOf(h.id)>=0); }
+  if(snapO){ if(typeof snapO.targetElev==='number')elevB=snapO.targetElev; idB=null; }
+  /* v057 ASLFULL 上の階(B23.2): A・B の高さ = 地面の標高 + 階 */
+  var gElevA=elevA,gElevB=elevB,flA=+((opt&&opt.floorA)||0),flB=+((opt&&!snapO&&opt.floorB)||0),roofA=!!(opt&&opt.roofA),roofB=!!(opt&&!snapO&&opt.roofB); /* v062: 屋上は ½ 付き */ elevA+=flA; elevB+=flB;
+  function snapSide(h1,h2){ if(!snapO||!snapO.sideIds)return false; return snapO.sideIds.indexOf(h1&&h1.id)>=0||snapO.sideIds.indexOf(h2&&h2.id)>=0; }
   var sameElev=(elevA===elevB);
   var higherElev=Math.max(elevA,elevB);
   var path=losSupercoverLine(ax,ay,bx,by);
@@ -27531,6 +27539,102 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
   }
   var blocked=false,blockingTerrain=null,blockingHex=null,blockingReason=null,blockingPx=null;
   var hindranceDrm=0,hindranceHexes=[];
+  /* v039 ASLFULL(半レベル A6.21・B9.2・B12.2・B15.2): 判定に使った規則の注記 */
+  var halfNotes=[],halfSeen={};
+  function halfNote(key,txt){ if(halfSeen[key])return; halfSeen[key]=1; halfNotes.push(txt); }
+  /* 画素(gx,gy)が属するヘクス辺 = 最寄りのヘクス(hId)と、その隣のうち次に近いヘクスの間の辺。その隣のヘクスを返す */
+  function halfSideNeighbor(gx2,gy2,hId){
+    var cc=losColRowToGlobalCanonPrecise(hId.boardId,hId.col,hId.row); if(!cc)return null;
+    var best=null,bd=1e18;
+    for(var k=0;k<6;k++){ var ang=Math.PI/6+k*Math.PI/3;
+      var nId=losHexIdentityAtGlobal(cc.x+Math.cos(ang)*LOS_GEO_HEX_H,cc.y+Math.sin(ang)*LOS_GEO_HEX_H);
+      if(!nId||nId.id===hId.id)continue;
+      var nc=losColRowToGlobalCanonPrecise(nId.boardId,nId.col,nId.row); if(!nc)continue;
+      var d=(nc.x-gx2)*(nc.x-gx2)+(nc.y-gy2)*(nc.y-gy2); if(d<bd){bd=d;best={id:nId,c:nc,c0:cc};} }
+    return best;
+  }
+  /* そのヘクス辺の両端(頂点)が A→B の線から 2画素以内なら、LOS はヘクス背骨に沿っている */
+  /* v046 ASLFULL B9.2: 背骨に沿う壁/生垣の例外。sn は halfSideNeighbor の戻り値(c0=画素のヘクスの中心、c=隣のヘクスの中心、全体座標) */
+  var spineCache={};
+  function spineIsA(h){ if(!h)return false; if(h.id===ownHexA)return true; var cc=losColRowToGlobalCanonPrecise(h.boardId,h.col,h.row); return !!(cc&&ownCenterA&&Math.abs(cc.x-ownCenterA.x)<4&&Math.abs(cc.y-ownCenterA.y)<4); }
+  function spineIsB(h){ if(!h)return false; if(snapO)return h.id===snapO.targetHexId; if(h.id===ownHexB)return true; var cc=losColRowToGlobalCanonPrecise(h.boardId,h.col,h.row); return !!(cc&&ownCenterB&&Math.abs(cc.x-ownCenterB.x)<4&&Math.abs(cc.y-ownCenterB.y)<4); }
+  function spineHexesAt(V){ var out={},list=[]; for(var k=0;k<12;k++){ var a=k*Math.PI/6; var h=losHexIdentityAtGlobal(Math.round(V[0]+Math.cos(a)*9),Math.round(V[1]+Math.sin(a)*9)); if(h&&!out[h.id]){out[h.id]=1;list.push(h);} } return list; }
+  function spineWallOn(p1,p2){ var dx=p2[0]-p1[0],dy=p2[1]-p1[1],L=Math.sqrt(dx*dx+dy*dy)||1,nx=-dy/L,ny=dx/L,hit=null;
+    for(var k=3;k<=7;k++){ var t=k/10,x=p1[0]+dx*t,y=p1[1]+dy*t; for(var o=-3;o<=3;o++){ /* 辺の中ほど(30〜70%)だけを見る: 端の頂点では隣の辺の壁の太さを拾うため */ var ti=losTerrainInfoAtGlobal(Math.round(x+nx*o),Math.round(y+ny*o)); if(ti&&ti.name==='Wall')return 'Wall'; if(ti&&ti.name==='Hedge')hit='Hedge'; } } return hit; }
+  function spineCheck(sn){
+    var mx=(sn.c0.x+sn.c.x)/2,my=(sn.c0.y+sn.c.y)/2,ux=sn.c.x-sn.c0.x,uy=sn.c.y-sn.c0.y,L=Math.sqrt(ux*ux+uy*uy)||1,px=-uy/L,py=ux/L,hs=LOS_GEO_HEX_W/0.75/4;
+    return spineCheckSeg([mx+px*hs,my+py*hs],[mx-px*hs,my-py*hs]);
+  }
+  function spineCheckSeg(V0,V1){
+    var hs=LOS_GEO_HEX_W/0.75/4, key=Math.round(V0[0]+V1[0])+','+Math.round(V0[1]+V1[1]); if(spineCache[key])return spineCache[key];
+    var V=[V0,V1], touch=[], touchB=false, r={block:true,touch:false,touchB:false,full:false};
+    for(var k=0;k<2;k++){ var hs2=spineHexesAt(V[k]); var tA=hs2.some(spineIsA), tB=hs2.some(spineIsB); touch.push(tA||tB); if(tB)touchB=true; }
+    if(!touch[0]&&!touch[1]){ spineCache[key]=r; return r; }
+    r.touch=true; r.touchB=touchB; var full=false;
+    for(var k2=0;k2<2;k2++){ if(!touch[k2]||touch[1-k2])continue; /* B9.2 EX: 調べるのは射撃側にも目標にも属さない頂点だけ(両端が触れる背骨は障害物にならない) */ var Vo=V[1-k2],Vt=V[k2],dx=Vt[0]-Vo[0],dy=Vt[1]-Vo[1],l=Math.sqrt(dx*dx+dy*dy)||1,ex=dx/l,ey=dy/l,n3=0;
+      for(var j=0;j<3;j++){ var ang=j*2*Math.PI/3,cs=Math.cos(ang),sn2=Math.sin(ang),dxj=ex*cs-ey*sn2,dyj=ex*sn2+ey*cs; if(spineWallOn(Vo,[Vo[0]+dxj*2*hs,Vo[1]+dyj*2*hs]))n3++; }
+      if(n3===3)full=true; }
+    r.full=full; r.block=full; spineCache[key]=r; return r;
+  }
+  /* 背骨の端の頂点の近く(6画素以内)の壁/生垣の画素: その頂点から LOS に沿う背骨が伸び、その背骨が B9.2 で遮らないなら、頂点の画素も遮らない(向きに依らない) */
+  function spineVertexFree(gx2,gy2,hId){
+    var cc=losColRowToGlobalCanonPrecise(hId.boardId,hId.col,hId.row); if(!cc)return false;
+    var R=LOS_GEO_HEX_W/0.75/2, best=null, bd=36;
+    for(var k=0;k<6;k++){ var a=k*Math.PI/3, vx=cc.x+Math.cos(a)*R, vy=cc.y+Math.sin(a)*R, d=(vx-gx2)*(vx-gx2)+(vy-gy2)*(vy-gy2); if(d<bd){bd=d;best=[vx,vy,a];} }
+    if(!best)return false;
+    var V=[best[0],best[1]], ox=V[0]-cc.x, oy=V[1]-cc.y, ol=Math.sqrt(ox*ox+oy*oy)||1, ex=ox/ol, ey=oy/ol;
+    for(var j=0;j<3;j++){ var ang=j*2*Math.PI/3, cs=Math.cos(ang), sn2=Math.sin(ang), dx=ex*cs-ey*sn2, dy=ex*sn2+ey*cs, W=[V[0]+dx*R,V[1]+dy*R];
+      if(losPointToSegmentDist(V[0],V[1],ax,ay,bx,by)<=2&&losPointToSegmentDist(W[0],W[1],ax,ay,bx,by)<=2&&spineWallOn(V,W)){ var sc=spineCheckSeg(V,W); if(sc.touch&&!sc.full)return true; } }
+    return false;
+  }
+  function halfAlongSpine(sn){
+    if(!sn)return false;
+    var mx=(sn.c0.x+sn.c.x)/2,my=(sn.c0.y+sn.c.y)/2,ux=sn.c.x-sn.c0.x,uy=sn.c.y-sn.c0.y,L=Math.sqrt(ux*ux+uy*uy)||1;
+    var px=-uy/L,py=ux/L,hs=LOS_GEO_HEX_W/0.75/4;
+    return losPointToSegmentDist(mx+px*hs,my+py*hs,ax,ay,bx,by)<=2&&losPointToSegmentDist(mx-px*hs,my-py*hs,ax,ay,bx,by)<=2;
+  }
+  /* v057 ASLFULL 障害物の高さ(B23.2)と Blind Hex(A6.2・A6.4〜6.43) */
+  var UP_BLDH={40:1,50:1,41:1.5,51:1.5,42:2.5,52:2.5};
+  function upObsH(px,py,tt){ if(!tt)return 0; if(/Building|Multiple|Fortified/.test(tt.name)){ var rr=losResolveGlobal(px,py); var cd=rr?losTerrainCodeAt(rr.boardId,rr.lx,rr.ly):null; if(UP_BLDH[cd]!=null)return UP_BLDH[cd]; } return tt.lvl?tt.lvl+0.5:(tt.h||0); }
+  var upSeen={}, upHexB=null;
+  function upFmt(v){ return (v%1)?(Math.floor(v)+'½'):String(v); }
+  function upVerdict(hId,px,py,tt,ce){
+    var top=ce+upObsH(px,py,tt), full=Math.floor(top), hi=higherElev, lo=Math.min(elevA,elevB), tnm=losTerrainNameJP(tt.name);
+    if(top>=hi)return {block:true};
+    var uk=hId.id+':'+full+':'+ce; /* v058 ASLFULL */
+    if(upSeen[uk])return upSeen[uk];
+    if(lo>=full){ halfNote('A6.2up:'+hId.name,'A6.2・A6.4: '+tnm+'('+hId.name+'、高さ'+upFmt(top)+')より高い地点から、高さ'+full+'以上の地点を見るので遮らない'); return (upSeen[uk]={block:false}); }
+    if(!upHexB)upHexB=idB||losHexIdentityAtGlobal(Math.round(bx),Math.round(by));
+    var aHi=elevA>elevB, hiId=aHi?idA:upHexB, loId=aHi?upHexB:idA, loG=aHi?gElevB:gElevA;
+    var dHi=hiId?losHexRangeGlobalIds(hiId,hId):null, dLo=loId?losHexRangeGlobalIds(hId,loId):null;
+    if(dHi==null||dLo==null)return (upSeen[uk]={block:true});
+    var n0=1+Math.floor(dHi/5), red=Math.max(0,Math.floor(hi-full)-1), adj=ce-loG, x=n0+adj, nb=(x<=1)?x:Math.max(1,x-red), blk=dLo<=nb; /* A6.42 の減少は最低1まで(A6.8 EX: 2J4 を4レベルにすると H1 が見える=A6.43 の加算の後に減らす) */
+    halfNote('A6.4:'+hId.name,'A6.4 Blind Hex: '+tnm+'('+hId.name+'、高さ'+upFmt(top)+')は、高い方(高さ'+hi+')から距離'+dHi+'。Blind Hex = 1'+(n0>1?' + '+(n0-1)+'(A6.41)':'')+(adj?(adj>0?' + ':' − ')+Math.abs(adj)+'(A6.43)':'')+((x>1&&red)?' − '+(x-nb)+'(A6.42)':'')+' = '+nb+'。低い方(高さ'+lo+')は障害物から'+dLo+'ヘクスなので'+(blk?'見えない(遮断)':'見える'));
+    return (upSeen[uk]={block:blk,blind:true});
+  }
+  /* v060 ASLFULL 同じ建物(B23.25・A6.1) */
+  var upBS={};
+  function upBset(h){ if(!h||typeof window.ASLFULL_BLDG_SET!=='function')return null; if(upBS[h.id]===undefined){ try{ upBS[h.id]=ASLFULL_BLDG_SET(h); }catch(e){ upBS[h.id]=null; } } return upBS[h.id]; }
+  function upGraze(h,px,py,hc){
+    if(!hc)return false; var ti=losTerrainInfoAtGlobal(px,py); if(!ti||!/Building|Multiple/.test(ti.name))return false;
+    var k=h.boardId+':'+h.col+':'+h.row;
+    function chk(own,oc){ if(!own||!oc)return false; var st=upBset(own); if(!st||!st.keys[k])return false;
+      var dO=Math.sqrt((oc.x-px)*(oc.x-px)+(oc.y-py)*(oc.y-py)), dC=Math.sqrt((hc.x-px)*(hc.x-px)+(hc.y-py)*(hc.y-py));
+      if(dO-dC<=4){ halfNote('A6.1g:'+h.name,'A6.1: '+h.name+'の建物の絵は、同じ建物の'+own.name+'との境をかすめるだけなので遮らない'); return true; } return false; }
+    return chk(idA,ownCenterA)||(!snapO&&chk(idB,ownCenterB));
+  }
+  /* v062 ASLFULL: 長屋の仕切りの辺(B23.71)。LOS が越える辺の中点の近くでは、中点の両側に仕切りがあるときだけ遮る(21P8→P7 は見える、B23.71 EX) */
+  function upRowSide(ii,h){ /* LOS がこの画素の近く(前後12画素)で越える辺 */
+    var nb=null; for(var d=1;d<=12&&!nb;d++){ for(var sg=1;sg>=-1;sg-=2){ var jj=ii+d*sg; if(jj<0||jj>=path.length)continue; var hh=losHexIdentityAtGlobal(path[jj][0],path[jj][1]); if(hh&&hh.id!==h.id){ nb=hh; break; } } }
+    if(!nb)return true; var c0=losColRowToGlobalCanonPrecise(h.boardId,h.col,h.row), c1=losColRowToGlobalCanonPrecise(nb.boardId,nb.col,nb.row); if(!c0||!c1)return true;
+    var mx=(c0.x+c1.x)/2,my=(c0.y+c1.y)/2,ux=c1.x-c0.x,uy=c1.y-c0.y,L=Math.sqrt(ux*ux+uy*uy)||1,qx=-uy/L,qy=ux/L,hs=LOS_GEO_HEX_W/0.75/4;
+    var fp=((path[ii][0]-mx)*qx+(path[ii][1]-my)*qy)/hs; if(Math.abs(fp)>=0.2)return true; /* 辺の中点から離れた所で仕切りを越える */
+    var bar=function(f){ var sx=mx+qx*hs*f, sy=my+qy*hs*f; for(var ox=-2;ox<=2;ox++)for(var oy=-2;oy<=2;oy++){ var tt=losTerrainInfoAtGlobal(Math.round(sx+ox),Math.round(sy+oy)); if(tt&&/Rowhouse Wall/.test(tt.name))return true; } return false; };
+    return bar(-0.25)&&bar(0.25); } /* 中点で越えるときは、中点の両側に仕切りがあるときだけ遮る(仕切りが中点まで届かない辺は通る、21P8→P7) */
+  /* v062 ASLFULL A6.3: 低い方が窪地の中なら、窪地のヘクス(中心が負の標高)の土手の画素は稜線として遮らない(窪地の判定は後で A6.3 で行う) */
+  var upDpC={};
+  function upDepHex(h){ /* 窪地 = ガリー・小川・沈んだ道(A6.3)。水域(B21)は窪地ではない */ if(!h)return false; if(upDpC[h.id]===undefined){ var c=losColRowToGlobalCanonPrecise(h.boardId,h.col,h.row); var e=c?losElevAtGlobal(Math.round(c.x),Math.round(c.y)):null; var tt=c?losTerrainInfoAtGlobal(Math.round(c.x),Math.round(c.y)):null; upDpC[h.id]=(e!==null&&e<0&&!!tt&&/Gully|Stream|Sunken/.test(tt.name)); } return upDpC[h.id]; }
+  var upDpMode=(elevA!==elevB)&&(function(){ var loId=(elevA<elevB)?idA:(idB||losHexIdentityAtGlobal(Math.round(bx),Math.round(by))), loF=(elevA<elevB)?flA:flB; return !!loId&&loF===0&&upDepHex(loId); })();
   var seenHexes={};
   var seenSmokeHexes={}; // 2026-08追加(ダルマ指示): LOSタブに配置した煙幕マーカーの重複計上防止(地形妨害とは別枠で累積)
   // 2026-08追加(ダルマ指摘バグ修正): 盤面接続の継ぎ目で、実物では同一の1ヘクスが
@@ -27710,6 +27814,13 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
         if(nm2&&hexTrace[idx].encounteredTerrains.indexOf(nm2)<0)hexTrace[idx].encounteredTerrains.push(nm2);
       }
     }
+    if((roofA||roofB)&&hexId&&!(roofA&&roofB)){ var rwR=losTerrainInfoAtGlobal(gx,gy); if(rwR&&/Rowhouse Wall/.test(rwR.name)&&upRowSide(i,hexId)){ /* v063 ASLFULL: 屋上から仕切りの向こうの家の中は見えない */
+      var rwE=roofA?ownCenterB:ownCenterA; if(rwE&&Math.sqrt((gx-rwE.x)*(gx-rwE.x)+(gy-rwE.y)*(gy-rwE.y))<=38){
+        blocked=true; blockingTerrain=T('長屋の仕切り（B23.71・B23.25）'); blockingHex=hexId.name; blockingReason='rowhouse_bar'; blockingPx=[gx,gy];
+        halfNote('B23.71r:'+hexId.name,'B23.71・B23.25: 屋上からは仕切りの上を見渡せるが、仕切りの向こうの家の中のユニットは見えない(屋上どうしなら見える)'); break; } } }
+    if(!roofA&&!roofB&&hexId){ var rwT=losTerrainInfoAtGlobal(gx,gy); if(rwT&&/Rowhouse Wall/.test(rwT.name)&&upRowSide(i,hexId)){ /* v062 ASLFULL B23.71 */
+      blocked=true; blockingTerrain=T('長屋の仕切り（B23.71）'); blockingHex=hexId?hexId.name:null; blockingReason='rowhouse_bar'; blockingPx=[gx,gy];
+      halfNote('B23.71:'+(hexId?hexId.name:''),'B23.71: 長屋の黒い仕切りは、すべての高さで LOS を遮る(屋上のユニットは例外)'); break; } }
     if(hexId===null||losIsOwnAlias(hexId))continue;
     var cellElev=losElevAtGlobal(gx,gy);
     if(cellElev===null)continue;
@@ -27779,6 +27890,7 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
       }
     }
     if(tieWithOwn)continue;
+    if(upGraze(hexId,gx,gy,hexCenterCur))continue; /* v060 ASLFULL A6.1 */
     if(sameElev){
       // 2026-08修正(Kato確認・修正実施承認済み): A/Bが同高度の場合、経路上がA/Bより
       // "高い"(丘)ケースの遮断判定が欠落しており、丘を挟んでいてもLOSが素通りする
@@ -27793,15 +27905,16 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
       if(cellElev<elevA){
         var t0=losEffectiveTerrainInfoGlobal(gx,gy,hexId);
         if(!t0)continue;
-        var obstacleTop=cellElev+t0.h;
+        var obstacleTop=cellElev+upObsH(gx,gy,t0); /* v057 ASLFULL B23.2 */
         if(obstacleTop>elevA&&obstacleTop>elevB){
-          blocked=true;blockingTerrain=losTerrainNameJP(t0.name)+T('（低地だが高さで突出）'); // v11.282: 日本語表示で英語の地形名が出ていたblockingHex=hexId.name;blockingReason='obstacle_height_over_lower_terrain';blockingPx=[gx,gy];
+          blocked=true;blockingTerrain=losTerrainNameJP(t0.name)+T('（低地だが高さで突出）');blockingHex=hexId.name;blockingReason='obstacle_height_over_lower_terrain';blockingPx=[gx,gy]; // v11.282: 日本語表示で英語の地形名が出ていた。v057 ASLFULL: 注釈が代入を飲み込んで遮断ヘクスが空だったのを直す
           break;
         }
         continue;
       }
     }else{
-      if(cellElev>=higherElev){
+      if(cellElev>=higherElev&&upDpMode&&upDepHex(hexId))halfNote('A6.3b:'+hexId.name,'A6.3: 窪地のヘクス('+hexId.name+')の土手は稜線として数えない'); /* v062 ASLFULL */
+      if(cellElev>=higherElev&&!(upDpMode&&upDepHex(hexId))){ /* v062 ASLFULL A6.3 */
         blocked=true;blockingTerrain=T('稜線（別の丘ヘクス）');blockingHex=hexId.name;blockingReason='crest';blockingPx=[gx,gy];
         break;
       }
@@ -27816,8 +27929,36 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
     }else{
       isObstacleHere=t.obs&&t.spl===0.0;
     }
+    if(isObstacleHere&&t.half){ /* v039 ASLFULL */
+      var tnJ=losTerrainNameJP(t.name);
+      if(t.inh&&snapSideHex(hexId)){ isObstacleHere=false; /* v041 ASLFULL A8.15 瓦礫 */
+        if(Math.abs(gx-bx)+Math.abs(gy-by)>8)snapRubble.push([t.name,hexId.name,hexId.id]);
+        halfNote('A8.15rb:'+hexId.name,'A8.15: '+tnJ+'('+hexId.name+')は入る/出るヘクスの瓦礫。遮らず、越えれば DRM'); }
+      else if(!sameElev){ isObstacleHere=false; halfNote('A6.21:'+hexId.name,'A6.21: '+tnJ+'('+hexId.name+')は半レベルの障害物。高さの違う地点の間の LOS は遮らない'); }
+      else if(!t.inh){
+        var snH=halfSideNeighbor(gx,gy,hexId);
+        if(snH&&!losIsOwnAlias(snH.id)&&snapSide(hexId,snH.id)){ /* v040 ASLFULL */
+          isObstacleHere=false;
+          if(Math.abs(gx-bx)+Math.abs(gy-by)>8){ snapCross.push([t.name,hexId.name+'/'+snH.id.name,hexId.id,snH.id.id]); }
+          halfNote('B9.2snap:'+hexId.name+':'+snH.id.id,'B9.2: '+tnJ+'('+hexId.name+'と'+snH.id.name+'の間の辺)は入る/出るヘクスの辺なので遮らない');
+        }else if(snH&&losIsOwnAlias(snH.id)){
+          isObstacleHere=false;
+          var isBsideH=ownCenterB&&Math.abs(snH.c.x-ownCenterB.x)<4&&Math.abs(snH.c.y-ownCenterB.y)<4;
+          halfNote('B9.2:'+hexId.name+':'+snH.id.id,'B9.2: '+tnJ+'('+hexId.name+'と'+snH.id.name+'の間の辺)は'+(isBsideH?'目標(B)':'射撃側(A)')+'のヘクスの辺なので遮らない'+(isBsideH?'(B の TEM: '+(t.name==='Hedge'?'生垣 +1':'石壁 +2')+'、B9.3 の条件で適用)':''));
+        }else if(halfAlongSpine(snH)){ /* v046 ASLFULL B9.2 背骨の例外 */
+          var spv=spineCheck(snH), spNm=hexId.name+'と'+snH.id.name+'の間';
+          if(!spv.touch){ halfNote('B9.2spine:'+hexId.name+':'+snH.id.id,'B9.2: 背骨に沿う'+tnJ+'('+spNm+')は射撃側・目標のヘクスに触れないので障害物'); }
+          else if(spv.full){ halfNote('B9.2spine:'+hexId.name+':'+snH.id.id,'B9.2: 背骨に沿う'+tnJ+'('+spNm+')は、反対側の頂点の3本がすべて壁/生垣なので障害物'); }
+          else{ isObstacleHere=false;
+            halfNote('B9.2spine:'+hexId.name+':'+snH.id.id,'B9.2: 背骨に沿う'+tnJ+'('+spNm+')は射撃側/目標のヘクスに触れ、反対側の頂点の3本がそろわないので遮らない'+((spv.touchB&&!snapO)?'(目標の TEM: '+(t.name==='Hedge'?'生垣 +1':'石壁 +2')+'、B9.2 EX・B9.3)':'')); }
+        }else if(spineVertexFree(gx,gy,hexId)){ isObstacleHere=false; /* v046 ASLFULL B9.2: 遮らない背骨の端の頂点 */
+        }
+      }
+    }
+    var upBlind=false;
+    if(isObstacleHere&&!sameElev&&!t.half){ var uvM=upVerdict(hexId,gx,gy,t,cellElev); /* v058 ASLFULL: 季節内の果樹園も(B14.2) */ if(!uvM.block)isObstacleHere=false; else upBlind=!!uvM.blind; } /* v057 ASLFULL A6.2・A6.4 */
     if(isObstacleHere){
-      blocked=true;blockingTerrain=t.name;blockingHex=hexId.name;blockingReason='obstacle';blockingPx=[gx,gy];
+      blocked=true;blockingTerrain=t.name;blockingHex=hexId.name;blockingReason=upBlind?'blind_hex':'obstacle';blockingPx=[gx,gy];
       break;
     }
     // 2026-08修正(Kato指示: 全域地形の縁判定を統一化。旧実装は果樹園限定・標高差限定
@@ -27854,6 +27995,9 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
         var isSplitO=tO.spl>0.0;
         var isAlwaysObsO=tO.obs&&tO.spl===0.0;
         var touchBlocksO=isAlwaysObsO||(isSplitO&&!sameElev&&orchardInSeason);
+        if(touchBlocksO&&tO.half&&snapSideHex(oHexId)){ touchBlocksO=false; if(Math.abs(oxN-bx)+Math.abs(oyN-by)>8)snapRubble.push([tO.name,oHexId.name,oHexId.id]); } /* v041 ASLFULL */
+        if(touchBlocksO&&tO.half&&!sameElev){ touchBlocksO=false; halfNote('A6.21:'+oHexId.name,'A6.21: '+losTerrainNameJP(tO.name)+'('+oHexId.name+')は半レベルの障害物。高さの違う地点の間の LOS は遮らない'); } /* v039 ASLFULL */
+        if(touchBlocksO&&(isAlwaysObsO||isSplitO)&&!tO.half&&!sameElev){ /* v058 ASLFULL: 果樹園も */ var oElU=losElevAtGlobal(oxN,oyN); if(oElU!==null&&!upVerdict(oHexId,oxN,oyN,tO,oElU).block)touchBlocksO=false; } /* v057 ASLFULL */
         if(!touchBlocksO)continue;
         blocked=true;blockingTerrain=tO.name;blockingHex=oHexId.name;blockingReason='obstacle_adjacent';blockingPx=[oxN,oyN];
         break;
@@ -27861,9 +28005,10 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
       if(blocked)break;
     }
     if(blocked)break;
-    var isHindranceHere=(t.hin||isSplit);
+    var isHindranceHere=(t.hin||isSplit)&&!(snapO&&hexId.id===snapO.targetHexId)&&!(isSplit&&!sameElev&&orchardInSeason); /* v040 ASLFULL。v058: 高さの違う LOS の季節内の果樹園は障害物で、妨害ではない(B14.2・B14.21) */
     if(isHindranceHere){
       var ignoreAsLow=(!isSplit)&&(!sameElev)&&(cellElev<higherElev);
+      if(!sameElev&&(t.name==='Brush'||t.name==='Grain')){ ignoreAsLow=true; halfNote('B12.2:'+hexId.name,(t.name==='Brush'?'B12.2':'B15.2')+': '+losTerrainNameJP(t.name)+'('+hexId.name+')の妨害は、同じ高さの射撃側と目標の間だけ数える(高さが違うので +0)'); } /* v039 ASLFULL */
       var sKeyMain=losSeamKey(hexId);
       if(ignoreAsLow){
       }else if(sKeyMain&&seamSeenAt[sKeyMain]&&seamSeenAt[sKeyMain]!==hexId.id){
@@ -27925,6 +28070,7 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
         if(nElev===null)continue;
         var isSplitN=tN.inh&&tN.spl>0.0;
         var ignoreAsLowN=(!isSplitN)&&(!sameElev)&&(nElev<higherElev);
+        if(!sameElev&&(tN.name==='Brush'||tN.name==='Grain'))ignoreAsLowN=true; /* v039 ASLFULL B12.2・B15.2 */
         if(ignoreAsLowN)continue;
         // 2026-08修正(ユーザー報告・実装承認済み・重大バグ修正「季節内の果樹園を高度差の
         // あるLOSが通過→LOS遮断され射撃不可(SK4果樹園項)のはずがジャッチできてしまう」):
@@ -27935,11 +28081,11 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
         // 適用すべき完全遮断(SK4果樹園項)が一切適用されていなかった。ここで
         // touchBlocksOと同じ条件(isSplitN&&!sameElev&&orchardInSeason)を追加し、
         // 該当する場合は妨害+1ではなく完全遮断として扱う。
-        if(isSplitN&&!sameElev&&orchardInSeason){
+        if(isSplitN&&!sameElev&&orchardInSeason){ if(!upVerdict(nHexId,nx,ny,tN,nElev).block)continue; /* v058 ASLFULL B14.2 */
           blocked=true;blockingTerrain=tN.name;blockingHex=nHexId.name;blockingReason='obstacle_adjacent_vertex';blockingPx=[nx,ny];
           break;
         }
-        if(tN.hin||isSplitN){
+        if((tN.hin||isSplitN)&&!(snapO&&nHexId.id===snapO.targetHexId)){ /* v040 ASLFULL */
           // 2026-08追加(ダルマ指摘・実装承認済み): 共通ヘルパーlosIsEquidistantDuplicateHindrance
           // で等距離ペア判定(詳細はヘルパー定義部のコメント参照)。
           if(!losIsEquidistantDuplicateHindrance(nHexId,hindranceHexes)){
@@ -27992,6 +28138,60 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
       hindranceHexes.push([idB?idB.name:ownHexB,T('煙幕')+'+'+ownSmkLevelB,null,true]);
     }
   }
+  if(snapO&&snapO.targetHexId&&S_LOS.smoke&&S_LOS.smoke[snapO.targetHexId]&&!seenSmokeHexes[snapO.targetHexId]&&!((!sameElev)&&(elevB+2<higherElev))){ /* v040 ASLFULL */
+    seenSmokeHexes[snapO.targetHexId]=true; var snSmk=S_LOS.smoke[snapO.targetHexId].level;
+    if(snSmk){ hindranceDrm+=snSmk; hindranceHexes.push([snapO.targetName||snapO.targetHexId,T('煙幕')+'+'+snSmk,null,true]); }
+  }
+  /* v060 ASLFULL B23.25: 同じ建物の隣どうしは同じ階のときだけ LOS がある */
+  if(!blocked&&!snapO&&idA&&idB&&idA.id!==idB.id){ var sbA=upBset(idA); if(sbA&&sbA.keys[idB.boardId+':'+idB.col+':'+idB.row]&&losHexRangeGlobalIds(idA,idB)===1&&flA!==flB){
+    blocked=true; blockingTerrain=T('同じ建物の別の階（B23.25）'); blockingHex=idB.name; blockingReason='same_building';
+    halfNote('B23.25:'+idB.name,'B23.25: '+idA.name+'と'+idB.name+'は同じ建物の隣どうしで階が違うので LOS なし(同じ階か、階段で縦につながるときだけ)'); } }
+  /* v061 ASLFULL B23.25: 建物の Location への LOS は、入る辺が建物の絵の中なら無い(1X3/1X4) */
+  if(!blocked&&!snapO&&!(roofA&&roofB)&&idA&&idB&&idA.id!==idB.id&&path.length>8&&losHexRangeGlobalIds(idA,idB)>1){ /* v063: 屋上の側だけ対象外 */ /* v062: 屋上は B23.25 EXC */
+    var enBld=function(px,py){ for(var ex=-1;ex<=1;ex++)for(var ey=-1;ey<=1;ey++){ var ti=losTerrainInfoAtGlobal(px+ex,py+ey); if(ti&&/Building|Multiple/.test(ti.name))return true; } return false; };
+    var enChk=function(idX,ocX,fromEnd){ var st=upBset(idX); if(!st||st.n<2||!ocX)return null; var n=path.length, k, step=fromEnd?-1:1, i0=fromEnd?n-1:0;
+      var isX=function(h){ if(!h)return false; if(h.id===idX.id)return true; var cc=losColRowToGlobalCanonPrecise(h.boardId,h.col,h.row); return !!(cc&&Math.abs(cc.x-ocX.x)<4&&Math.abs(cc.y-ocX.y)<4); };
+      for(k=i0;k>=0&&k<n;k+=step){ if(!isX(losHexIdentityAtGlobal(path[k][0],path[k][1])))break; }
+      if(k<0||k>=n)return null; var hO=losHexIdentityAtGlobal(path[k][0],path[k][1]); if(!hO||!st.keys[hO.boardId+':'+hO.col+':'+hO.row])return null;
+      var run=0; for(var kk=k;kk>=0&&kk<n&&run<8;kk+=step){ var hh=losHexIdentityAtGlobal(path[kk][0],path[kk][1]); if(!hh||hh.id!==hO.id)break; run++; } if(run<6)return null; /* 頂点をかすめるだけ(外側のヘクスを6画素未満しか通らない)なら A6.1 で対象外 */
+      var kIn=k-step*2, kOut=k+step*2; if(kIn<0||kIn>=n||kOut<0||kOut>=n)return null;
+      if(enBld(path[kIn][0],path[kIn][1])&&enBld(path[kOut][0],path[kOut][1]))return {hex:idX.name,via:hO.name,px:path[k]};
+      return null; };
+    var enB=roofB?null:enChk(idB,ownCenterB,true), enA=(enB||roofA)?null:enChk(idA,ownCenterA,false), enR=enB||enA;
+    if(enR){ blocked=true; blockingTerrain=T('建物の絵の中の辺（B23.25）'); blockingHex=enR.via; blockingReason='b23_25_entry'; blockingPx=enR.px;
+      halfNote('B23.25e:'+enR.hex,'B23.25: LOS が'+enR.hex+'に入る辺('+enR.via+'との間)は建物の絵の中なので、'+enR.hex+'の建物の中のユニットへの LOS は無い(隣接なら有る)'); }
+  }
+  /* v062 ASLFULL A6.3: 窪地の中のユニットへの LOS */
+  if(!blocked&&!sameElev&&!snapO&&hexTrace.length>=2){
+    var dpA=elevA<elevB, dpG=dpA?gElevA:gElevB, dpF=dpA?flA:flB;
+    if(upDpMode){
+      var dpT=hexTrace.slice(); if(dpA)dpT.reverse();
+      var dpE=function(h){ var c=losColRowToGlobalCanonPrecise(h.bId,h.col,h.row); return c?losElevAtGlobal(Math.round(c.x),Math.round(c.y)):null; };
+      var dpId=function(h){ var c=losColRowToGlobalCanonPrecise(h.bId,h.col,h.row); return c?losHexIdentityAtGlobal(Math.round(c.x),Math.round(c.y)):null; };
+      var dj=dpT.length-1; while(dj>1){ var hj=dpId(dpT[dj-1]); if(!hj||!upDepHex(hj))break; dj--; }
+      var dpC=losColRowToGlobalCanonPrecise(dpT[dj].bId,dpT[dj].col,dpT[dj].row), dpH=dpC?losHexIdentityAtGlobal(Math.round(dpC.x),Math.round(dpC.y)):null, dpHi=dpA?idB:idA;
+      var dpR=(dpH&&dpHi)?losHexRangeGlobalIds(dpHi,dpH):null;
+      if(dpR!=null){ var dpNeed=dpR+dpG, dpHiE=Math.max(elevA,elevB);
+        halfNote('A6.3:'+dpT[dpT.length-1].name,'A6.3 窪地: '+dpT[dpT.length-1].name+'(標高'+dpG+')の中へは、窪地の手前まで距離'+dpR+'なので高さ'+dpNeed+'以上が要る(高い方は高さ'+dpHiE+')'+(dj<dpT.length-1?'。'+dpT[dj].name+'から先は窪地が続くので距離に数えない':''));
+        if(dpHiE<dpNeed){ blocked=true; blockingTerrain=T('窪地の中（A6.3）'); blockingHex=dpT[dpT.length-1].name; blockingReason='depression'; } }
+    }
+  }
+  /* v060 ASLFULL B10.23: 低い丘の稜線の Blind Hex */
+  if(!blocked&&!sameElev&&!snapO&&hexTrace.length>2){
+    var crA=elevA>elevB, crT=hexTrace.slice(); if(!crA)crT.reverse();
+    var crHi=crA?idA:idB, crLoId=crA?idB:idA, crLoG=crA?gElevB:gElevA, crLo=Math.min(elevA,elevB);
+    var crE=crT.map(function(h){ var c=losColRowToGlobalCanonPrecise(h.bId,h.col,h.row); return c?losElevAtGlobal(Math.round(c.x),Math.round(c.y)):null; });
+    var crId=function(h){ var c=losColRowToGlobalCanonPrecise(h.bId,h.col,h.row); return c?losHexIdentityAtGlobal(Math.round(c.x),Math.round(c.y)):null; };
+    for(var ci=1;ci<crT.length-1&&crHi&&crLoId;ci++){
+      var ce2=crE[ci], cn=crE[ci+1]; if(ce2==null||cn==null||ce2>=higherElev||ce2<=cn)continue;
+      if(crT[ci].terrain==='Cliff'||crT[ci+1].terrain==='Cliff')continue;
+      var dif=ce2-crLoG; if(dif<1||crLo>=ce2)continue;
+      var cid=crId(crT[ci]); if(!cid)continue; var cd=losHexRangeGlobalIds(crHi,cid), dl=losHexRangeGlobalIds(cid,crLoId); if(cd==null||dl==null)continue;
+      var cn0=(cd>=5)?(dif+Math.floor(cd/5)-1):((dif>=2&&cd>1)?dif-1:0), cred=Math.max(0,Math.floor(higherElev-ce2)-1), cnb=Math.max(0,cn0-cred);
+      halfNote('B10.23:'+crT[ci].name,'B10.23 稜線の Blind Hex: '+crT[ci].name+'(標高'+ce2+')は高い方(高さ'+higherElev+')から距離'+cd+'。Blind Hex = '+cn0+(cred&&cn0?' − '+Math.min(cred,cn0)+'(A6.42)':'')+' = '+cnb+'。低い方は稜線から'+dl+'ヘクスなので'+(dl<=cnb?'見えない(遮断)':'見える'));
+      if(dl<=cnb){ blocked=true; blockingTerrain=T('稜線の Blind Hex（B10.23）'); blockingHex=crT[ci].name; blockingReason='crest_blind'; break; }
+    }
+  }
   if(hindranceDrm>=6){
     blocked=true;
     blockingTerrain=blockingTerrain||T('妨害DRM累積+6以上');
@@ -28029,7 +28229,7 @@ function losCheckLOSGlobal(ax,ay,bx,by,orchardInSeason,grainInSeason){
   return {blocked:blocked,blockingTerrain:blockingTerrain,blockingHex:blockingHex,blockingReason:blockingReason,
     blockingPx:blockingPx,hindranceDrm:hindranceDrm,hindranceHexes:hindranceHexes,pathLen:path.length,
     elevA:elevA,elevB:elevB,hexA:idA?idA.name:'?',hexB:idB?idB.name:'?',dataReady:true,hexTrace:hexTrace,
-    terrainA:terrainA,terrainB:terrainB,temB:temB,range:range,lang:S.lang}; // v11.282: lang=判定時の表示言語
+    terrainA:terrainA,terrainB:terrainB,temB:temB,range:range,lang:S.lang,halfLevelNotes:halfNotes,snapCross:snapCross,snapRubble:snapRubble,floorA:flA,floorB:flB,groundA:gElevA,groundB:gElevB}; // v11.282: lang=判定時の表示言語
 }
 // シナリオのdt(例:"1944/6")から季節設定を導出。取れなければnull。
 // 麦畑季節内=6〜9月、果樹園季節内=4〜10月(SKルール1.1.1地形タイプの麦畑/果樹園季節記載に基づく)
@@ -30066,7 +30266,8 @@ var LOS_TEM_ID_BY_VALUE={0:'open',1:'woods',2:'wood_bld',3:'stone_bld'};
 function losComputeApplyData(){
   var r=S_LOS.result;
   if(!r||r.error||!r.dataReady||r.range==null)return null;
-  var elevVal=(r.elevA===r.elevB)?'same':(r.elevA>r.elevB?'firer':'target');
+  var eAv=(r.groundA!=null)?r.groundA:r.elevA, eBv=(r.groundB!=null)?r.groundB:r.elevB; /* v057 ASLFULL: 上の階は自動反映しない(仕様 §4) */
+  var elevVal=(eAv===eBv)?'same':(eAv>eBv?'firer':'target');
   var temVal=(r.temB!=null)?r.temB:0;
   var temId=LOS_TEM_ID_BY_VALUE[temVal]||'open';
   // v11.237修正(ダルマ「確認修正実施」): 繁み・果樹園(季節不問)・季節内の麦畑はTEM0だが開豁地ではないためFFMO/阻止が無効(ASLSK4 1.1.1)。
@@ -30119,6 +30320,7 @@ function LosBuildLogText(){
   lines.push('【地点B】'+r.hexB+' (標高'+r.elevB+')  [参考座標: x='+(S_LOS.pxB?S_LOS.pxB.x:'?')+', y='+(S_LOS.pxB?S_LOS.pxB.y:'?')+']');
   lines.push('B地点の地形: '+(r.terrainB||'?')+' / TEM '+((r.temB===null||r.temB===undefined)?'要確認':(r.temB>0?'+'+r.temB:'±0')));
   lines.push('判定結果: '+(r.blocked?'LOS遮断':'LOS通る'));
+  if(r.halfLevelNotes&&r.halfLevelNotes.length)lines.push('半レベル: '+r.halfLevelNotes.join(' / ')); /* v039 ASLFULL */
   if(r.blocked){
     lines.push('遮断理由(内部コード): '+r.blockingReason);
     lines.push('遮断地形: '+r.blockingTerrain+(r.blockingHex?' ('+r.blockingHex+')':''));
@@ -30174,9 +30376,9 @@ function losBuildRouteLogText(){
   lines.push('--- ヘクスごとの内訳 ---');
   route.hexes.forEach(function(h,i){
     var hexName=losHexNameFromColRow(h.col,h.row);
-    var stepLbl=(i===0)?(h.startStop?'[起点+始動停止2MP]':'[起点]'):((h.vcaChange||h.vcaAutoChange)?('[VCA'+i+']'):('['+i+']'));
+    var stepLbl=(i===0)?(h.startStop?'[起点+始動停止2MP]':'[起点]'):(h.wireStep?('[鉄条網'+i+']'):h.floorChange?('[階'+i+']'):(h.vcaChange||h.vcaAutoChange)?('[VCA'+i+']'):('['+i+']'));
     var costLbl=(i===0)?'':(' コスト='+(Math.round(h.cost*10)/10)+unitLbl);
-    lines.push(stepLbl+' 盤面'+h.boardId+' '+hexName+' 地形='+(h.terrain||'?')+costLbl+' 累計='+(Math.round(h.cum*10)/10)+unitLbl+(h.vcaChange?' [VCA変更]':(h.vcaAutoChange?(' [自動VCA変更 '+h.vcaTurnHexspines+'スパイン]'):''))+(h.climbing?' [稜線越え]':'')+(h.roadOk?' [道路継続]':'')+(h.bogRequired?(' [ボグ判定必要'+(h.woodsAll?' 林=全MP消費(ボグDRM+0)':(h.terrain==='Woods'?' 林=半分MP消費(ボグDRM+3)':''))+']'):'')+((h.wreckCnt>0)?(' [残骸/他車両'+h.wreckCnt+'個、追加'+h.wreckAddCost+unitLbl+']'):'')+(h.minMoveApplied?' [最少移動ルール適用/Motion状態]':''));
+    lines.push(stepLbl+' 盤面'+h.boardId+' '+hexName+' 地形='+(h.terrain||'?')+costLbl+' 累計='+(Math.round(h.cum*10)/10)+unitLbl+(h.wireStep?(' [鉄条網の下へ入る dr'+h.wireDr+(h.wire==='on'?'・引っかかる':'')+']'):h.floorChange?(' ['+(h.floorChange>0?'昇る':'降りる')+'→'+(window.ASLFULL_FLOOR_NAME?ASLFULL_FLOOR_NAME(h.floor):h.floor)+']'):h.floor?(' ['+(window.ASLFULL_FLOOR_NAME?ASLFULL_FLOOR_NAME(h.floor):h.floor)+']'):'')+(h.floorChange?'':h.vcaChange?' [VCA変更]':(h.vcaAutoChange?(' [自動VCA変更 '+h.vcaTurnHexspines+'スパイン]'):''))+(h.climbing?' [稜線越え]':'')+(h.roadOk?' [道路継続]':'')+(h.bogRequired?(' [ボグ判定必要'+(h.woodsAll?' 林=全MP消費(ボグDRM+0)':(h.terrain==='Woods'?' 林=半分MP消費(ボグDRM+3)':''))+']'):'')+((h.wreckCnt>0)?(' [残骸/他車両'+h.wreckCnt+'個、追加'+h.wreckAddCost+unitLbl+']'):'')+(h.minMoveApplied?' [最少移動ルール適用/Motion状態]':''));
   });
   return lines.join('\n');
 }
@@ -30387,6 +30589,9 @@ function LosMapClick(ev){
       var hexes=route.hexes;
       var last=hexes[hexes.length-1];
       var info=losHexTerrainInfoGlobal({boardId:rtBoardId,col:col,row:row,id:rtBoardId+':'+col+':'+row});
+      if(!isVeh&&last&&last.wire==='on'){ S_LOS.routeError=T('鉄条網の上にいるため進めません（先に「下へ入る」、B26.4）'); return false; } /* v075 */
+      var upFl=(!isVeh&&last&&+last.floor)?+last.floor:0; /* v070 ASLFULL: 上の階からの移動(B23.4・B23.8) */
+      if(upFl&&typeof window.ASLFULL_ROUTE_FLOOR_OK==='function'){ var upErr=window.ASLFULL_ROUTE_FLOOR_OK(last,{boardId:rtBoardId,col:col,row:row},upFl); if(upErr){ S_LOS.routeError=upErr; return false; } }
       // v11.282: 道路ヘクスサイドを横切る移動か。該当すれば地形によらず道路の移動率(歩兵1MF・車両CE½/BU1MP、ボグなし)。
       // 従来はヘクスの優勢地形(道路は細いため含まれない)でコストを決めていたため、道路移動率が適用されず、林-道路では林のコスト+ボグ、
       // 装甲車は開豁地の道路でも3MPになっていた。
@@ -30571,7 +30776,7 @@ function LosMapClick(ev){
           var infEffMax=infMaxMF+(infRoadOk?1:0);
           var infCxMax=infEffMax+2;
           if(last.moveCum+stepCost>infCxMax+1e-9){
-            if(hexes.length===1){
+            if(hexes.filter(function(hx){return !hx.floorChange&&!hx.wireStep;}).length===1){ /* v070: 昇り降りは移動に数えない */
               stepCost=Math.max(0,infEffMax-last.moveCum);
               minMoveApplied=true;
             }else{
@@ -30597,6 +30802,8 @@ function LosMapClick(ev){
       hexes.push({boardId:rtBoardId,col:col,row:row,cost:stepCost,moveCum:newMoveCum,cum:newMoveCum+stopAdd,terrain:info.name,onRoad:!!roadSideType,roadOk:newRoadOk,elev:newElev,climbing:climbing,bogRequired:bogRequired,ssrChk:s28chk,ssrExtra:ssrExtra,woodsAll:woodsAllUsed,wreckCnt:wreckCnt,wreckAddCost:wreckAddCost,vcaTurnHexspines:vcaTurnHexspines,vcaAutoChange:vcaTurnCost>0,vca:newVCA,minMoveApplied:minMoveApplied});
       // 2026-09修正(ダルマ指摘「停止1MPも現在の最終ヘクスに反映させる」): route.totalCost(最終合計・
       // 表示用)は新しい終端ヘクスのcum(停止込み)をそのまま使う。
+      if(upFl)hexes[hexes.length-1].floor=upFl; /* v070 ASLFULL: 同じ階のまま */
+      if(!isVeh&&typeof window.ASLFULL_WIRE_AT==='function'&&window.ASLFULL_WIRE_AT(rtBoardId,col,row))hexes[hexes.length-1].wire='on'; /* v075: 鉄条網の上(B26.4) */
       route.totalCost=newMoveCum+stopAdd;
       return true;
     };
@@ -31420,7 +31627,7 @@ function LOS_PAGE(){
   if(S_LOS.loading){
     h+='<div style="text-align:center;color:#8899aa;padding:10px 0">'+T('判定中…')+'</div>';
   }else{
-    var r=S_LOS.result;
+    var r=(typeof ASLFULL_SNAP_PANEL==='function'&&ASLFULL_SNAP_PANEL())||S_LOS.result; /* v043 ASLFULL: Snap Shot オン時は辺の判定を表示 */
     if(r&&r.error){
       var errColor=(r.error==='outOfBoard')?'#e0a030':'#e05050';
       var errMsg=(r.error==='unsupported')?T('お使いのブラウザは地形データの展開（DecompressionStream）に対応していないため、LOS判定を実行できません')
@@ -31534,6 +31741,7 @@ function LOS_PAGE(){
         if(r.hindranceHexes&&r.hindranceHexes.length){
           h+='<div style="margin-top:2px">'+T('妨害の内訳')+': '+r.hindranceHexes.map(function(hh){return hh[0]+'('+losTerrainNameJP(hh[1])+')';}).join((S.lang==='en'?', ':'、'))+'</div>';
         }
+        if(r.halfLevelNotes&&r.halfLevelNotes.length){ h+='<div style="margin-top:2px;color:#8fb3d9">'+r.halfLevelNotes.join('<br>')+'</div>'; } /* v039 ASLFULL */
         h+='<div style="margin-top:6px;color:#556677">'+T('標高')+' A='+r.elevA+' B='+r.elevB+' / '+T('経路セル数')+'='+r.pathLen+'</div>';
       }
       h+='</div>';
@@ -32605,6 +32813,7 @@ function SCEN_PAGE(){
   // 区分はダルマ確認済みの実物ボックス範囲: SK1=S1-S8, SK2=S9-S19, SK3=S20-S27, EX1=S28以降(将来追加分の受け皿)。
   function scenKit(id){
     var n=parseInt((id||'').replace(/[^0-9]/g,''),10);
+    if(/^BV/.test(id||'')&&!isNaN(n))return (n<=10)?'BV1':'BV2'; /* v050 ASLFULL: BV#1=BV1〜10、BV#2=BV123〜136 */
     if(isNaN(n))return 'EX1';
     // 2026-09追加(ダルマ指示): S28・S29をSK#3へ移動(番号レンジ上はEX1域だが特例でSK3扱い)。
     // 2026-09追加(Kato・ユーザー提供シナリオS30「Ripples on the Pond」追加時): S30も同様にSK3扱いに追加。
@@ -32620,8 +32829,8 @@ function SCEN_PAGE(){
   // 2026-09修正(Kato指示「ASLSKWv シナリオ選択はsk1/sk2/sk3/exp1のみにする」): 公開版(ASLSKWv、
   // WEB_PUBLIC_HIDE_SCENARIO_CONTENT=true)ではキット選択をSK1/SK2/SK3/EXP1の4つに限定する。
   // SK4/EX2/EX3は現状シナリオ0件(実装前)、BP2は非公開版限定として除外。ASLAKEXvでは従来通り8キット全て表示。
-  var KIT_ORDER=WEB_PUBLIC_HIDE_SCENARIO_CONTENT?['SK1','SK2','SK3','EX1']:['SK1','SK2','SK3','SK4','EX1','EX2','EX3','BP2'];
-  var KIT_LBL={SK1:T('SK#1'),SK2:T('SK#2'),SK3:T('SK#3'),SK4:T('SK#4'),EX1:T('EXP#1'),EX2:T('EXP#2'),EX3:T('EXP#3'),BP2:T('BonusPack#2')};
+  var KIT_ORDER=WEB_PUBLIC_HIDE_SCENARIO_CONTENT?['BV1','BV2','SK1','SK2','SK3','EX1']:['BV1','BV2','SK1','SK2','SK3','SK4','EX1','EX2','EX3','BP2']; /* v050 ASLFULL */
+  var KIT_LBL={BV1:T('BV#1'),BV2:T('BV#2'),SK1:T('SK#1'),SK2:T('SK#2'),SK3:T('SK#3'),SK4:T('SK#4'),EX1:T('EXP#1'),EX2:T('EXP#2'),EX3:T('EXP#3'),BP2:T('BonusPack#2')};
   var scnSorted=SCN.slice().sort(function(a,b){
     var ka=KIT_ORDER.indexOf(scenKit(a.id)),kb=KIT_ORDER.indexOf(scenKit(b.id));
     if(ka!==kb)return ka-kb;
@@ -33964,6 +34173,18 @@ function toggleSWHist(id){ // SW史実解説カードの開閉(2026-07追加、�
   S.unit.histOpen[id]=!S.unit.histOpen[id];
   Draw();
 }
+/* v051 ASLFULL: BV シナリオの OB に出てくる車両の id(全シナリオ分、初回だけ計算) */
+var ASLFULL_BV_VEH_IDS=null;
+function aslfullBvScenVehIds(){
+  if(ASLFULL_BV_VEH_IDS)return ASLFULL_BV_VEH_IDS;
+  var ids={};
+  SCN.filter(function(sc){return /^BV/.test(sc.id||'');}).forEach(function(sc){
+    var toks=scenarioObTokens(sc); if(!toks)return;
+    AFV_DATA.forEach(function(a){ if(!a.lbl||!a.nat)return;
+      if(toks.some(function(t){return a.nat.split('/').indexOf(t.nat)>=0&&afvLblMatchesToken(a,t);}))ids[a.id]=true; });
+  });
+  return (ASLFULL_BV_VEH_IDS=ids);
+}
 function UNIT_PAGE(){
   var u=S.unit,d=UNITS[u.nat],h="";
 
@@ -34134,6 +34355,7 @@ function UNIT_PAGE(){
       }
       h+='</div>';
     });
+    if(!window.ASLFULL_UNIT_NO_DC){ /* v068 ASLFULL: シナリオに DC が無ければ出さない */
     // DC
     h+='<div style="background:#0d0d14;border:1px solid #404040;border-left:2px solid '+nc+';border-radius:3px;padding:7px 9px;margin-bottom:4px">';
     h+='<div style="margin-bottom:5px;display:flex;align-items:center;gap:4px">';
@@ -34157,6 +34379,7 @@ function UNIT_PAGE(){
       h+='</div>';
     }
     h+='</div>';
+    } /* v068 ASLFULL */
   }
 
   // ── GUN(砲/迫撃砲) ──
@@ -34269,7 +34492,8 @@ function UNIT_PAGE(){
   // 2026-08追加(ダルマ指示「まずmmcや砲などと同じような表示にする必要がある」→「修正実施」):
   // GUN/MTRタブと同じチップ様式(afvChipInnerHTML)で車両一覧を表示する。確認済みデータ(afSrc==="confirmed")のみ。
   if(u.tab==="veh"){
-    var natVehs=AFV_DATA.filter(function(v){return (v.afSrc==="confirmed"||v.afSrc==="confirmed(pdf)")&&v.nat&&v.nat.split('/').indexOf(u.nat)>=0;}); // 修正(2026-09、全シナリオOB照合作業で発覚): 完全一致(===)だとFFRのUSA/FFR複数国籍対応(M4A3(76)W等)が表示されないため、GUNタブと同じsplit('/')方式に統一
+    var bvVehIds=aslfullBvScenVehIds(); /* v051 ASLFULL */
+    var natVehs=AFV_DATA.filter(function(v){return (v.afSrc==="confirmed"||v.afSrc==="confirmed(pdf)"||(v.afSrc==="confirmed(h)"&&bvVehIds[v.id]&&/^(GER|SOV)$/.test(u.nat)))&&v.nat&&v.nat.split('/').indexOf(u.nat)>=0;}); // 修正(2026-09、全シナリオOB照合作業で発覚): 完全一致(===)だとFFRのUSA/FFR複数国籍対応(M4A3(76)W等)が表示されないため、GUNタブと同じsplit('/')方式に統一
     if(!natVehs.length){
       h+='<div class="infobox" style="color:#667788">'+T('この陣営の車両データはまだ登録されていません（実物カウンター確認後に追加）')+'</div>';
     }
@@ -34854,7 +35078,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   function scenSan(){
     var sc=(typeof curScen==='function')?curScen():null,out={axis:null,allied:null,found:false};
     if(!sc||!sc.f)return out;
-    Object.keys(sc.f).forEach(function(nat){var v=sc.f[nat]&&sc.f[nat].san;if(v!=null){out[AXIS_NATS[nat]?'axis':'allied']=v;out.found=true;}});
+    Object.keys(sc.f).forEach(function(nat){var v=sc.f[nat]&&sc.f[nat].san;if(v!=null){out[AXIS_NATS[nat]?'axis':'allied']=(+v>=2)?+v:null;out.found=true;}}); /* v064: SAN 0 = 狙撃兵なし(null) */
     return out;
   }
   window.SNP_san=function(k,d){
@@ -34864,16 +35088,38 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     z.san[k]=v;saveState();Draw();
   };
   window.SNP_sanFromScen=function(){var s=scenSan(),z=snp();if(s.found){z.san.axis=s.axis;z.san.allied=s.allied;}saveState();Draw();};
+  /* v064(ダルマ「実施」): シナリオを選んだ(別のシナリオに切り替えた)ときに SAN を自動で入れる。同じシナリオのままなら上書きしない(ゲーム中に下がった SAN を残す) */
+  function syncScenSan(){ try{ var sc=(typeof curScen==='function')?curScen():null, z=snp(), id=sc?sc.id:null;
+    if(id===z.sanScen)return false; if(z.sanScen===undefined&&(z.san.axis!=null||z.san.allied!=null)){ z.sanScen=id; return false; } /* 更新前から SAN が入っている保存データは上書きしない */ z.sanScen=id; if(!sc)return false; var s=scenSan(); if(!s.found)return false; z.san.axis=s.axis; z.san.allied=s.allied; return true; }catch(e){ return false; } }
+  window.ASLFULL_SNP_SYNC=syncScenSan;
+  (function(){ var oD=window.Draw; if(typeof oD!=='function')return; window.Draw=function(){ if(syncScenSan()&&typeof saveState==='function')saveState(); return oD.apply(this,arguments); }; })();
+  window.SNP_panel=function(o){var z=snp();z.panelOpen=!!o;saveState();Draw();};
   function sanPanel(){
     var z=snp(),s=scenSan();
+    /* v048(ダルマ指示「他のタブと同じボタンサイズ、数値はデジタルパネル表示にする」): −/＋は他タブの増減ボタン(.cb 40×40)、
+       値は7セグ(seg7、未設定は「--」)、下の2ボタンは他タブと同じ .b.sm(高さ40) */
     var one=function(k,lbl){
       var v=z.san[k];
-      return '<span style="display:inline-flex;align-items:center;gap:4px">'+lbl+' '+btn('−','SNP_san(\''+k+'\',-1)')+'<b style="min-width:34px;text-align:center;display:inline-block">'+(v==null?L('なし','none'):v)+'</b>'+btn('＋','SNP_san(\''+k+'\',1)')+'</span>';
+      return '<div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="min-width:28px;font-size:12px;color:#ccddee;letter-spacing:0.08em">'+lbl+'</span>'
+        +'<button class="cb" onclick="SNP_san(\''+k+'\',-1)"'+(v==null?' disabled':'')+'>−</button>'
+        +'<div class="sumcard" style="padding:2px 8px;min-width:0">'+(typeof seg7==='function'?seg7(v==null?'--':(' '+v),v==null?'gld':'','SAN'):'<b>'+(v==null?L('なし','none'):v)+'</b>')+'</div>'
+        +'<button class="cb" onclick="SNP_san(\''+k+'\',1)"'+(v!=null&&v>=7?' disabled':'')+'>＋</button>'
+        +'</div>';
     };
+    var btnL=function(lbl,on){return '<button class="b sm" onclick="'+on+'">'+lbl+'</button>';};
+    /* v065(ダルマ「折りたたみにする」): ふだんは1行(SAN の値と未処理の数)だけ。タップで開く */
+    var fmt=function(v){return v==null?L('なし','none'):String(v);};
+    if(!z.panelOpen){
+      return '<button id="aslfullSanBar" onclick="SNP_panel(1)" style="display:flex;align-items:center;justify-content:space-between;width:100%;box-sizing:border-box;height:40px;margin:6px 0 10px;padding:0 10px;border:1px solid #6a5a20;border-radius:4px;background:#14110a;color:#ccddee;font-size:12px;font-family:inherit;cursor:pointer">'
+        +'<span><span style="color:#d4a017;letter-spacing:0.08em">'+L('狙撃兵 SAN (A14)','Sniper SAN (A14)')+'</span>　'+L('枢軸','Axis')+' '+fmt(z.san.axis)+' / '+L('連合','Allied')+' '+fmt(z.san.allied)+(pending()?'　<span style="color:#ff9a3d">'+L('未処理','pending')+' '+pending()+'</span>':'')+'</span>'
+        +'<span style="color:#8899aa">▶</span></button>';
+    }
     var h='<div style="margin:6px 0 10px;padding:8px;border:1px solid #6a5a20;border-radius:4px;background:#14110a">';
-    h+='<div style="color:#d4a017;font-weight:bold">'+L('狙撃兵 SAN (A14)','Sniper SAN (A14)')+'</div>';
+    h+='<div style="display:flex;justify-content:flex-end;margin:-2px 0 2px"><button class="b sm" style="height:40px;min-width:0;padding:0 12px" onclick="SNP_panel(0)">'+L('閉じる ▼','Close ▼')+'</button></div>';
+    h+='<div style="color:#d4a017;font-size:12px;letter-spacing:0.08em">'+L('狙撃兵 SAN (A14)','Sniper SAN (A14)')+'</div>'; /* v049: 他の見出し(.sh/.lbl 12px)に合わせる */
     h+='<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">'+one('axis',L('枢軸','Axis'))+one('allied',L('連合','Allied'))+'</div>';
-    h+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">'+(s.found?btn(L('シナリオの値を読み込む','Load from scenario'),'SNP_sanFromScen()'):'')+btn(L('狙撃兵カードを開く','Open Sniper card')+(pending()?' ('+pending()+')':''),'SNP_open()')+'</div>';
+    h+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">'+(s.found?btnL(L('シナリオの値を読み込む','Load from scenario'),'SNP_sanFromScen()'):'')+btnL(L('狙撃兵カードを開く','Open Sniper card')+(pending()?' ('+pending()+')':''),'SNP_open()')+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+L('シナリオOBの[ ]内の値。設定すると、PFPh・MPh・DFPh・AFPhのTH・MC/PTC・IFTの修正前DRが相手のSANと同じときに通知します。','The bracketed OB value. When set, a TH/MC/PTC/IFT Original DR equal to the enemy SAN during PFPh/MPh/DFPh/AFPh triggers a notice.')+'</div>';
     h+='</div>';
     return h;
@@ -36133,7 +36379,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
    ["kfz4","Kfz 4","GER",1,30,"","","",0,"",0,6,"","AAtr。MA=AAMG(ROF1)。AAMG 6†(注91)"],
    ["flaklkw20","2cm FlaK LKW","GER",0,24,"","T","GER_20L",20,"3/4",11,null,"","AAtr。MA:AA(注A)"],
    ["flaklkw37","3.7cm FlaK LKW","GER",-1,23,"H","T","GER_37L",37,"3/8",12,null,"","AAtr。MA:AA(注A)"],
-   ["kfz1","Kfz 1","GER",2,30,"L","","",0,"",0,null,"","tr。MA=AAMG(ROF1)・任意AAMG3†。PP9/T10。CS2†"],
+   ["kfz1","Kfz 1","GER",2,30,"L","","",0,"",0,null,"","tr。主砲・MG なし(カウンターに MG の火力表記なし。D1.8)。任意 AAMG は注94(RF1.2)で DYO 用、公式シナリオでは OB の図どおり(D1.84)。武装した場合は乗員を持ち CS#(注94†)。PP9/T10。cs2"], /* v054 ASLFULL 2026-10-08 ダルマ「修正実施」: 旧注記「MA=AAMG(ROF1)・任意AAMG3†」を H22 のカウンター図と注94で訂正 */
    ["kfz120","Kfz 1/20","GER",2,31,"L","","",0,"",0,null,"","atr(水陸両用)。Size+2†。PP9"],
    ["opel6700","Opel 6700 (Blitz)","GER",0,28,"","","",0,"",0,null,"","tr。PP21/T7"],
    ["buessing4500","Buessing-NAG 4500","GER",0,24,"H","","",0,"",0,null,"","tr。PP29/T2"],
@@ -36496,6 +36742,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   put(window.LOS_TEM_BY_TERRAIN,{"Shellholes":1,"Graveyard":1,"Path":0});
   // 4) 盤面の選択欄
   function reset(){ S_LOS.pxA=null;S_LOS.pxB=null;S_LOS.result=null;S_LOS.scrollLeft=0;S_LOS.scrollTop=0;S_LOS.enemyHexes=[];S_LOS.wreckHexes={};S_LOS.route=null; }
+  window.ASLFULL_HIDE_MAP_PICK=true; // v045
   window.ASLFULL_MAP_LAYOUT='h';
   // v027: 縦置き(90/270度)の盤面は幅645・高さ1800。並べる位置は前の盤面の実際の幅/高さの合計にする(S21・BV3と同じ方式)
   function relayout(){ var acc=0; S_LOS.boards.forEach(function(b){ var fp=losBoardFootprint(b.rot);
@@ -36517,6 +36764,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     try{
       if(S.tab!=='los')return r;
       if(!okIds()){ S_LOS.boards=[{id:IDS[0],col:0,row:0,rot:0}]; reset(); return window.Draw(); }
+      if(window.ASLFULL_HIDE_MAP_PICK)return r; /* v045(ダルマ指示「盤面(BV・VASL盤面データ)非表示にする」): 選択欄は出さない。盤面はシナリオの配置で決まる。ASLFULL_MAP_TOGGLE などの関数は残す */
       var main=document.getElementById('main'); if(!main||document.getElementById('aslfullMapPick'))return r;
       var sel=S_LOS.boards.map(function(b){return String(b.id);});
       var h='<div class="card" id="aslfullMapPick" style="margin-bottom:6px"><div class="sh">'+T('盤面（BV・VASL盤面データ）')+'</div>';
@@ -36540,6 +36788,17 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     return r;
   };
   window.ASLFULL_MAPUI={boards:IDS.length,terrainAdded:added};
+})();
+
+</script>
+<script>
+/* ===== ASLFULL拡張: 半レベルの障害物 (v039, 2026-10-08 ダルマ「実施」、docs/ASLFULL_Spec_HalfLevel_draft1.md) =====
+   ASLRB Terrain Chart の「Half-Level」のうち BV 盤面・カウンターで使う 石壁(72)・生垣(73)・石造瓦礫(90) に half を付ける
+   (VASL の isHalfLevelHeight と同じ)。判定本体の変更は tools/rulepatch5.py(losCheckLOSGlobal)。 */
+(function(){
+  if(typeof LOS_TERRAIN_TABLE==='undefined')return;
+  [72,73,90].forEach(function(c){ if(LOS_TERRAIN_TABLE[c])LOS_TERRAIN_TABLE[c].half=true; });
+  window.ASLFULL_HALFLEVEL=true;
 })();
 
 </script>
@@ -36578,10 +36837,10 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   }
   window.ASLFULL_LOS_NORTH_SNAP=snap; window.ASLFULL_LOS_NORTH_ORIG=orig;
   window.ASLFULL_LOS_NORTH_LAST=null; // 直近の判定で配置全体を回したか(確認用)
-  window.losCheckLOSGlobal=function(ax,ay,bx,by,orchardInSeason,grainInSeason){
+  window.losCheckLOSGlobal=function(ax,ay,bx,by,orchardInSeason,grainInSeason,opt){ /* v040: opt(Snap Shot の頂点 LOS)を渡す。B が頂点のときはヘクス中心へスナップしない */
     var flip=null;
     try{
-      var a=snap(ax,ay), b=snap(bx,by);
+      var a=snap(ax,ay), b=(opt&&opt.toPoint)?null:snap(bx,by);
       if(a){ax=a.x;ay=a.y;}
       if(b){bx=b.x;by=b.y;}
       var bs=S_LOS.boards||[], ok=bs.length>0;
@@ -36596,9 +36855,9 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
       }
     }catch(e){ if(flip){S_LOS.boards=flip.saved;} flip=null; }
     window.ASLFULL_LOS_NORTH_LAST=!!flip;
-    if(!flip)return orig.call(this,ax,ay,bx,by,orchardInSeason,grainInSeason);
+    if(!flip)return orig.call(this,ax,ay,bx,by,orchardInSeason,grainInSeason,opt);
     var res;
-    try{ res=orig.call(this,ax,ay,bx,by,orchardInSeason,grainInSeason); }
+    try{ res=orig.call(this,ax,ay,bx,by,orchardInSeason,grainInSeason,opt); }
     finally{ S_LOS.boards=flip.saved; }
     if(res&&!res.error){
       var back=function(pt){ return (pt&&pt.length>=2&&typeof pt[0]==='number')?[flip.XW-pt[0],flip.YH-pt[1]]:pt; };
@@ -37270,11 +37529,22 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     if(/\(b\)|boys/i.test(t.label))return {sw:'atr_sw_fin_b',latw:'atr_fin_b'};
     return null;
   }
+  /* v071(ダルマ「修正」): BV のドイツ軍の ATR(OB 表記「ATR」)は、ソ連の ATR(atr_sw_so「ATR 1-12(ソ連)」)ではなく独自の atr_sw_ge「ATR 1-12(独)」にする。
+     射撃タブの支援火器で名前が「ソ連」になり、国の絞り込み「独」で出なかったため。値は実物カウンター(ダルマ提供写真 2026-10-08、表 ATR 1-12・1PP、B#・ROF なし)と
+     ソ連の ATR と同じ扱い(FP1・射程12・ROF なし・PP1。B# の欄は印字なしだが、故障はソ連の ATR と同じ 12 のまま C13.26)。軽対戦車兵器(atr、独の基本 TK#5)は変更なし。
+     SK のシナリオ(鹵獲 ATR)は対象外。 */
+  function gerAtr(t){ if(t.nat!=='GER'||!/^ATR(\s*1-12)?$/i.test(String(t.label||'').trim()))return false; var sc=(typeof curScen==='function')?curScen():null; return !!(sc&&/^BV/.test(sc.id||'')); }
+  if(typeof SWT!=='undefined'&&!SWT.some(function(x){return x.id==='atr_sw_ge';})){
+    var gi=-1; SWT.forEach(function(x,i){ if(x.id==='atr_sw_so')gi=i; });
+    var gw={id:"atr_sw_ge",lbl:"ATR 1-12(独)",fp:1,b:12,x:99,rof:0,pp:1,nat:["GER"],r:1};
+    if(gi>=0)SWT.splice(gi+1,0,gw); else SWT.push(gw);
+  }
   if(typeof scenarioSWIds==='function'){
     var oSW=scenarioSWIds;
     window.scenarioSWIds=function(){
       var r=oSW.apply(this,arguments); var toks=scenarioObTokens(); if(!r||!toks)return r;
       toks.forEach(function(t){ var f=finAtr(t); if(!f)return; if(!r.FIN)r.FIN={}; delete r.FIN.atr_sw_so; r.FIN[f.sw]=true; });
+      toks.forEach(function(t){ if(!gerAtr(t))return; if(!r.GER)r.GER={}; delete r.GER.atr_sw_so; r.GER.atr_sw_ge=true; }); /* v071 */
       return r;
     };
   }
@@ -37286,6 +37556,837 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
       return r;
     };
   }
+})();
+
+</script>
+<script>
+/* ===== ASLFULL拡張: Snap Shot のヘクス辺 LOS (v040, 2026-10-08 ダルマ「実施」、docs/ASLFULL_Spec_SnapShotLOS_draft1.md) =====
+   LOSタブに「Snap Shot」の切り替えを出す。オンのとき B は「入るヘクス」をタップし、タップ位置に一番近い辺を「横切る辺」とする。
+   判定(ダルマ確認済み・ASLRB どおり):
+   - A8.15・C.5・B9.42: 辺の両端の頂点2つへ LOS を引き、両方とも通れば Snap Shot 可。線は頂点の2画素手前で止める。
+   - 入る/出るヘクスの地形は途中の地形として扱う(losCheckLOSGlobal の第7引数、tools/rulepatch6.py)。B の高さは入るヘクスの標高。
+   - C.5A・C.5C: 射程は入るヘクス(撃たれた後に目標が残るヘクス)まで。
+   - 妨害: 頂点2本で違うときは小さい方(ダルマ指示。ASLRB に明文なし、要確認)。
+   - 壁・生垣の DRM: 線が途中で越える入る/出るヘクスの辺(A8.15)と、頂点につながる壁・生垣(B9.42 の2条件)の大きい方。
+   - v041: B9.33(高い射撃側は距離を超える段数だけ壁 TEM を減らす)、入る/出るヘクスの瓦礫(A8.15・B24.3、遮らず TEM を DRM に)、
+     道路・切れ目(B9.3、移動中の目標には TEM なし)、射撃側の WA(B9.31、切り替え。高さが違えば主張不可 B9.35)。壁と瓦礫は累積せず大きい方(B9.31)。
+   - A8.15 EXC: 射撃側のヘクスに入るユニットには撃てない。
+   - 射撃タブ(DFF)へ反映(案A): Snap Shot をオン、射程・妨害・高さの差・越える辺の DRM を入れる。他のタブ・他のフェイズは今の AB地点の反映のまま。
+   盤面の座標は、入るヘクスの盤面の元の向き(北が上)で計算して丸めるため、盤面の回転で結果が変わらない。 */
+(function(){
+  if(typeof losCheckLOSGlobal!=='function'||typeof LosMapClick!=='function')return;
+  var HW=LOS_GEO_HEX_W/0.75, HALFW=HW/2, QW=HW/4, HALFH=LOS_GEO_HEX_H/2;
+  // 平頂ヘクスの頂点(中心からの差)。辺 i は頂点 i と i+1 の間。辺 i の向こうの隣のヘクスの中心の差が NB[i]
+  var VX=[[-HALFW,0],[-QW,-HALFH],[QW,-HALFH],[HALFW,0],[QW,HALFH],[-QW,HALFH]];
+  var NB=[[-LOS_GEO_HEX_W,-HALFH],[0,-LOS_GEO_HEX_H],[LOS_GEO_HEX_W,-HALFH],[LOS_GEO_HEX_W,HALFH],[0,LOS_GEO_HEX_H],[-LOS_GEO_HEX_W,HALFH]];
+  var SIDE_ANG=[-150,-90,-30,30,90,150];
+  function boardById(id){ for(var i=0;i<S_LOS.boards.length;i++)if(String(S_LOS.boards[i].id)===String(id))return S_LOS.boards[i]; return null; }
+  function rawToG(b,x,y){ var t=losRotateRawToTile(x,y,b.rot); return {x:b.col*LOS_IMG_W+t.x,y:b.row*LOS_IMG_H+t.y}; }
+  function gToRaw(b,x,y){ return losRotateTileToRaw(x-b.col*LOS_IMG_W,y-b.row*LOS_IMG_H,b.rot); }
+  function idAtRaw(b,x,y){ var g=rawToG(b,x,y); return losHexIdentityAtGlobal(Math.round(g.x),Math.round(g.y)); }
+  function terrAtRaw(b,x,y){ var g=rawToG(b,x,y); var t=losTerrainInfoAtGlobal(Math.round(g.x),Math.round(g.y)); return t?t.name:null; }
+  function unit(x,y){ var L=Math.sqrt(x*x+y*y)||1; return [x/L,y/L]; }
+  function segDist(px,py,ax,ay,bx,by){ var dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy,t=L>0?((px-ax)*dx+(py-ay)*dy)/L:0; t=Math.max(0,Math.min(1,t)); var cx=ax+t*dx-px,cy=ay+t*dy-py; return Math.sqrt(cx*cx+cy*cy); }
+  // 辺(端点 p1,p2、元の向きの画素)が壁/生垣か。辺に沿って中ほどを調べる(±4画素)
+  function wallOn(b,p1,p2){
+    var u=unit(p2[0]-p1[0],p2[1]-p1[1]), nx=-u[1], ny=u[0], hit=null;
+    for(var k=2;k<=8;k++){ var t=k/10, x=p1[0]+(p2[0]-p1[0])*t, y=p1[1]+(p2[1]-p1[1])*t;
+      for(var o=-4;o<=4;o++){ var n=terrAtRaw(b,x+nx*o,y+ny*o); if(n==='Wall')return 'Wall'; if(n==='Hedge')hit='Hedge'; } }
+    return hit;
+  }
+  function wallDrm(n){ return n==='Wall'?2:(n==='Hedge'?1:0); }
+  // 入るヘクス(盤面 b の col,row)と辺 side から、辺の両端・出るヘクス・頂点ごとの第3のヘクスなどを求める
+  function geom(b,col,row,side){
+    var c=losHexCenterPx(col,row), cx=c.x, cy=c.y;
+    function vt(i){ i=(i+6)%6; return [cx+VX[i][0],cy+VX[i][1]]; }
+    function nb(i){ i=(i+6)%6; return [cx+NB[i][0],cy+NB[i][1]]; }
+    var pc=nb(side);
+    return {b:b,c:[cx,cy],pc:pc,v:[vt(side),vt(side+1)],
+      r:[nb(side-1),nb(side+1)],               // 頂点0・1 の第3のヘクスの中心
+      wq:[[vt(side-1),vt(side)],[vt(side+1),vt(side+2)]], // 頂点ごとの「入るヘクスと第3のヘクスの間の辺」
+      Q:idAtRaw(b,cx,cy), P:idAtRaw(b,pc[0],pc[1])};
+  }
+  // 頂点 V の近く(辺の長さの5〜35%)で、壁の画素が無く道路の画素がある = 道路・切れ目(B9.3)
+  function gapNear(b,V,far){
+    var u=unit(far[0]-V[0],far[1]-V[1]), nx=-u[1], ny=u[0], L=Math.sqrt((far[0]-V[0])*(far[0]-V[0])+(far[1]-V[1])*(far[1]-V[1])), wall=0, road=0;
+    for(var k=1;k<=7;k++){ var t=0.05*k, x=V[0]+u[0]*L*t, y=V[1]+u[1]*L*t;
+      for(var o=-4;o<=4;o++){ var n=terrAtRaw(b,x+nx*o,y+ny*o); if(n==='Wall'||n==='Hedge')wall++; else if(n==='Dirt Road'||n==='Paved Road'||n==='Path')road++; } }
+    return wall===0&&road>0;
+  }
+  // 1つの頂点の B9.42 判定(壁・生垣の DRM と注記)。wa: 射撃側が WA を主張(その辺が射撃側のヘクスの辺なら TEM なし、B9.31)
+  function vertexWalls(G,k,aRaw,idA,wa){
+    var V=G.v[k], other=G.v[1-k], R=G.r[k], b=G.b, best=0, notes=[];
+    var ua=unit(aRaw[0]-V[0],aRaw[1]-V[1]);
+    var via=idAtRaw(b,V[0]+ua[0]*4,V[1]+ua[1]*4);
+    var Rid=idAtRaw(b,R[0],R[1]);
+    var uo=unit(V[0]-G.c[0],V[1]-G.c[1]);
+    var sides=[
+      {p:[V,other],h:[G.P,G.Q],tem:function(){ return via&&G.P&&via.id===G.P.id; }},      // 横切る辺(出るヘクス側から入る)
+      {p:G.wq[k],h:[G.Q,Rid],tem:function(){ return via&&Rid&&via.id===Rid.id; }},         // 入るヘクスと第3のヘクスの間の辺
+      {p:[V,[V[0]+uo[0]*2*QW,V[1]+uo[1]*2*QW]],h:[G.P,Rid],tem:function(){ return false; }} // 出るヘクスと第3のヘクスの間の辺(沿うときだけ)
+    ];
+    sides.forEach(function(sd){
+      var w=wallOn(b,sd.p[0],sd.p[1]); if(!w)return;
+      var far=(sd.p[0][0]===V[0]&&sd.p[0][1]===V[1])?sd.p[1]:sd.p[0];
+      var along=segDist(far[0],far[1],aRaw[0],aRaw[1],V[0],V[1])<=2;
+      if(!(along||sd.tem()))return;
+      var nm=losTerrainNameJP(w);
+      if(wa&&idA&&sd.h.some(function(h){ return h&&h.id===idA.id; })){ notes.push('B9.31: '+nm+T('は射撃側の WA の辺なので TEM なし')); return; }
+      if(!along&&gapNear(b,V,far)){ notes.push('B9.3: '+nm+T('の道路・切れ目を通る（移動中の目標には TEM なし）')); return; }
+      best=Math.max(best,wallDrm(w)); notes.push('B9.42: '+nm+(along?T('の辺に沿う LOS'):T('の向こう側から頂点に入る LOS'))+'（+'+wallDrm(w)+'）');
+    });
+    return {drm:best,notes:notes};
+  }
+  // B9.33: 高さの差 hd が距離 range を超える1段ごとに TEM を1減らす(最低0)
+  function b933(tem,hd,range){ if(!(hd>0)||range==null)return tem; return Math.max(0,tem-Math.max(0,hd-range)); }
+  window.ASLFULL_SNAP_B933=b933;
+  // 判定本体。A は正準座標、入るヘクスは (盤面ID, col, row)、side は辺の番号
+  function evalSnap(ax,ay,boardId,col,row,side){
+    var b=boardById(boardId); if(!b)return null;
+    var G=geom(b,col,row,side), aR0=gToRaw(b,ax,ay), aRaw=[aR0.x,aR0.y];
+    var idA=losHexIdentityAtGlobal(Math.round(ax),Math.round(ay));
+    var res={qName:G.Q?G.Q.name:'?',pName:G.P?G.P.name:'?',v:[],notes:[],ok:false,na:null,hinder:0,wall:0,wallRaw:0,rubble:0,hexDrm:0,reduce:0,range:null,elevA:null,elevQ:null,pick:null};
+    var gq=rawToG(b,G.c[0],G.c[1]); res.elevQ=losElevAtGlobal(Math.round(gq.x),Math.round(gq.y));
+    res.elevA=losElevAtGlobal(Math.round(ax),Math.round(ay)); if(res.elevA!=null&&typeof window.ASLFULL_UPPER_FLOOR==='function')res.elevA+=ASLFULL_UPPER_FLOOR('A'); /* v058: 射撃側の上の階(B23.2)を B9.33・WA・B10.31 の高さに入れる */
+    res.range=losHexRangeGlobalIds(idA,G.Q);
+    res.vRaw=G.v.map(function(V){ return rawToG(b,V[0],V[1]); });
+    if(!G.Q||!G.P){ res.na=T('盤面の外の辺は選べない'); return res; }
+    if(idA&&idA.id===G.Q.id){ res.na=T('射撃側のヘクスに入るユニットには撃てない（A8.15）'); return res; }
+    // B9.32・B9.35: WA は壁と同じ高さのユニットだけ(壁の高さは入るヘクスの標高で近似)
+    var waAsk=!!S_LOS.snapWA, wa=waAsk&&res.elevA===res.elevQ;
+    if(waAsk&&!wa)res.notes.push(T('射撃側は壁と高さが違うため WA を主張できない（B9.32・B9.35）'));
+    var opt={toPoint:true,targetElev:res.elevQ,targetHexId:G.Q.id,targetName:G.Q.name,sideIds:[G.Q.id,G.P.id]};
+    for(var k=0;k<2;k++){
+      var V=G.v[k], u=unit(V[0]-aRaw[0],V[1]-aRaw[1]);
+      var E=[Math.round(V[0]-u[0]*2),Math.round(V[1]-u[1]*2)], Eg=rawToG(b,E[0],E[1]);
+      var r=(isFinite(Eg.x)&&isFinite(Eg.y))?losCheckLOSGlobal(ax,ay,Eg.x,Eg.y,S_LOS.orchardSeason,S_LOS.grainSeason,opt):{error:'badPoint'};
+      var vw=vertexWalls(G,k,aRaw,idA,wa);
+      var cross=0, crossWA=false;
+      ((r&&r.snapCross)||[]).forEach(function(c){ if(wa&&idA&&(c[2]===idA.id||c[3]===idA.id)){ crossWA=true; return; } cross=Math.max(cross,wallDrm(c[0])); });
+      var rb=0, rbNames=[];
+      ((r&&r.snapRubble)||[]).forEach(function(c){ var tm=losTemForTerrain(c[0]); if(tm==null)return; if(tm>rb)rb=tm; if(rbNames.indexOf(c[1])<0)rbNames.push(c[1]); });
+      res.v.push({r:r,blocked:!!(r&&(r.error||r.blocked)),terrain:r&&r.blockingTerrain,hex:r&&r.blockingHex,hinder:r&&!r.error?r.hindranceDrm:null,
+        wall:Math.max(vw.drm,cross),cross:cross,crossWA:crossWA,rubble:rb,rbNames:rbNames,wn:vw.notes,end:Eg});
+    }
+    res.ok=!res.v[0].blocked&&!res.v[1].blocked;
+    if(res.ok){
+      var k0=(res.v[0].hinder<=res.v[1].hinder)?0:1; res.pick=k0; res.hinder=res.v[k0].hinder;
+      res.wallRaw=Math.max(res.v[0].wall,res.v[1].wall);
+      // B9.33: 射撃側が目標ヘクスの基準の高さより高い分が距離を超える1段ごとに、壁・生垣の TEM を1減らす(最低0)
+      var hd=(res.elevA!=null&&res.elevQ!=null)?res.elevA-res.elevQ:0;
+      res.reduce=(hd>0&&res.range!=null)?Math.max(0,hd-res.range):0;
+      res.wall=b933(res.wallRaw,hd,res.range);
+      res.rubble=Math.max(res.v[0].rubble,res.v[1].rubble);
+      res.hexDrm=Math.max(res.wall,res.rubble); // B9.31: 壁の TEM は他の正の TEM と累積しない
+      if(res.v[0].hinder!==res.v[1].hinder)res.notes.push(T('頂点2本で妨害が違うため小さい方を使用（ダルマ指示、要確認）'));
+      if(res.v[0].cross||res.v[1].cross)res.notes.push('A8.15: '+T('入る/出るヘクスの辺の壁・生垣を越える'));
+      if(res.v[0].crossWA||res.v[1].crossWA)res.notes.push('B9.31: '+T('射撃側の WA の辺の壁・生垣を越えるため TEM なし'));
+      res.v.forEach(function(x){ x.wn.forEach(function(n){ if(res.notes.indexOf(n)<0)res.notes.push(n); }); });
+      if(res.wallRaw&&res.reduce)res.notes.push('B9.33: '+T('射撃側が')+hd+T('段高く距離')+res.range+T('のため、壁・生垣の TEM を')+Math.min(res.reduce,res.wallRaw)+T('減らす'));
+      if(res.rubble){ var nms=[]; res.v.forEach(function(x){ x.rbNames.forEach(function(n){ if(nms.indexOf(n)<0)nms.push(n); }); });
+        res.notes.push('A8.15・B24.3: '+T('入る/出るヘクスの瓦礫（')+nms.join('、')+T('）を越える')+'（+'+res.rubble+'）'); }
+      if(res.wall&&res.rubble)res.notes.push('B9.31: '+T('壁の TEM と瓦礫の TEM は累積しないため大きい方'));
+      if(res.elevQ!==null&&res.elevA!==null&&res.elevQ>res.elevA)res.notes.push('B10.31: '+(res.hexDrm>0?T('目標の方が高いが、越える辺の DRM（正の TEM）があるため高さの有利 +1 はつかない'):T('目標の方が高い（高さの有利 +1 TEM。稜線越えの例外は射撃タブで指定）'))); /* v044 */
+    }
+    return res;
+  }
+  window.ASLFULL_SNAP_EVAL=evalSnap;
+  // 入るヘクス名・出るヘクス名から辺の番号を求める(テスト・確認用)
+  window.ASLFULL_SNAP_SIDE=function(boardId,qName,pName){
+    var q=losHexNameToColRow(qName), p=losHexNameToColRow(pName); if(!q||!p)return -1;
+    var c=losHexCenterPx(q.col,q.row), pc=losHexCenterPx(p.col,p.row);
+    for(var i=0;i<6;i++){ if(Math.abs(c.x+NB[i][0]-pc.x)<3&&Math.abs(c.y+NB[i][1]-pc.y)<3)return i; }
+    return -1;
+  };
+  function recompute(){
+    S_LOS.snapRes=null;
+    if(!S_LOS.snapOn||!S_LOS.snapSide||!S_LOS.pxA)return;
+    var s=S_LOS.snapSide;
+    try{ S_LOS.snapRes=evalSnap(S_LOS.pxA.x,S_LOS.pxA.y,s.boardId,s.col,s.row,s.side); }catch(e){ S_LOS.snapRes={na:'error: '+e,v:[],notes:[]}; }
+  }
+  // 射撃タブ(DFF)へ反映(案A)
+  function applyFire(){
+    var R=S_LOS.snapRes, f=S.dff; if(!f||!R)return;
+    if(!R.ok){ f.aslSnap=false; if(typeof clearFireRes==='function')clearFireRes(f); return; }
+    var vr=R.v[R.pick].r, keep=S_LOS.result;
+    var tmp={}; for(var k in vr)tmp[k]=vr[k]; tmp.range=R.range; tmp.temB=0; tmp.terrainB=null; tmp.elevB=R.elevQ; tmp.dataReady=true;
+    S_LOS.result=tmp; var d=null; try{ d=losComputeApplyData(); }finally{ S_LOS.result=keep; }
+    if(!d)return;
+    f.tem=0; f.temId='open'; f.elev=d.elev; f.ffmo=false; f.ffnam=false;
+    f.los={wht:d.los.wht,orch:d.los.orch}; f.hinder=d.hinder;
+    f.grps.forEach(function(gr){ gr.range=R.range; if(gr.range!=null&&gr.range<17&&gr.binocular)gr.binocular=false; });
+    f.aslSnap=true; f.aslSpray=false; f.aslSnapHex=Math.min(3,R.hexDrm||0);
+    if(typeof clearFireRes==='function')clearFireRes(f);
+  }
+  var oApply=window.losAutoApplyToAllTabs;
+  window.losAutoApplyToAllTabs=function(){
+    var r=oApply.apply(this,arguments);
+    try{ if(S_LOS.snapOn&&S_LOS.snapSide){ recompute(); applyFire(); } }catch(e){}
+    return r;
+  };
+  // タップ位置の取得(本体の LosMapClick の中で最初に呼ばれる losPixelToHexColRow の引数=盤面の元の向きの画素)
+  var oClick=window.LosMapClick;
+  window.LosMapClick=function(ev){
+    if(!S_LOS.snapOn)return oClick.apply(this,arguments);
+    var cap=null, oP=window.losPixelToHexColRow, prevB=S_LOS.pxB;
+    window.losPixelToHexColRow=function(x,y){ var r=oP.apply(this,arguments); if(!cap)cap={x:x,y:y,cr:r}; return r; };
+    var pend=null;
+    try{
+      // B を決めた直後の判定(LosRunPixel、非同期)より前に辺を決めておく
+      var oRun=window.LosRunPixel;
+      window.LosRunPixel=function(){ pend=arguments; };
+      try{ oClick.apply(this,arguments); } finally{ window.LosRunPixel=oRun; }
+    } finally { window.losPixelToHexColRow=oP; }
+    if(S_LOS.pxB&&S_LOS.pxB!==prevB&&cap&&cap.cr){
+      var rv=losResolveGlobal(Math.round(S_LOS.pxB.x),Math.round(S_LOS.pxB.y));
+      var c=losHexCenterPx(cap.cr.col,cap.cr.row), ang=Math.atan2(cap.y-c.y,cap.x-c.x)*180/Math.PI, best=0, bd=999;
+      for(var i=0;i<6;i++){ var dd=Math.abs(((ang-SIDE_ANG[i])+540)%360-180); if(dd<bd){bd=dd;best=i;} }
+      S_LOS.snapSide=rv?{boardId:String(rv.boardId),col:cap.cr.col,row:cap.cr.row,side:best}:null;
+    }else if(!S_LOS.pxB){ S_LOS.snapSide=null; S_LOS.snapRes=null; }
+    if(pend)window.LosRunPixel.apply(this,pend);
+  };
+  // v042(ダルマ指示「横切る辺を選択できるようにする。車両行軍の初期向き(VCA)と同じ選択ボタンを同じ場所に表示」):
+  // マップ上の向きパネル(losRouteVcaPanelHTML の左半分、シナリオ/月・果樹園・麦畑の下)に、横切る辺を選ぶ6方向ボタンを出す。
+  // 矢印は辺の向き(盤面の回転・表示の回転込み)。B をタップした時は今までどおり、タップ位置に一番近い辺を最初に選ぶ。
+  var SIDE_ORDER=[1,2,3,4,5,0]; // 上から時計回り(↑↗↘↓↙↖)
+  window.ASLFULL_SNAP_SETSIDE=function(i){
+    if(!S_LOS.snapOn||!S_LOS.snapSide||i<0||i>5)return;
+    if(S_LOS.snapSide.side===i)return;
+    var winY=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
+    if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    S_LOS.snapSide.side=i; S_LOS.snapRes=null;
+    if(S_LOS.pxA&&S_LOS.pxB)LosRunPixel(); else Draw();
+    window.scrollTo(0,winY);
+  };
+  function sidePanelHTML(){
+    var ss=S_LOS.snapSide, h='<div class="lbl" style="font-size:10px;margin:0 0 3px;line-height:1.4">'+T('Snap Shot：横切る辺を選択')+(ss?T('(設定済み)'):'')+'</div>';
+    if(!ss||!S_LOS.pxA)return h+'<div style="font-size:11px;color:#8899aa;line-height:1.5">'+T('A（射撃側）と B（入るヘクス）をタップすると、横切る辺を選べます')+'</div>';
+    var rot=((typeof losBoardRotById==='function'?losBoardRotById(ss.boardId):0)||0)+(S_LOS.viewRot||0);
+    h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin:2px 0 0">';
+    SIDE_ORDER.forEach(function(i){
+      var on=(ss.side===i);
+      h+='<button class="b sm'+(on?' on':'')+'" style="height:40px;font-size:16px;line-height:1.1;padding:0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center" onclick="ASLFULL_SNAP_SETSIDE('+i+')"><span style="display:inline-block;transform:rotate('+(SIDE_ANG[i]+90+rot)+'deg)">&#8593;</span></button>';
+    });
+    h+='</div>';
+    var R=S_LOS.snapRes; if(R&&!R.na)h+='<div style="font-size:10px;color:#8899aa;margin-top:2px">'+R.pName+' → '+R.qName+'</div>';
+    return h;
+  }
+  if(typeof window.losRouteVcaPanelHTML==='function'){
+    var oPanel=window.losRouteVcaPanelHTML;
+    window.losRouteVcaPanelHTML=function(seasonBoxH){
+      var r=oPanel.apply(this,arguments);
+      try{
+        if(!S_LOS.snapOn||S_LOS.routeMode)return r;
+        var pre=seasonBoxH||'', mark='<div style="flex:1 1 50%;min-width:0">'+pre, k=r.indexOf(mark);
+        if(k<0)return r;
+        return r.slice(0,k+mark.length)+'<div id="aslfullSnapSides">'+sidePanelHTML()+'</div>'+r.slice(k+mark.length);
+      }catch(e){ return r; }
+    };
+  }
+  // v043(ダルマ報告「中央の LOS は FAIL、Snap Shot の辺は OK なのに、デジタルパネルが FAIL 表示」):
+  // Snap Shot オンで辺の判定があるとき、LOSタブの結果パネル(LOS結果・レンジ・LOS妨害・TEM・高低差と下の詳細)は Snap Shot の判定を表示する。
+  // TEM の欄には「越える辺の DRM」(壁・生垣・瓦礫。目標ヘクスの TEM は使わない、A8.15)を出す。中心への LOS の結果は S_LOS.result のまま。
+  window.ASLFULL_SNAP_PANEL=function(){
+    try{
+      var R=S_LOS.snapRes; if(!S_LOS.snapOn||!R||!S_LOS.result||!S_LOS.result.dataReady)return null;
+      var base=S_LOS.result, o={};
+      var pick=(R.ok&&R.pick!=null)?R.v[R.pick]:null, blk=null;
+      (R.v||[]).forEach(function(x){ if(x.blocked&&!blk)blk=x; });
+      var src=(pick&&pick.r)||(blk&&blk.r)||base;
+      for(var k in src)o[k]=src[k];
+      o.dataReady=true; o.error=null;
+      o.hexA=base.hexA; o.hexB=(R.na?base.hexB:(R.pName+' → '+R.qName+' '+T('の辺')));
+      o.range=(R.range!=null)?R.range:base.range; o.elevA=(R.elevA!=null)?R.elevA:base.elevA; o.elevB=(R.elevQ!=null)?R.elevQ:base.elevB;
+      o.terrainA=base.terrainA; o.terrainB=null;
+      if(R.na){ o.blocked=true; o.blockingTerrain=R.na; o.blockingHex=null; o.hindranceDrm=0; o.hindranceHexes=[]; o.temB=null; }
+      else if(R.ok){ o.blocked=false; o.blockingTerrain=null; o.blockingHex=null; o.hindranceDrm=R.hinder; o.temB=R.hexDrm||0; }
+      else{ o.blocked=true; o.blockingTerrain=blk?blk.terrain:null; o.blockingHex=blk?blk.hex:null; o.temB=null; }
+      o.snapPanel=true;
+      return o;
+    }catch(e){ return null; }
+  };
+  // v047(ダルマ「実施」): GET LOG(LOSデバッグログ)に Snap Shot の判定を書き出す。上の内容(中心への LOS)はそのまま
+  function snapLogText(){
+    var R=S_LOS.snapRes; if(!S_LOS.snapOn||!R)return '';
+    var L=['','--- Snap Shot(A8.15・C.5・B9.42) ---'];
+    L.push('横切る辺: '+R.pName+' → '+R.qName+'(入るヘクス)');
+    if(R.na){ L.push('判定: Snap Shot 不可('+R.na+')'); return L.join('\n'); }
+    L.push('判定: '+(R.ok?'Snap Shot 可':'Snap Shot 不可(頂点2つとも通る必要あり)'));
+    (R.v||[]).forEach(function(x,k){
+      var r=x.r||{};
+      L.push('頂点'+(k+1)+': '+(x.blocked?('遮断 '+(x.terrain||'')+(x.hex?' ('+x.hex+')':'')+(r.blockingPx?' 遮断地点 x='+r.blockingPx[0]+' y='+r.blockingPx[1]:'')):'通る')
+        +' / 妨害 +'+(x.hinder==null?'?':x.hinder)+' / 壁・生垣 +'+x.wall+(x.rubble?' / 瓦礫 +'+x.rubble:'')
+        +(x.end?' [終点 x='+Math.round(x.end.x*10)/10+' y='+Math.round(x.end.y*10)/10+']':''));
+      if(r.hindranceHexes&&r.hindranceHexes.length)L.push('  妨害の内訳: '+r.hindranceHexes.map(function(h){return h[0]+'('+h[1]+')';}).join(', '));
+    });
+    L.push('射程(入るヘクスまで、C.5A): '+R.range+' / 妨害(頂点2本の小さい方): +'+R.hinder+' / 越える辺の DRM: +'+(R.hexDrm||0)+'(壁・生垣 '+R.wallRaw+(R.reduce?'→B9.33 で '+R.wall:'')+'、瓦礫 '+(R.rubble||0)+')');
+    L.push('標高: A='+R.elevA+' 入るヘクス='+R.elevQ+' / 射撃側の WA: '+(S_LOS.snapWA?'主張する':'主張しない'));
+    if(R.notes&&R.notes.length)L.push('注記: '+R.notes.join(' / '));
+    return L.join('\n');
+  }
+  window.ASLFULL_SNAP_LOGTEXT=snapLogText;
+  if(typeof window.LosBuildLogText==='function'){
+    var oLog=window.LosBuildLogText;
+    window.LosBuildLogText=function(){ var t=oLog.apply(this,arguments); try{ if(t)t+=snapLogText(); }catch(e){} return t; };
+  }
+  window.ASLFULL_SNAP_WA=function(){ S_LOS.snapWA=!S_LOS.snapWA; if(S_LOS.pxA&&S_LOS.pxB&&S_LOS.snapSide)LosRunPixel(); else Draw(); };
+  window.ASLFULL_SNAP_TOGGLE=function(){
+    S_LOS.snapOn=!S_LOS.snapOn; S_LOS.snapSide=null; S_LOS.snapRes=null;
+    if(S_LOS.pxB){ S_LOS.pxB=null; S_LOS.result=null; }
+    if(!S_LOS.snapOn&&S.dff){ S.dff.aslSnap=false; }
+    Draw();
+  };
+  // 盤面の上の表示: 横切る辺(太線)と頂点2つへの線
+  var oOv=window.losWreckHexOverlaySVG;
+  window.losWreckHexOverlaySVG=function(dispLayout){
+    var h=oOv.apply(this,arguments);
+    try{
+      var R=S_LOS.snapRes; if(!S_LOS.snapOn||!R||!R.vRaw)return h;
+      var v=R.vRaw.map(function(p){ return losCanonicalToDisplay(p.x,p.y,dispLayout); });
+      /* v047(ダルマ「実施」): 横切る辺の太線は判定で色分け(可=緑、不可=マゼンタ)。頂点への点線は従来どおり(通る=黄、遮断=マゼンタ) */
+      h+='<line x1="'+v[0].x+'" y1="'+v[0].y+'" x2="'+v[1].x+'" y2="'+v[1].y+'" stroke="'+(R.ok?'#2ecc71':'#ff00ff')+'" stroke-width="7" stroke-opacity="0.85"/>';
+      if(S_LOS.pxA&&R.v&&R.v.length===2){
+        var a=losCanonicalToDisplay(S_LOS.pxA.x,S_LOS.pxA.y,dispLayout);
+        R.v.forEach(function(x,k){ h+='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+v[k].x+'" y2="'+v[k].y+'" stroke="'+(x.blocked?'#ff00ff':'#ffd400')+'" stroke-width="2" stroke-dasharray="3,3" stroke-opacity="0.95"/>'; });
+      }
+    }catch(e){}
+    return h;
+  };
+  // LOSタブの切り替えボタンと結果
+  var oD=window.Draw;
+  window.Draw=function(){
+    var r=oD.apply(this,arguments);
+    try{
+      if(S.tab!=='los'||document.getElementById('aslfullSnapCard'))return r;
+      var wrap=document.getElementById('losScrollWrap'); if(!wrap)return r;
+      /* v045(ダルマ指示): 見出し「Snap Shot（A8.15）」を削除。Snap Shot と射撃側の WA の2ボタンを横並び一列にする */
+      var h='<div class="card" id="aslfullSnapCard" style="margin-top:6px">';
+      var bst='height:40px;font-size:11px;line-height:1.25;white-space:normal;padding:2px 4px;min-width:0';
+      h+='<div style="display:grid;grid-template-columns:'+(S_LOS.snapOn?'1fr 1fr':'1fr')+';gap:4px">';
+      h+='<button class="b sm'+(S_LOS.snapOn?' on':'')+'" style="'+bst+'" onclick="ASLFULL_SNAP_TOGGLE()">'+(S_LOS.snapOn?T('Snap Shot：オン（B＝入るヘクスの中で、横切る辺の近くをタップ）'):T('Snap Shot：オフ'))+'</button>';
+      if(S_LOS.snapOn)h+='<button class="b sm'+(S_LOS.snapWA?' on':'')+'" style="'+bst+'" onclick="ASLFULL_SNAP_WA()">'+(S_LOS.snapWA?T('射撃側の WA：主張する（自分のヘクスの壁・生垣は TEM なし、B9.31）'):T('射撃側の WA：主張しない'))+'</button>';
+      h+='</div>';
+      var R=S_LOS.snapRes;
+      if(S_LOS.snapOn){
+        if(!S_LOS.pxA)h+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+T('A（射撃側）をタップしてから、B（入るヘクス）を横切る辺の近くでタップ')+'</div>';
+        else if(!R)h+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+T('B（入るヘクス）を、横切る辺の近くでタップ')+'</div>';
+        else if(R.na)h+='<div style="font-size:13px;color:#ff9a3d;margin-top:4px">'+R.na+'</div>';
+        else{
+          h+='<div style="font-size:14px;margin-top:4px;color:'+(R.ok?'#66dd88':'#ff9a3d')+'">'+(R.ok?T('Snap Shot 可'):T('Snap Shot 不可'))+'　'+R.pName+' → '+R.qName+'</div>';
+          R.v.forEach(function(x,k){ h+='<div style="font-size:12px;color:#aabbcc">'+T('頂点')+(k+1)+'：'+(x.blocked?T('遮断')+(x.terrain?'（'+losTerrainNameJP(x.terrain)+(x.hex?' '+x.hex:'')+'）':''):T('通る')+'　'+T('妨害')+' +'+x.hinder+(x.wall?'　'+T('壁・生垣')+' +'+x.wall:''))+'</div>'; });
+          if(R.ok)h+='<div style="font-size:13px;margin-top:2px">'+T('射程')+' '+R.range+'（'+T('入るヘクスまで、C.5A')+'）　'+T('妨害')+' +'+R.hinder+'　'+T('越える辺の DRM')+' +'+R.hexDrm+'　'+T('標高')+' A='+R.elevA+' '+T('目標')+'='+R.elevQ+'</div>';
+          if(R.ok)h+='<div style="font-size:12px;color:#8899aa">'+T('射撃タブ（臨機射撃）に Snap Shot・射程・妨害・壁の DRM を反映済み。FP は地域射撃で半分、FFMO・FFNAM・目標ヘクスの TEM なし')+'</div>';
+          R.notes.forEach(function(n){ h+='<div style="font-size:12px;color:#8fb3d9">'+n+'</div>'; });
+          h+='<div style="font-size:11px;color:#667788;margin-top:2px">'+T('上の通常の LOS 結果は、ヘクス中心への LOS')+'</div>';
+        }
+      }
+      h+='</div>';
+      var d=document.createElement('div'); d.innerHTML=h; wrap.parentNode.insertBefore(d.firstChild,wrap.nextSibling);
+    }catch(e){}
+    return r;
+  };
+  window.ASLFULL_SNAPSHOT=true;
+})();
+
+</script>
+<script>
+/* ===== ASLFULL拡張: ユニットタブに、BV シナリオに出てくるが未表示だった SMC・SW を追加 (v052, 2026-10-08 ダルマ「登録実施」) =====
+   表示だけの追加。射撃タブなどの選択肢(UNITS・SWT)には入れないので、判定は変わらない。
+   - 装甲指揮官(D3.4): OB とバランスに出てくる 独 10-2・9-2・9-1・8-1、ソ 9-2・9-1。士気・指揮修正は「8-1〜10-2」の表記どおり(D3.4)。
+     装甲指揮官は乗員と同じ士気で、車両の外では存在しない(D3.42・3.43)ため、混乱士気は「—」。
+   - DC 30-1 は本体の SW 欄に既にあるので追加しない。
+   - FT 24-1(ソ): 実物カウンター(ダルマ提供写真 2026-10-08)= 表 FT・△・1PP・X10・24-1、B# なし。裏「No AFPh penalty / -1 DRM vs owner」(A22)。v055
+   - ATR 1-12(独): 実物カウンター(ダルマ提供写真 2026-10-08)= 表 ATR 1-12・1PP、B#・ROF なし。裏 R1・X6(修理の除去)・No Long Range。v055、v056 で X# 欄は「—」に訂正 */
+(function(){
+  if(typeof UNIT_PAGE!=='function'||typeof UNITS==='undefined')return;
+  function AL(lbl,src){var p=lbl.split('-');return {lbl:lbl,mor:+p[0],cmd:-(+p[1]),src:src};}
+  var EXTRA={
+    GER:{smc:[AL('10-2','BV'),AL('9-2','BV'),AL('9-1','BV'),AL('8-1','BVバランス')],
+         sw:[{lbl:'ATR 1-12',fp:1,r:1,b:99,x:99,rof:0,pp:1,note:'実物カウンター：B# なし、裏 R1・X6(修理の除去)・No Long Range(遠距離射撃不可)。最大射程12(C13.22)'}]}, /* v056: 裏の X6 は修理の除去で、射撃の X# ではない(他の SW と同じ扱い) */
+    SOV:{smc:[AL('9-2','BVバランス'),AL('9-1','BV')],
+         sw:[{lbl:'FT 24-1',fp:24,r:null,b:99,x:10,rof:0,pp:1,note:'実物カウンター：△・X10、B# なし。AFPh の半減なし、所有者への攻撃 -1 DRM(A22)。非エリートは X# 罰則(A22.3)'}]}
+  };
+  window.ASLFULL_UNIT_EXTRA=EXTRA;
+
+  function box(lbl,val,vc,show){
+    if(show===false)return '<div style="background:#000000;border:1px solid #0d0d14;border-radius:2px;padding:2px 4px;text-align:center;height:28px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center"><div style="font-size:12px;color:#2a2e3a;line-height:1">'+lbl+'</div><div style="font-size:12px;color:#2a2e3a;line-height:1">—</div></div>';
+    return '<div style="background:#000000;border:1px solid #404040;border-radius:2px;padding:2px 4px;text-align:center;height:28px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center">'
+      +'<div style="font-size:12px;color:#445566;letter-spacing:0.08em;line-height:1">'+lbl+'</div>'
+      +'<div style="font-size:12px;font-weight:bold;color:'+vc+';line-height:1">'+val+'</div></div>';
+  }
+  function smcHTML(s,nc){
+    var cmdC=s.cmd<0?'#c8a032':s.cmd>0?'#cc4444':'#445566';
+    var h='<div class="aslfull-extra" data-kind="al" style="background:#0d0d14;border:1px solid #404040;border-left:2px solid '+nc+';border-radius:3px;padding:7px 9px;margin-bottom:4px">';
+    h+='<div style="margin-bottom:5px"><span style="font-size:12px;font-weight:bold;color:'+nc+';letter-spacing:0.05em;border:1px solid '+nc+'66;border-radius:2px;padding:3px 4px 4px 4px;background:'+nc+'0f;display:inline-flex;align-items:center;gap:4px;min-width:58px;min-height:22px;box-sizing:border-box;justify-content:center">'+s.lbl+'<span style="font-size:10px;font-weight:normal;border:1px solid '+nc+'88;border-radius:2px;padding:0px 4px">'+T('装甲指揮官')+'</span></span></div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">';
+    h+=box(T('士気'),s.mor,nc);
+    h+=box(T('混乱士気'),'—',nc);
+    h+=box(T('指揮'),(s.cmd>0?'+':'')+s.cmd,cmdC);
+    h+='</div>';
+    h+='<div style="font-size:12px;color:#c8a032;margin-top:4px">'+T('D3.4：車両の MA・OVR・CC などにだけ有効。乗員と同じ士気(D3.42)')+(s.src==='BV'?'':'（'+T(s.src)+'）')+'</div>';
+    return h+'</div>';
+  }
+  function swHTML(s,nc){
+    var m=s.lbl.match(/^([A-Za-z]+)\s*(\d+-\d+)/);
+    var h='<div class="aslfull-extra" data-kind="sw" style="background:#0d0d14;border:1px solid #404040;border-left:2px solid '+nc+';border-radius:3px;padding:7px 9px;margin-bottom:4px">';
+    h+='<div style="margin-bottom:5px;display:flex;align-items:center;gap:4px"><span style="display:inline-flex;flex-direction:column;align-items:center;background:#000000;border:1px solid '+nc+'66;border-radius:3px;padding:3px 5px;min-width:58px">';
+    h+='<span style="font-size:10px;color:'+nc+';font-weight:bold;white-space:nowrap;letter-spacing:0.02em">'+m[1]+'</span>';
+    h+='<span style="font-size:10px;font-weight:bold;color:'+nc+';border:1px solid '+nc+'88;border-radius:2px;padding:0 5px;margin-top:2px;line-height:1.4">'+m[2]+'</span></span></div>';
+    h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px">';
+    h+=box('FP',s.fp,nc);
+    h+=box('R#',s.r,'#44cc88',s.r!=null);
+    h+=box('B#',s.b,'#cc8800',s.b<99);
+    h+=box('X#',s.x,'#cc4444',typeof s.x==='string'||s.x<99);
+    h+=box('ROF',s.rof||'—','#4499ee');
+    h+=box('PP',s.pp,'#8899aa');
+    h+='</div>';
+    if(s.note)h+='<div style="font-size:12px;color:#c8a032;margin-top:4px">'+T(s.note)+'</div>';
+    return h+'</div>';
+  }
+  var orig=UNIT_PAGE;
+  window.UNIT_PAGE=function(){
+    var h=orig.apply(this,arguments);
+    var u=S.unit,ex=EXTRA[u&&u.nat],d=UNITS[u&&u.nat];
+    if(!ex||!d)return h;
+    var nc=d.col;
+    if(u.tab==='smc')ex.smc.forEach(function(s){h+=smcHTML(s,nc);});
+    if(u.tab==='sw')ex.sw.forEach(function(s){if(s)h+=swHTML(s,nc);});
+    return h;
+  };
+})();
+/* ===== v066(ダルマ指示「ユニットタブのシナリオに登場しない国、ユニットは非表示にする」。「全て表示」の切替は不要):
+   ユニットタブは、シナリオを選んでいればそのシナリオ、選んでいなければ BV シナリオ全体に出てくる国・ユニットだけを表示する。
+   後でシナリオが増えれば、その国・ユニットは自動で表示される。表示だけの変更で、射撃タブなどの選択肢(UNITS・SWT 等)は変えない。
+   - 国: シナリオの陣営(sc.f のキー)。
+   - MMC: OB の表記と同じもの＋その損耗(HS)・ELR 超過の置き換え先。乗員(2-2-8 等)は、その国の砲・車両が OB にあれば表示。
+   - SMC: OB の表記と同じもの。装甲指揮官(追加分)は OB・バランスに「X-Y(装甲指揮官)」があれば表示。
+   - SW: OB の LMG/MMG/HMG/FT/ATR(種類と FP-射程)。DC は OB に DC があるときだけ(v068)。
+   - LATW・砲・車両: 本体の scenarioLatwIds・scenarioGunIds・scenarioAfvIdsByVehId。 */
+(function(){
+  if(typeof UNIT_PAGE!=='function'||typeof UNITS==='undefined'||typeof SCN==='undefined')return;
+  var cache={};
+  function bvList(){ return SCN.filter(function(sc){ return /^BV/.test(sc.id||''); }); }
+  function withSel(id,fn){ var sv=S.scen.sel; S.scen.sel=id; try{ return fn(); } finally{ S.scen.sel=sv; } }
+  function norm(l){ return String(l||'').replace(/×\d+.*$/,'').trim(); }
+  function collect(scs){
+    var o={nats:{},lbl:{},sw:{},dc:{},latw:{},gun:{},veh:{},al:{},crewNat:{}};
+    scs.forEach(function(sc){
+      Object.keys(sc.f||{}).forEach(function(n){ o.nats[n]=1; });
+      (scenarioObTokens(sc)||[]).forEach(function(t){ var L=norm(t.label); (o.lbl[t.nat]=o.lbl[t.nat]||{})[L]=1;
+        var m=L.match(/^(\d+[-+]\d+)\(装甲指揮官\)$/); if(m)(o.al[t.nat]=o.al[t.nat]||{})[m[1]]=1;
+        var w=L.replace(/\s+/g,'').match(/^(LMG|MMG|HMG|FT|ATR)(\d+-\d+)?/); if(w)(o.sw[t.nat]=o.sw[t.nat]||[]).push({type:w[1],num:w[2]||null,lahti:/Lahti/.test(L)}); if(/^DC/.test(L.replace(/\s+/g,'')))o.dc[t.nat]=1; /* v068 */ });
+      Object.keys(sc.bal||{}).forEach(function(k){ var txt=String(sc.bal[k]); var re=/(独|ソ連)軍[^。]*?(\d+[-+]\d+) ?装甲指揮官/g, mm; while((mm=re.exec(txt))){ var n=(mm[1]==='独')?'GER':'SOV'; (o.al[n]=o.al[n]||{})[mm[2]]=1; } });
+      withSel(sc.id,function(){
+        var g=scenarioGunIds()||{}, v=scenarioAfvIdsByVehId()||{}, l=scenarioLatwIds()||{};
+        Object.keys(g).forEach(function(id){ o.gun[id]=1; var gd=GUN_DATA.filter(function(x){return x.id===id;})[0]; if(gd)String(gd.nat).split('/').forEach(function(n){ o.crewNat[n]=1; }); });
+        Object.keys(v).forEach(function(id){ o.veh[id]=1; var vd=AFV_DATA.filter(function(x){return x.id===id;})[0]; if(vd)String(vd.nat).split('/').forEach(function(n){ o.crewNat[n]=1; }); });
+        Object.keys(l).forEach(function(id){ o.latw[id]=1; });
+      });
+    });
+    return o;
+  }
+  function allowed(){
+    var sc=(typeof curScen==='function')?curScen():null, key=sc?sc.id:'ALL';
+    if(!cache[key])cache[key]=collect(sc?[sc]:bvList());
+    return cache[key];
+  }
+  window.ASLFULL_UNIT_ALLOWED=allowed;
+  function mmcOk(a,nat,d){
+    var ok={}, base=a.lbl[nat]||{};
+    (d.mmc||[]).forEach(function(m){ if(base[m.lbl])ok[m.lbl]=1; if(a.crewNat[nat]&&m.lbl.indexOf('(乗員)')>=0)ok[m.lbl]=1; });
+    for(var i=0;i<4;i++){ Object.keys(ok).forEach(function(l){ var c=CASUAL_MAP[nat]&&CASUAL_MAP[nat][l]; if(c)ok[c]=1; (d.elr||[]).forEach(function(e){ if(e.f===l)ok[e.t]=1; }); }); }
+    return ok;
+  }
+  function swOk(a,nat,s){
+    if(!s||!s.lbl)return false; var lbl=s.lbl.replace(/\s+/g,''), m=lbl.match(/(LMG|MMG|HMG|FT|ATR)(?:\(b\))?(\d+-\d+)/);
+    if(!m)return false;
+    return (a.sw[nat]||[]).some(function(t){ if(t.type!==m[1])return false; if(t.num&&t.num!==m[2])return false; if(t.lahti&&!/Lahti/.test(lbl))return false; return true; });
+  }
+  var inner=window.UNIT_PAGE;
+  window.UNIT_PAGE=function(){
+    if(window.ASLFULL_UNIT_FILTER_OFF)return inner.apply(this,arguments); /* テスト用(画面からは切り替えない) */
+    var a; try{ a=allowed(); }catch(e){ return inner.apply(this,arguments); }
+    var natsAll=Object.keys(UNITS), nats=natsAll.filter(function(n){ return a.nats[n]; });
+    if(!nats.length)return inner.apply(this,arguments);
+    if(nats.indexOf(S.unit.nat)<0)S.unit.nat=nats[0];
+    var nat=S.unit.nat, d=UNITS[nat];
+    var sv={UNITS:UNITS,SWT:SWT,GUN_DATA:GUN_DATA,LATW_DATA:LATW_DATA,AFV_DATA:AFV_DATA}, ex=window.ASLFULL_UNIT_EXTRA&&window.ASLFULL_UNIT_EXTRA[nat], exSv=ex?{smc:ex.smc,sw:ex.sw}:null;
+    var swEmpty=false, mmcN=1, smcN=1, h;
+    try{
+      var U2={}; nats.forEach(function(n){ U2[n]=UNITS[n]; });
+      var mo=mmcOk(a,nat,d), so=a.lbl[nat]||{}, d2={}; for(var k in d)d2[k]=d[k];
+      d2.mmc=(d.mmc||[]).filter(function(m){ return mo[m.lbl]; }); d2.smc=(d.smc||[]).filter(function(s){ return so[s.lbl]; }); U2[nat]=d2; mmcN=d2.mmc.length; smcN=d2.smc.length;
+      UNITS=U2;
+      var sw2=sv.SWT.filter(function(s){ return s.nat&&s.nat.indexOf(nat)>=0&&s.id!=='atr_sw_ge'&&swOk(a,nat,s); }); /* v071: 独 ATR は追加分(実物カウンターの注記付き)で出すので、射撃用の atr_sw_ge は出さない */ swEmpty=!sw2.length; SWT=sw2;
+      GUN_DATA=sv.GUN_DATA.filter(function(g){ return a.gun[g.id]; });
+      LATW_DATA=sv.LATW_DATA.filter(function(w){ return a.latw[w.id]; });
+      AFV_DATA=sv.AFV_DATA.filter(function(v){ return a.veh[v.id]; });
+      if(ex){ var al=a.al[nat]||{}; ex.smc=exSv.smc.filter(function(s){ return al[s.lbl]; }); ex.sw=exSv.sw.filter(function(s){ return s&&swOk(a,nat,s); }); }
+      window.ASLFULL_UNIT_NO_DC=!a.dc[nat]; /* v068(ダルマ指示): DC もシナリオに出てくるときだけ */
+      h=inner.apply(this,arguments);
+    } finally {
+      window.ASLFULL_UNIT_NO_DC=false;
+      UNITS=sv.UNITS; SWT=sv.SWT; GUN_DATA=sv.GUN_DATA; LATW_DATA=sv.LATW_DATA; AFV_DATA=sv.AFV_DATA; if(ex){ ex.smc=exSv.smc; ex.sw=exSv.sw; }
+    }
+    /* v067(ダルマ「実施」): 出てくるものが無い欄の文言を6欄でそろえる。シナリオを選んでいなければ「BV シナリオに登場する○○はありません」 */
+    var sc=(typeof curScen==='function')?curScen():null;
+    var tab=S.unit.tab, KN={mmc:'分隊',smc:'指揮官',sw:'支援火器',latw:'対戦車携行兵器',gun:'砲',veh:'車両'};
+    var msg=KN[tab]?T((sc?'このシナリオに登場する':'BV シナリオに登場する')+KN[tab]+'はありません'):'';
+    var none='<div class="infobox aslfull-none" style="color:#667788">'+msg+'</div>';
+    var exSw=!!(ex&&exSv.sw.some(function(s){ return s&&swOk(a,nat,s); })), exSmc=!!(ex&&exSv.smc.some(function(s){ return (a.al[nat]||{})[s.lbl]; }));
+    if(tab==='sw'&&swEmpty)h=h.replace(/<div class="infobox" style="color:#ffdd88;background:#3a2a0a[^>]*>[\s\S]*?<\/div>/,(exSw||a.dc[nat])?'':none); /* 本体は国の SW が0件だと全件を出す注意書きを出すので差し替える(追加分の SW があれば文言は出さない) */
+    if(tab==='gun')h=h.replace('<div class="infobox" style="color:#667788">'+T('該当する砲/迫撃砲データはありません')+'</div>',none);
+    if(tab==='latw')h=h.replace('<div class="infobox" style="color:#667788">'+T('該当する対戦車携行兵器データはありません')+'</div>',none);
+    if(tab==='veh')h=h.replace('<div class="infobox" style="color:#667788">'+T('この陣営の車両データはまだ登録されていません（実物カウンター確認後に追加）')+'</div>',none);
+    if(tab==='mmc'&&!mmcN)h+=none;
+    if(tab==='smc'&&!smcN&&!exSmc)h+=none;
+    var lab=sc?(T('表示：')+sc.id+T(' に登場する国・ユニット')):T('表示：BV シナリオに登場する国・ユニット');
+    return '<div style="font-size:11px;color:#8899aa;margin:0 0 4px">'+lab+'</div>'+h;
+  };
+})();
+
+</script>
+<script>
+/* ===== ASLFULL拡張: LOSタブ 建物の上の階 (v057, 2026-10-08 ダルマ「実施」、docs/ASLFULL_Spec_UpperLevel_draft1.md ②-1) =====
+   - A・B 地点それぞれに「階」(v068 から 1階(Level 0)・2階(Level 1)・3階(Level 2)。v059〜v067 は 地上/2階/3階)の選択を出す。選べる階はそのヘクスの建物で決める(B23.2):
+     二階家(VASL 41・51)は2階まで、多層建物(42・52)は3階まで。平屋(40・50)・建物以外は地上だけなので欄を出さない。
+   - 判定(losCheckLOSGlobal)には、A・B 地点(S_LOS.pxA・pxB)の LOS のときだけ opt.floorA・floorB を渡す。
+     敵軍 LOS・行軍などは今までどおり地上。Snap Shot は射撃側(A)の階だけ使う(目標は地上)。
+   - A・B が建物の中どうしで、間がすべて建物のヘクスなら「同じ建物の中の LOS(B23.25)は判定しない」と注記する。 */
+(function(){
+  if(typeof losCheckLOSGlobal!=='function'||typeof S_LOS==='undefined')return;
+  var FL={41:1,51:1,42:2,52:2}, cache={};
+  function maxFloor(h){
+    if(!h)return 0; if(cache[h.id]!=null)return cache[h.id];
+    var d=LOS_BOARD_DATA[h.boardId]; if(!d)return 0;
+    var c=losHexCenterPx(h.col,h.row), cnt={}, tot=0;
+    var x0=Math.max(0,Math.floor(c.x-LOS_GEO_HEX_W*2/3)),x1=Math.min(d.gridW-1,Math.ceil(c.x+LOS_GEO_HEX_W*2/3));
+    var y0=Math.max(0,Math.floor(c.y-LOS_GEO_HEX_H/2)),y1=Math.min(d.gridH-1,Math.ceil(c.y+LOS_GEO_HEX_H/2));
+    for(var x=x0;x<=x1;x++)for(var y=y0;y<=y1;y++){ var cr=losPixelToHexColRow(x,y); if(cr.col!==h.col||cr.row!==h.row)continue; tot++; var cd=losTerrainCodeAt(h.boardId,x,y); if(FL[cd])cnt[FL[cd]]=(cnt[FL[cd]]||0)+1; }
+    var m=0; [1,2].forEach(function(f){ if(tot&&(cnt[f]||0)/tot>=0.05)m=f; });
+    return (cache[h.id]=m);
+  }
+  function hexAt(p){ return p?losHexIdentityAtGlobal(Math.round(p.x),Math.round(p.y)):null; }
+  function sync(k){ /* 地点のヘクスが変わったら地上に戻す。選べない階は切り下げる */
+    var p=S_LOS[k==='A'?'pxA':'pxB'], h=hexAt(p), key='floor'+k;
+    if(!h){ S_LOS[key]=0; S_LOS[key+'Hex']=null; return {h:null,max:0}; }
+    if(S_LOS[key+'Hex']!==h.id){ S_LOS[key]=0; S_LOS[key+'Hex']=h.id; }
+    var mx=maxFloor(h), v=+S_LOS[key]||0; /* v062: 屋上(B23.8)は 最上階+½ */
+    if(v%1!==0){ if(!roofOK()||mx<1||v!==mx+0.5)S_LOS[key]=0; } else if(v>mx)S_LOS[key]=mx;
+    return {h:h,max:mx};
+  }
+  /* v062(ダルマ「修正実施」): 屋上(B23.8)は SSR で使うときだけ(シナリオの SSR に「屋上」)。二階家・多層建物で選べる */
+  function roofOK(){ try{ var sc=curScen(); return !!(sc&&JSON.stringify(sc.ssr||[]).indexOf('屋上')>=0); }catch(e){ return false; } }
+  window.ASLFULL_ROOF_OK=roofOK;
+  window.ASLFULL_UPPER_MAXFLOOR=maxFloor;
+  /* v060(ダルマ「任せる」、docs/ASLFULL_Spec_CrestBuilding_draft1.md): 同じ建物のヘクスの集まり(B23.25)。
+     建物の画素が10%以上のヘクスを、共有する辺の中ほど(25・50・75%)の両側3画素に建物の画素が2点以上あるときにつなぐ(30ヘクスまで)。 */
+  var BLD={40:1,41:1,42:1,50:1,51:1,52:1,203:1,206:1}, fcache={}, scache={};
+  function bfrac(bd,col,row){
+    var k=bd+':'+col+':'+row; if(fcache[k]!=null)return fcache[k];
+    var d=LOS_BOARD_DATA[bd]; if(!d)return 0; var c=losHexCenterPx(col,row), n=0, t=0;
+    for(var x=Math.max(0,Math.floor(c.x-LOS_GEO_HEX_W*2/3));x<=Math.min(d.gridW-1,Math.ceil(c.x+LOS_GEO_HEX_W*2/3));x+=2)
+      for(var y=Math.max(0,Math.floor(c.y-LOS_GEO_HEX_H/2));y<=Math.min(d.gridH-1,Math.ceil(c.y+LOS_GEO_HEX_H/2));y+=2){ var cr=losPixelToHexColRow(x,y); if(cr.col!==col||cr.row!==row)continue; t++; if(BLD[losTerrainCodeAt(bd,x,y)])n++; }
+    return (fcache[k]=t?n/t:0);
+  }
+  function linked(bd,c0,c1){
+    var mx=(c0.x+c1.x)/2,my=(c0.y+c1.y)/2,ux=c1.x-c0.x,uy=c1.y-c0.y,L=Math.sqrt(ux*ux+uy*uy)||1; ux/=L;uy/=L; var px=-uy,py=ux,hs=LOS_GEO_HEX_W/0.75/2, ok=0;
+    [-0.25,0,0.25].forEach(function(f){ var sx=mx+px*hs*f, sy=my+py*hs*f; if(BLD[losTerrainCodeAt(bd,Math.round(sx-ux*3),Math.round(sy-uy*3))]&&BLD[losTerrainCodeAt(bd,Math.round(sx+ux*3),Math.round(sy+uy*3))])ok++; });
+    return ok>=2;
+  }
+  window.ASLFULL_BLDG_SET=function(h){
+    if(!h)return null; var k0=h.boardId+':'+h.col+':'+h.row; if(scache[k0]!==undefined)return scache[k0];
+    var bd=h.boardId; if(!LOS_BOARD_DATA[bd]||bfrac(bd,h.col,h.row)<0.1)return (scache[k0]=null);
+    var keys={}, q=[[h.col,h.row]]; keys[k0]=1; var n=1;
+    while(q.length&&n<30){ var cur=q.shift(), c0=losHexCenterPx(cur[0],cur[1]);
+      for(var i=0;i<6;i++){ var a=Math.PI/6+i*Math.PI/3, nx=c0.x+Math.cos(a)*LOS_GEO_HEX_H, ny=c0.y+Math.sin(a)*LOS_GEO_HEX_H, cr=losPixelToHexColRow(Math.round(nx),Math.round(ny));
+        if(!cr||(cr.col===cur[0]&&cr.row===cur[1]))continue; var kk=bd+':'+cr.col+':'+cr.row; if(keys[kk])continue;
+        if(bfrac(bd,cr.col,cr.row)<0.1)continue; var c1=losHexCenterPx(cr.col,cr.row); if(!linked(bd,c0,c1))continue;
+        keys[kk]=1; n++; q.push([cr.col,cr.row]); } }
+    var r={keys:keys,n:n}; Object.keys(keys).forEach(function(kk){ scache[kk]=r; });
+    return r;
+  };
+  window.ASLFULL_UPPER_INFO=function(k){ try{ var q=sync(k); return {mx:q.max,fl:q.max?(+S_LOS['floor'+k]||0):0}; }catch(e){ return {mx:0,fl:0}; } }; /* v074 */
+  window.ASLFULL_UPPER_FLOOR=function(k){ try{ return sync(k).max?(+S_LOS['floor'+k]||0):0; }catch(e){ return 0; } }; /* v058。v062: 屋上は ½ 付き */
+  var near=function(x,y,p){ return p&&Math.abs(x-p.x)<0.01&&Math.abs(y-p.y)<0.01; };
+  var oC=window.losCheckLOSGlobal;
+  window.losCheckLOSGlobal=function(ax,ay,bx,by,orch,grain,opt){
+    try{
+      if(near(ax,ay,S_LOS.pxA)){
+        var fa=sync('A').max?(+S_LOS.floorA||0):0, fb=0;
+        if(!(opt&&opt.toPoint)&&near(bx,by,S_LOS.pxB))fb=sync('B').max?(+S_LOS.floorB||0):0;
+        if(fa||fb){ var o2={}; if(opt)for(var k in opt)o2[k]=opt[k]; o2.floorA=fa; o2.floorB=fb; o2.roofA=(fa%1!==0); o2.roofB=(fb%1!==0); opt=o2; }
+      }
+      if(enemyCtx&&!(opt&&opt.toPoint)){ /* v069: 敵軍マーカーからの LOS 線(B=敵軍マーカー)は、敵の高さ(地面＋階)で判定 */
+        var eb=ehAt(bx,by), ef=eb?ehFloor(eb):0;
+        if(ef){ var o3={}; if(opt)for(var k3 in opt)o3[k3]=opt[k3]; o3.floorB=ef; o3.roofB=(ef%1!==0); if(o3.floorA==null){ o3.floorA=0; o3.roofA=false; } opt=o3; }
+      }
+    }catch(e){}
+    return oC.call(this,ax,ay,bx,by,orch,grain,opt);
+  };
+  window.ASLFULL_SET_FLOOR=function(k,f){
+    var winY=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
+    if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    S_LOS['floor'+k]=+f||0;
+    if(S_LOS.pxA&&S_LOS.pxB)LosRunPixel(); else Draw();
+    window.scrollTo(0,winY);
+  };
+  /* v068(ダルマ指示): 1階(Level 0)・2階(Level 1)・3階(Level 2)・屋上(Level 1½/2½)。v059 は 地上・2階・3階 */
+  function flFmt(v){ return (v%1)?(Math.floor(v)+'½'):String(v); }
+  function flBase(v){ v=+v||0; return (v%1!==0)?'屋上':((v|0)+1)+'階'; }
+  function flName(v){ v=+v||0; return T(flBase(v))+'（Level '+flFmt(v)+'）'; }
+  window.ASLFULL_FLOOR_NAME=flName;
+  function rowHTML(k,info){
+    var cur=+S_LOS['floor'+k]||0, g=null, opts=[]; for(var f0=0;f0<=info.max;f0++)opts.push(f0); if(roofOK()&&info.max>=1)opts.push(info.max+0.5);
+    try{ var p=S_LOS[k==='A'?'pxA':'pxB']; g=losElevAtGlobal(Math.round(p.x),Math.round(p.y)); }catch(e){}
+    var h='<div style="display:flex;align-items:center;gap:4px;margin-top:4px"><div style="font-size:12px;color:#aabbcc;width:96px;flex:0 0 96px;line-height:1.3">'+(k==='A'?T('A（射撃側）の階'):T('B（目標）の階'))+'<br><span style="font-size:10px;color:#667788">'+info.h.name+'</span></div>';
+    h+='<div style="flex:1;display:grid;grid-template-columns:repeat('+opts.length+',1fr);gap:4px">';
+    opts.forEach(function(f){ h+='<button class="b sm'+(cur===f?' on':'')+'" style="height:40px;font-size:12px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 2px;white-space:nowrap" onclick="ASLFULL_SET_FLOOR(\''+k+'\','+f+')"><span style="display:block;line-height:1.2">'+T(flBase(f))+'</span><span style="display:block;font-size:10px;line-height:1.2;opacity:.8">Level '+flFmt(f)+'</span></button>'; });
+    h+='</div></div>';
+    if(g!=null)h+='<div style="font-size:11px;color:#8899aa;margin:2px 0 0 100px">'+T('高さ')+' '+flFmt(g+cur)+'（'+T('地面')+' '+g+(cur?' + '+flFmt(cur):'')+'）'+((cur%1)?' '+T('屋上：建物の TEM なし・開豁地扱い（B23.81、射撃タブには未反映）'):'')+'</div>';
+    return h;
+  }
+  function sameBuildingNote(){
+    var r=S_LOS.result; if(!r||!r.hexTrace||!r.hexTrace.length)return '';
+    var bld=function(n){ return !!n&&/Building|Multiple|Fortified/.test(n); };
+    if(!bld(r.terrainA)||!bld(r.terrainB))return '';
+    var all=r.hexTrace.every(function(x){ return x.isA||x.isB||bld(x.terrain); });
+    return all?'<div style="font-size:12px;color:#ff9a3d;margin-top:4px">'+T('B23.25：A と B が同じ建物の中なら、建物の中の LOS（階段・建物の絵をまたぐ辺）はこのアプリでは判定しない')+'</div>':'';
+  }
+  var oD=window.Draw;
+  window.Draw=function(){
+    var r=oD.apply(this,arguments);
+    try{
+      if(S.tab!=='los'||document.getElementById('aslfullFloorCard'))return r;
+      var wrap=document.getElementById('losScrollWrap'); if(!wrap||!S_LOS.pxA)return r;
+      var a=sync('A'), b=S_LOS.pxB?sync('B'):{h:null,max:0};
+      if(!a.max&&!b.max)return r;
+      var h='<div class="card" id="aslfullFloorCard" style="margin-top:6px">';
+      h+='<div style="font-size:12px;color:#c8a032">'+T('建物の上の階（B23.2）')+'</div>';
+      if(a.max)h+=rowHTML('A',a);
+      if(b.max)h+=rowHTML('B',b);
+      h+=sameBuildingNote();
+      h+='</div>';
+      var d=document.createElement('div'); d.innerHTML=h; wrap.parentNode.insertBefore(d.firstChild,wrap.nextSibling);
+    }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+    return r;
+  };
+  if(typeof window.LosBuildLogText==='function'){
+    var oLog=window.LosBuildLogText;
+    window.LosBuildLogText=function(){ var t=oLog.apply(this,arguments); try{ var R=S_LOS.result; if(t&&R&&(R.floorA||R.floorB))t+='\n--- 上の階(B23.2) ---\nA: '+flName(R.floorA)+'(地面 '+R.groundA+' + '+(+R.floorA||0)+') = '+R.elevA+' / B: '+flName(R.floorB)+'(地面 '+R.groundB+' + '+(+R.floorB||0)+') = '+R.elevB; }catch(e){} return t; };
+  }
+  /* v069(ダルマ「実施」): 敵軍マーカーの高さ。向きの6ボタンの右に「高さ」ボタン(押すたびに 1階→2階→3階→屋上→1階)。
+     選べる階はそのヘクスの建物(二階家は2階まで・多層建物は3階まで、屋上は SSR に「屋上」があるシナリオだけ)。建物でなければ押せない。
+     対象は最後に触れたマーカー(向きと同じ)、高さはマーカーごと(eh.floor)。敵軍マーカーからの LOS 線は敵の高さで判定
+     (行軍マーカーは地上、A地点は A地点で選んだ階)。1階以外のマーカーの横に「L1」「L2」「L1½」などを表示。 */
+  var enemyCtx=false;
+  function ehOpts(eh){ var g=losColRowToGlobalCanon(eh.boardId,eh.col,eh.row), mx=g?maxFloor(hexAt(g)):0, o=[]; for(var f=0;f<=mx;f++)o.push(f); if(roofOK()&&mx>=1)o.push(mx+0.5); return o; }
+  function ehFloor(eh){ var v=+(eh&&eh.floor)||0; if(!v)return 0; try{ return ehOpts(eh).indexOf(v)>=0?v:0; }catch(e){ return 0; } }
+  function ehAt(x,y){ var L=S_LOS.enemyHexes||[]; for(var i=0;i<L.length;i++){ var g=losColRowToGlobalCanon(L[i].boardId,L[i].col,L[i].row); if(g&&Math.abs(g.x-x)<0.01&&Math.abs(g.y-y)<0.01)return L[i]; } return null; }
+  window.ASLFULL_ENEMY_FLOOR=ehFloor;
+  window.ASLFULL_ENEMY_FLOOR_NEXT=function(){
+    var eh=(typeof losEnemyActiveHex==='function')?losEnemyActiveHex():null; if(!eh)return;
+    var o=ehOpts(eh); if(o.length<2)return;
+    var winY=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
+    if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    eh.floor=o[(o.indexOf(ehFloor(eh))+1)%o.length]; Draw(); window.scrollTo(0,winY);
+  };
+  if(typeof window.losEnemyFacingPanelHTML==='function'){
+    var oP=window.losEnemyFacingPanelHTML;
+    window.losEnemyFacingPanelHTML=function(){
+      var h=oP.apply(this,arguments);
+      try{ if(S_LOS.routeMode&&S_LOS.mfEntityType!=='vehicle')return h+(window.ASLFULL_WIRE_HTML?window.ASLFULL_WIRE_HTML():'')+stairHTML(); }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+      try{
+        var eh=S_LOS.enemyHexMode&&losEnemyActiveHex(); if(!eh||h.indexOf('repeat(6,1fr)')<0)return h;
+        var o=ehOpts(eh), v=ehFloor(eh), dis=o.length<2;
+        var bt='<button class="b sm'+(v?' on':'')+'" id="aslfullEnemyFloorBtn"'+(dis?' disabled':'')+' style="height:40px;font-size:12px;min-width:0;padding:0 1px;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap'+(dis?';opacity:.35':'')+'" onclick="ASLFULL_ENEMY_FLOOR_NEXT()"><span style="display:block;line-height:1.2">'+T(flBase(v))+'</span><span style="display:block;font-size:9px;line-height:1.2;opacity:.8">Level '+flFmt(v)+'</span></button>';
+        h=h.replace('repeat(6,1fr)','repeat(6,1fr) 2.2fr'); /* 高さボタンは文字が多いので幅を広く */ var i=h.lastIndexOf('</div>'); h=h.slice(0,i)+bt+h.slice(i);
+      }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  if(typeof window.losEnemyHexOverlaySVG==='function'){
+    var oE=window.losEnemyHexOverlaySVG;
+    window.losEnemyHexOverlaySVG=function(dispLayout){
+      var h; enemyCtx=true; try{ h=oE.apply(this,arguments); } finally { enemyCtx=false; }
+      try{
+        (S_LOS.enemyHexes||[]).forEach(function(eh){ var v=ehFloor(eh); if(!v)return; var g=losColRowToGlobalCanon(eh.boardId,eh.col,eh.row); if(!g)return; var d=losCanonicalToDisplay(g.x,g.y,dispLayout);
+          var t='L'+flFmt(v), w=8+t.length*8;
+          h+='<g class="aslfull-enemy-floor" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')"><rect x="'+(d.x+14)+'" y="'+(d.y-30)+'" width="'+w+'" height="17" rx="3" fill="#000000" fill-opacity="0.8" stroke="#ff00ff" stroke-width="1"/><text x="'+(d.x+14+w/2)+'" y="'+(d.y-17)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffdd55">'+t+'</text></g>'; });
+      }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  /* v070(ダルマ「実施」): 歩兵の行軍に建物の昇り降り(B23.4・B23.8)。表示は敵軍マーカーの向きと同じ所(シナリオ/月の欄の下)。
+     - 行軍の先頭が上の階のある建物(二階家・多層建物)のヘクスのとき「▲ 昇る」「今の階」「▼ 降りる」。1回 1 MF、同じヘクスで1レベル変わる。
+       二階家は全ヘクスに階段(B23.22)。多層建物は階段の印のあるヘクスだけ(B23.23・B23.4)だが、盤面データに印が無いので全ヘクスで許して注記を出す。
+       屋上(B23.8)は SSR に「屋上」があるシナリオだけ、最上階の上(1 MF)。
+     - 上の階・屋上から隣のヘクスへは、同じ建物の同じ階(屋上は同じ高さの屋上)へだけ進める(建物の 2 MF)。外へは出られない。
+     - 行軍マーカーの横に L1・L2・L1½ 等。敵軍マーカーからの LOS 線は行軍マーカーの階で判定(tools/rulepatch19.py)。 */
+  function rtHexOf(c){ var g=losColRowToGlobalCanon(c.boardId,c.col,c.row); return g?hexAt(g):null; }
+  function rtOpts(c){ var mx=maxFloor(rtHexOf(c)), o=[]; for(var f=0;f<=mx;f++)o.push(f); if(roofOK()&&mx>=1)o.push(mx+0.5); return {mx:mx,o:o}; }
+  window.ASLFULL_ROUTE_FLOOR_OK=function(last,tgt,fl){
+    try{
+      var hL=rtHexOf(last), hT=rtHexOf(tgt); if(!hL||!hT)return null;
+      var st=window.ASLFULL_BLDG_SET(hL), kT=hT.boardId+':'+hT.col+':'+hT.row;
+      if(!st||!st.keys[kT])return T('上の階からは建物の外へ出られない（先に降りる）');
+      if(losHexElevAt(last.boardId,last.col,last.row)!==losHexElevAt(tgt.boardId,tgt.col,tgt.row))return T('標高の違う建物ヘクスへの上の階の移動（B23.72）は、このアプリでは判定しない（先に降りる）');
+      var mL=maxFloor(hL), mT=maxFloor(hT);
+      if(fl%1!==0){ if(!roofOK()||mT!==mL)return T('高さの違う屋上へは移れない（B23.8）'); return null; }
+      if(fl>mT)return T('進む先のヘクスにその階が無い（B23.2）');
+      return null;
+    }catch(e){ return null; }
+  };
+  window.ASLFULL_ROUTE_STAIR=function(dir){
+    var rt=S_LOS.route; if(!rt||!rt.hexes||!rt.hexes.length||S_LOS.mfEntityType==='vehicle')return;
+    var last=rt.hexes[rt.hexes.length-1], op=rtOpts(last).o, cur=+last.floor||0, i=op.indexOf(cur); if(i<0)i=0;
+    var j=i+(dir>0?1:-1); if(j<0||j>=op.length)return;
+    var mf=losCurrentUnitMF(), cx=mf+2;
+    if(mf>0&&last.moveCum+1>cx+1e-9){ S_LOS.routeError=T('MFが不足しています(必要')+'1MF / '+T('残り')+(Math.round(Math.max(0,cx-last.moveCum)*10)/10)+(S.lang==='en'?'MF, ':'MF、')+T('CX上限含む')+')'; Draw(); return; }
+    var winY=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
+    if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    var mc=last.moveCum+1;
+    rt.hexes.push({boardId:last.boardId,col:last.col,row:last.row,cost:1,moveCum:mc,cum:mc,terrain:last.terrain,onRoad:false,roadOk:false,elev:last.elev,climbing:false,bogRequired:false,wreckCnt:0,wreckAddCost:0,vcaChange:true,floorChange:(dir>0?1:-1),floor:op[j]});
+    rt.totalCost=mc; S_LOS.routeError=null; Draw(); window.scrollTo(0,winY);
+  };
+  /* v072(ダルマ「実施」): 起点の階を MF なしで選ぶ(行軍に起点だけがあるとき)。最初から上の階にいる部隊用。 */
+  window.ASLFULL_ROUTE_ORIGIN_FLOOR=function(f){
+    var rt=S_LOS.route; if(!rt||!rt.hexes||rt.hexes.length!==1||S_LOS.mfEntityType==='vehicle')return;
+    var o=rtOpts(rt.hexes[0]).o; if(o.indexOf(+f)<0)return;
+    var winY=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0;
+    if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    if(+f)rt.hexes[0].floor=+f; else delete rt.hexes[0].floor;
+    S_LOS.routeError=null; Draw(); window.scrollTo(0,winY);
+  };
+  function originHTML(rt,r){
+    if(rt.hexes.length!==1)return '';
+    var cur=+rt.hexes[0].floor||0, h='<div class="lbl" style="font-size:12px;margin:0 0 3px">'+T('起点の階（MFなし）')+'</div><div id="aslfullOriginRow" style="display:flex;flex-wrap:wrap;gap:2px;margin:2px 0 4px">';
+    r.o.forEach(function(f){ var on=(f===cur); h+='<button class="b sm" data-fl="'+f+'" style="height:30px;font-size:12px;min-width:0;padding:0 8px'+(on?';border:1px solid #4499ee;color:#4499ee;font-weight:bold':'')+'" onclick="ASLFULL_ROUTE_ORIGIN_FLOOR('+f+')">'+T(flBase(f))+'</button>'; });
+    return h+'</div>';
+  }
+  function stairHTML(){
+    var rt=S_LOS.route; if(!rt||!rt.hexes||!rt.hexes.length)return '';
+    var last=rt.hexes[rt.hexes.length-1], r=rtOpts(last); if(!r.mx)return '';
+    var cur=+last.floor||0, i=r.o.indexOf(cur); if(i<0)i=0;
+    var up=i<r.o.length-1, dn=i>0;
+    var bs='height:40px;font-size:12px;min-width:0;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;white-space:nowrap';
+    var h=originHTML(rt,r)+'<div class="lbl" style="font-size:12px;margin:0 0 3px">'+T('建物の昇り降り（B23.4）')+'</div>';
+    h+='<div id="aslfullStairRow" style="display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:2px;margin:2px 0 4px">';
+    h+='<button class="b sm" id="aslfullStairUp"'+(up?'':' disabled')+' style="'+bs+(up?'':';opacity:.35')+'" onclick="ASLFULL_ROUTE_STAIR(1)"><span style="display:block;line-height:1.2">▲ '+T('昇る')+'</span><span style="display:block;font-size:9px;line-height:1.2;opacity:.8">1MF</span></button>';
+    h+='<div id="aslfullStairCur" style="'+bs+';border:1px solid #4499ee66;border-radius:3px;color:#4499ee;font-weight:bold"><span style="display:block;line-height:1.2">'+T(flBase(cur))+'</span><span style="display:block;font-size:9px;line-height:1.2;opacity:.8">Level '+flFmt(cur)+'</span></div>';
+    h+='<button class="b sm" id="aslfullStairDn"'+(dn?'':' disabled')+' style="'+bs+(dn?'':';opacity:.35')+'" onclick="ASLFULL_ROUTE_STAIR(-1)"><span style="display:block;line-height:1.2">▼ '+T('降りる')+'</span><span style="display:block;font-size:9px;line-height:1.2;opacity:.8">1MF</span></button>';
+    h+='</div>';
+    if(r.mx>=2)h+='<div style="font-size:10px;color:#c8a032;line-height:1.4;margin-bottom:4px">'+T('多層建物は階段の印のあるヘクスだけ昇り降りできる（B23.4）。盤面で確かめること')+'</div>';
+    return h;
+  }
+  if(typeof window.losMoveRouteOverlaySVG==='function'){
+    var oR=window.losMoveRouteOverlaySVG;
+    window.losMoveRouteOverlaySVG=function(dispLayout){
+      var h=oR.apply(this,arguments);
+      try{
+        var rt=S_LOS.route; if(!rt||!rt.hexes||S_LOS.mfEntityType==='vehicle')return h;
+        var pos={}, ord=[]; rt.hexes.forEach(function(c){ var k=c.boardId+':'+c.col+':'+c.row; if(!(k in pos))ord.push(k); pos[k]=c; });
+        ord.forEach(function(k){ var c=pos[k], v=+c.floor||0; if(!v)return; var g=losColRowToGlobalCanon(c.boardId,c.col,c.row); if(!g)return; var d=losCanonicalToDisplay(g.x,g.y,dispLayout);
+          var t='L'+flFmt(v), w=8+t.length*8;
+          h+='<g class="aslfull-route-floor" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')"><rect x="'+(d.x+14)+'" y="'+(d.y-30)+'" width="'+w+'" height="17" rx="3" fill="#000000" fill-opacity="0.8" stroke="#4499ee" stroke-width="1"/><text x="'+(d.x+14+w/2)+'" y="'+(d.y-17)+'" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffdd55">'+t+'</text></g>'; });
+      }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  /* v073(ダルマ「実施」): 射撃タブに上の階の注記(B23.3・B10.31)。TEM は階によって変えない(B23.3: 目標がいる建物で決まる。B10.31: 高さの有利は建物内の目標には付かない)。
+     間接射撃(B23.32)の階ごとの加算は条文が読み切れていないので「要確認」と出すだけで、数値には入れない。 */
+  if(typeof window.FIRE_TAB_PAGE==='function'){
+    var oFP=window.FIRE_TAB_PAGE;
+    window.FIRE_TAB_PAGE=function(){
+      var h=oFP.apply(this,arguments);
+      try{
+        var R=S_LOS.result, iB=window.ASLFULL_UPPER_INFO('B'); if(!R||!(R.floorA||R.floorB||iB.mx>=1))return h;
+        var ind=(iB.fl%1!==0)?0:Math.max(0,iB.mx-iB.fl); /* B23.32: 目標より上の屋上以外の階の数ぶん +1 */
+        var card='<div class="card" id="aslfullUpperFireNote" style="border-color:#4499ee"><div class="sh">'+T('上の階（B23.3・B10.31・B23.32）')+'</div>'
+          +'<div style="font-size:13px;line-height:1.5">A: '+T(flBase(R.floorA))+' / B: '+T(flBase(R.floorB))+'<br>'
+          +T('直接射撃：建物のTEMは階によらず、目標のいる建物で決まる（B23.3）。高さの有利（+1）は建物内の目標にはつかない（B10.31）。LOSの障害物は LOS タブの結果に入っている。')+'<br>'
+          +T('間接射撃（迫撃砲・OBA）：目標より上にある屋上以外の階1つにつきIFTのDRM +1（B23.32）。B地点では')+' <b>+'+ind+'</b>'
+          +T('（この画面の数値には入れていない）。')+'<br>'
+          +'<span style="color:#c8a032">'+T('要確認：WPの扱い・Interior Building Hex の条件（B23.32）は条文が読み切れていない。')+'</span></div></div>';
+        var b='<div class="res" id="fireResultsCard"', j=h.indexOf(b);
+        if(j>=0)h=h.slice(0,j)+card+h.slice(j); else h+=card;
+      }catch(e){ window.ASLFULL_UPPER_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  window.ASLFULL_UPPER=true;
+})();
+
+</script>
+<script>
+/* ASLFULL v075(ダルマ「実施」): 歩兵の行軍に鉄条網(B26.4・B26.44・B26.46)。仕様: docs/ASLFULL_Spec_Fortifications_draft1.md 段階1。
+   - 行軍の最後のヘクスに鉄条網の印を置く/外す(設置は人が行う。S_LOS.wireHexes)。
+   - 鉄条網のヘクスに入った歩兵は鉄条網の「上」(hex.wire='on')。上にいる間は先へ進めない(tools/rulepatch20.py)。
+   - 「下へ入る」: dr(1〜6)を入力。dr 個の MF を使って下(wire='under')へ入る。残り MF より dr が大きいときは、残り MF だけ使って上に引っかかる。
+     鉄条網の下へ入ろうとする手番は Double Time・Dash ができない(B26.46)ので、MF の上限は CX 分(+2)を含めない。
+     MF が分からない(0)ときは上限なし。APh・Minimum Move では下へ入れない(B26.4)。
+   - 条文にあるが判定には入れない: 上にいる間の SW 回収・捜索・塹壕への出入りの禁止(B26.4)、CC・攻撃の +1/-1(B26.31)は注意書きだけ。鉄条網は LOS の障害物でも TEM でもない(B26.2・B26.3)ので、判定には何も足さない。
+   - 歩兵の Bypass 禁止(B26.44)は、このアプリの行軍に歩兵の Bypass がないので対象外。 */
+(function(){
+  if(typeof S_LOS==='undefined'||typeof Draw!=='function')return;
+  function T2(s){ return (typeof T==='function')?T(s):s; }
+  function wset(){ if(!S_LOS.wireHexes)S_LOS.wireHexes={}; return S_LOS.wireHexes; }
+  window.ASLFULL_WIRE_AT=function(bd,col,row){ try{ return !!wset()[bd+':'+col+':'+row]; }catch(e){ return false; } };
+  function lastHex(){ var rt=S_LOS.route; return (rt&&rt.hexes&&rt.hexes.length)?rt.hexes[rt.hexes.length-1]:null; }
+  window.ASLFULL_WIRE_TOGGLE=function(){
+    var l=lastHex(); if(!l)return;
+    var winY=window.pageYOffset||document.documentElement.scrollTop||0; if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    var k=l.boardId+':'+l.col+':'+l.row, w=wset();
+    if(w[k]){ delete w[k]; if(l.wire)delete l.wire; } else { w[k]=1; }
+    Draw(); window.scrollTo(0,winY);
+  };
+  window.ASLFULL_WIRE_EXIT=function(dr){
+    var rt=S_LOS.route, l=lastHex(); dr=+dr;
+    if(!rt||!l||l.wire!=='on'||!(dr>=1&&dr<=6)||S_LOS.mfEntityType==='vehicle')return;
+    var mf=0; try{ mf=losCurrentUnitMF(); }catch(e){}
+    var rem=mf>0?Math.max(0,mf-l.moveCum):dr, use=Math.min(dr,rem), under=(dr<=rem);
+    var winY=window.pageYOffset||document.documentElement.scrollTop||0; if(typeof losSaveMapScroll==='function')losSaveMapScroll();
+    var mc=l.moveCum+use;
+    var h={boardId:l.boardId,col:l.col,row:l.row,cost:use,moveCum:mc,cum:mc,terrain:l.terrain,onRoad:false,roadOk:false,elev:l.elev,climbing:false,bogRequired:false,wreckCnt:0,wreckAddCost:0,vcaChange:true,wireStep:true,wireDr:dr,wire:under?'under':'on'};
+    if(+l.floor)h.floor=+l.floor;
+    rt.hexes.push(h); rt.totalCost=mc;
+    S_LOS.routeError=under?null:T2('鉄条網に引っかかった（dr が残り MF を超えた）。残り MF だけ使い、このフェイズは出られない（B26.4）');
+    Draw(); window.scrollTo(0,winY);
+  };
+  window.ASLFULL_WIRE_HTML=function(){
+    var l=lastHex(); if(!l)return '';
+    var k=l.boardId+':'+l.col+':'+l.row, has=!!wset()[k];
+    var bs='height:34px;font-size:12px;min-width:0;padding:0 6px';
+    var h='<div class="lbl" style="font-size:12px;margin:0 0 3px">'+T2('鉄条網（B26）')+'</div><div id="aslfullWireRow" style="display:flex;flex-wrap:wrap;gap:2px;margin:2px 0 4px;align-items:center">';
+    h+='<button class="b sm" id="aslfullWireToggle" style="'+bs+'" onclick="ASLFULL_WIRE_TOGGLE()">'+T2(has?'この鉄条網を外す':'このヘクスに鉄条網を置く')+'</button>';
+    if(l.wire==='on'){
+      h+='<span style="font-size:12px;color:#ff8866;margin:0 4px">'+T2('上にいる：下へ入る dr')+'</span>';
+      for(var d=1;d<=6;d++)h+='<button class="b sm aslfullWireDr" data-dr="'+d+'" style="'+bs+';min-width:30px" onclick="ASLFULL_WIRE_EXIT('+d+')">'+d+'</button>';
+    } else if(l.wire==='under'){
+      h+='<span style="font-size:12px;color:#4499ee;margin:0 4px">'+T2('鉄条網の下（自由に動ける）')+'</span>';
+    }
+    h+='</div>';
+    if(has||l.wire)h+='<div style="font-size:10px;color:#c8a032;line-height:1.4;margin-bottom:4px">'+T2('下へ入る手番は Double Time・Dash 不可（B26.46）。APh・Minimum Move では下へ入れない。上にいる間は SW の回収・捜索・塹壕の出入り不可（B26.4）。MF は dr の分だけ使う。鉄条網は LOS の障害物でも TEM でもない（B26.2・B26.3）。上にいる歩兵は、自分の攻撃（CC を含む）に +1 DRM（砲は To Hit +1）、CC で攻撃されたときは -1 DRM（B26.31）。')+'</div>';
+    return h;
+  };
+  if(typeof window.losMoveRouteOverlaySVG==='function'){
+    var oR=window.losMoveRouteOverlaySVG;
+    window.losMoveRouteOverlaySVG=function(dispLayout){
+      var h=oR.apply(this,arguments);
+      try{
+        if(S_LOS.mfEntityType==='vehicle')return h;
+        var w=wset(), st={};
+        ((S_LOS.route&&S_LOS.route.hexes)||[]).forEach(function(c){ if(c.wire)st[c.boardId+':'+c.col+':'+c.row]=c.wire; });
+        Object.keys(w).forEach(function(k){
+          var p=k.split(':'), g=losColRowToGlobalCanon(p[0],+p[1],+p[2]); if(!g)return; var d=losCanonicalToDisplay(g.x,g.y,dispLayout);
+          var t=st[k]==='on'?'鉄条網・上':st[k]==='under'?'鉄条網・下':'鉄条網';
+          h+='<g class="aslfull-wire" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')"><rect x="'+(d.x-24)+'" y="'+(d.y+8)+'" width="48" height="14" rx="3" fill="#000000" fill-opacity="0.8" stroke="#ff8866" stroke-width="1"/><text x="'+d.x+'" y="'+(d.y+19)+'" text-anchor="middle" font-size="10" fill="#ff8866">'+t+'</text></g>';
+        });
+      }catch(e){ window.ASLFULL_WIRE_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  window.ASLFULL_WIRE=true;
 })();
 
 </script>
