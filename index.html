@@ -8365,7 +8365,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.178"; // v178: カウンターをメインタブ(ユニットの右)に独立、見た目・ボタン(40px)・7セグをアプリ本体に合わせる(ダルマ指示)。
+var APP_VERSION="ASLFULL-v0.179"; // v179: カウンタータブ選択で iPad Safari が落ちる(ダルマ報告)→ 7セグのぼかし(filter)と広い影をやめて軽くする。
+var APP_VERSION_HIST_ASLFULL_v178="ASLFULL-v0.178"; // v178: カウンターをメインタブ(ユニットの右)に独立、見た目・ボタン(40px)・7セグをアプリ本体に合わせる(ダルマ指示)。
 var APP_VERSION_HIST_ASLFULL_v177="ASLFULL-v0.177"; // v177: 丸印付き M#(Sheet 7 写真)、Limbered Fire(C10.24)、BV125 の 88 FlaK 牽引の切り替え(ダルマ「お任せで実施」)。
 var APP_VERSION_HIST_ASLFULL_v176="ASLFULL-v0.176"; // v176: 早見表>カウンター。5cm leGrW 36・50mm RM obr. 40 は light mortar(C9.2)なので SW・1/2 インチへ。
 var APP_VERSION_HIST_ASLFULL_v175="ASLFULL-v0.175"; // v175: 独・ソ車両の PP・T#・CS#・Type を H章 Listing から追加(ダルマ「修正実施」)。乗車・牽引カードで自動入力。
@@ -42475,7 +42476,7 @@ window.ASLFULL_CARD_IMG={"ASLA":"data:image/webp;base64,UklGRrJ7AwBXRUJQVlA4IKZ7
     if(!f||f.getAttribute('data-ok'))return;
     f.setAttribute('data-ok','1');
     var html=String(window.ASLFULL_CNT_HTML||'');
-    var head='<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Share+Tech+Mono&display=swap"><style id="aslfullAppTheme">'+THEME+'\n'+segCss()+'</style>';
+    var head='<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Share+Tech+Mono&display=swap"><style id="aslfullAppTheme">'+THEME+'\n'+segCss()+'\n'+"/* v179: iPad Safari のメモリ不足対策。ぼかし(filter・広い影)をやめ、軽い影だけにする */\n.seg7-digit .on,.seg7-digit .on.red,.seg7-digit .on.blu,.seg7-digit .on.gld,.seg7-digit .on.org{filter:none;box-shadow:0 0 3px rgba(0,255,130,.85)}\n.seg7-wrap{box-shadow:inset 0 1px 3px rgba(0,0,0,.7)}\n.seg7-lbl{text-shadow:none}\nheader,section{box-shadow:none}\nnav a,.btn,.rst,summary,.ci{box-shadow:0 3px 0 #0e0e0c,inset 0 1px 0 rgba(255,255,255,.12);text-shadow:none}\n.ci[aria-pressed=\"true\"]{box-shadow:0 3px 0 #080e14,inset 0 1px 0 rgba(100,140,180,.2)}\nnav a:active,.btn:active,.rst:active,summary:active,.ci:active{transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}\n.prog .pc,.ckgrp.done .prog .pc{box-shadow:none;text-shadow:none}\n.bh span,.cbn{text-shadow:none}\ndetails:not([open])>.tw{display:none}\n"+'</style>'; // v179: 軽量化
     if(/<html[\s>]/i.test(html))html=html.replace(/<html([^>]*)>/i,function(m,at){return /data-theme/.test(at)?m:'<html'+at+' data-theme="dark">';});
     else html='<!doctype html><html lang="ja" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>'+html+'</body></html>';
     // v171: ページ内リンクはスクロールだけにする(iPad Safari で親 URL に解決されるため)
