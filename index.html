@@ -8365,7 +8365,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.217"; // v217: T-26S M37/39 −/4 は実物 2 枚 — BV128 の 3 両目は D1.84 で MG 違いを代用(OB・シナリオカード・カウンタータブ)、名前を「T-26S M37/39 −/4」に(ダルマ「修正実施」)。
+var APP_VERSION="ASLFULL-v0.218"; // v218: カウンタータブの登場シナリオを押すと実物のシナリオカード画像を直接開く(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v217="ASLFULL-v0.217"; // v217: T-26S M37/39 −/4 は実物 2 枚 — BV128 の 3 両目は D1.84 で MG 違いを代用(OB・シナリオカード・カウンタータブ)、名前を「T-26S M37/39 −/4」に(ダルマ「修正実施」)。
 var APP_VERSION_HIST_ASLFULL_v216="ASLFULL-v0.216"; // v216: T-28 M34・T-28E M40 の BMG 2×2 — 左右の副砲塔の 2FP を別々に(目標の Target Facing・側面で VCA を変えないとき CA DRM なし・故障も別々・OVR は 2+2・車体FP「2×2」)(ダルマ「実施」)。
 var APP_VERSION_HIST_ASLFULL_v215="ASLFULL-v0.215"; // v215: MG をカードの印字と H 章に合わせる — T-26 M33 は MG なし、ISU-122・ISU-152 は AAMG 4、StuPz IV は BMG 3・AAMG 2(ダルマ「修正実施」)。
 var APP_VERSION_HIST_ASLFULL_v214="ASLFULL-v0.214"; // v214: T-26S M37/39 をカードの印字どおり 4 種類(−/4・−/4ᴿ²/2・−/4/2・−/4ᴿ²)に分割。BV123/125/127/129 の OB とカウンタータブ(必要数 3・2・1・1)を直す(ダルマ「修正実施」)。
@@ -43461,7 +43462,9 @@ window.ASLFULL_CARD_IMG={"ASLA":"data:image/webp;base64,UklGRrJ7AwBXRUJQVlA4IKZ7
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&document.getElementById('aslfullScnPop')&&!document.getElementById('aslfullCardViewer'))close(); });
   document.addEventListener('click',function(e){
     var t=e.target.closest&&e.target.closest('#aslfullCntRoot td.scl2 .sc,#aslfullCntRoot .csl .sc'); if(!t)return;
-    e.preventDefault(); e.stopPropagation(); ASLFULL_SCN_POP((t.textContent||'').trim());
+    e.preventDefault(); e.stopPropagation(); var sid=(t.textContent||'').trim();
+    if(window.ASLFULL_CARD_OPEN&&window.ASLFULL_CARD_HAS&&ASLFULL_CARD_HAS(sid)){ ASLFULL_CARD_OPEN(sid); return; } /* v218: 実物のシナリオカードを直接開く */
+    ASLFULL_SCN_POP(sid); /* 画像がないときだけ、アプリのカード */
   },true);
   var st=document.createElement('style');
   st.textContent='#aslfullCntRoot td.scl2 .sc,#aslfullCntRoot .csl .sc{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}'
