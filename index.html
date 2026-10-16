@@ -8365,7 +8365,9 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.211"; // v211: A5 捕虜・No Quarter(A20)— 白兵戦の捕獲(A20.22)、潰走/阻止タブ「降伏(A20)」、白兵戦タブ「捕虜(A20)」(No Quarter・捕虜の記録・逃亡 NTC・Massacre・注記)(ダルマ「実施」)。
+var APP_VERSION="ASLFULL-v0.213"; // v213: A6 隠蔽(A12)— 移動タブのサブタブ「隠蔽(A12)」(獲得・喪失・ダミー・捜索・Mopping Up・HIP・車両)(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v212="ASLFULL-v0.212"; // v212: カウンタータブの「登場するシナリオ」のシナリオ名から、シナリオカードをその場で開く(見るだけ、選択は変えない)(ダルマ指示)。
+var APP_VERSION_HIST_ASLFULL_v211="ASLFULL-v0.211"; // v211: A5 捕虜・No Quarter(A20)— 白兵戦の捕獲(A20.22)、潰走/阻止タブ「降伏(A20)」、白兵戦タブ「捕虜(A20)」(No Quarter・捕虜の記録・逃亡 NTC・Massacre・注記)(ダルマ「実施」)。
 var APP_VERSION_HIST_ASLFULL_v210="ASLFULL-v0.210"; // v210: ケースの「シナリオで使用」・取り出しリストで ASLC に ASLA・ASLB の部隊を含める(SSR2、Sniper は 1 枚)(ダルマ「修正実施」)。
 var APP_VERSION_HIST_ASLFULL_v209="ASLFULL-v0.209"; // v209: ケースの選び欄の名前を「シナリオで使用」に(ダルマ指示)。
 var APP_VERSION_HIST_ASLFULL_v208="ASLFULL-v0.208"; // v208: ケース「シナリオで使う物」は光らせず、使わない部屋・カウンターを暗くする(ダルマ指示)。
@@ -43393,6 +43395,289 @@ window.ASLFULL_CARD_IMG={"ASLA":"data:image/webp;base64,UklGRrJ7AwBXRUJQVlA4IKZ7
     return h;
   };
   window.ASLFULL_A20_ON=true;
+})();
+</script>
+
+<script>
+/* v212 ASLFULL: カウンタータブの「登場するシナリオ」のシナリオ名を押すと、そのシナリオのカード(シナリオタブと同じ内容)をその場で重ねて開く。
+ * 選択中のシナリオ・入力は変えない(描画のときだけ一時的に差し替えて戻す)。カードの中のボタン・入力は押せない(見るだけ)。 */
+(function(){
+  function L(ja,en){ return (typeof S!=='undefined'&&S.lang==='en')?en:ja; }
+  var MARK='<div style="background:#0d0d14;border:1px solid #404040;border-radius:3px;padding:9px 11px;margin-bottom:5px">';
+  function cardHTML(id){
+    var s=S.scen, keep={sel:s.sel,kit:s.kitFilter,rec:s.viewRecords}, h='';
+    try{ s.sel=id; s.kitFilter=null; s.viewRecords=false; h=SCEN_PAGE(); }catch(e){ h=''; }
+    finally{ s.sel=keep.sel; s.kitFilter=keep.kit; s.viewRecords=keep.rec; }
+    var i=h.indexOf(MARK); return i>=0?h.slice(i):'';
+  }
+  function close(){ var o=document.getElementById('aslfullScnPop'); if(o){ o.remove(); document.body.style.overflow=o.dataset.ov||''; } }
+  window.ASLFULL_SCN_POP=function(id){
+    if(!id||typeof SCN==='undefined'||!SCN.some(function(x){ return x.id===id; }))return false;
+    close();
+    var body=cardHTML(id); if(!body)return false;
+    var o=document.createElement('div'); o.id='aslfullScnPop'; o.dataset.ov=document.body.style.overflow||'';
+    o.setAttribute('role','dialog'); o.setAttribute('aria-label',id);
+    o.innerHTML='<div class="spp-in"><div class="spp-h"><b>'+id+'</b><span>'+L('シナリオカード(見るだけ。選択中のシナリオは変わりません)','Scenario card (view only; the selected scenario is unchanged)')+'</span>'
+      +'<button type="button" class="b sm spp-x">'+L('閉じる','Close')+'</button></div><div class="spp-b">'+body+'</div></div>';
+    document.body.appendChild(o); document.body.style.overflow='hidden';
+    o.querySelectorAll('.spp-b button,.spp-b input,.spp-b select,.spp-b textarea').forEach(function(el){ if(el.classList.contains('aslfullCardBtn'))return; /* 実物のカード画像は見られる */ el.disabled=true; el.removeAttribute('onclick'); el.tabIndex=-1; });
+    o.querySelectorAll('.spp-b [onclick]').forEach(function(el){ if(!el.classList.contains('aslfullCardBtn'))el.removeAttribute('onclick'); });
+    o.addEventListener('click',function(e){ if(e.target===o||e.target.closest('.spp-x'))close(); });
+    var x=o.querySelector('.spp-x'); if(x)x.focus();
+    return true;
+  };
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&document.getElementById('aslfullScnPop')&&!document.getElementById('aslfullCardViewer'))close(); });
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('#aslfullCntRoot td.scl2 .sc,#aslfullCntRoot .csl .sc'); if(!t)return;
+    e.preventDefault(); e.stopPropagation(); ASLFULL_SCN_POP((t.textContent||'').trim());
+  },true);
+  var st=document.createElement('style');
+  st.textContent='#aslfullCntRoot td.scl2 .sc,#aslfullCntRoot .csl .sc{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}'
+    +'#aslfullScnPop{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);display:flex;justify-content:center;align-items:flex-start;padding:max(12px,env(safe-area-inset-top)) 8px 12px;box-sizing:border-box}'
+    +'#aslfullScnPop .spp-in{width:100%;max-width:920px;max-height:100%;display:flex;flex-direction:column;background:#000;border:1px solid #404040;border-radius:4px;overflow:hidden}'
+    +'#aslfullScnPop .spp-h{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid #404040;background:#0d0d14}'
+    +'#aslfullScnPop .spp-h b{color:#c8a032;letter-spacing:.1em}#aslfullScnPop .spp-h span{flex:1;min-width:0;font-size:12px;color:#8899aa}'
+    +'#aslfullScnPop .spp-x{min-width:80px;height:40px;flex:none}'
+    +'#aslfullScnPop .spp-b{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px;min-width:0}'
+    +'#aslfullScnPop .spp-b button[disabled]{opacity:1;cursor:default}';
+  document.head.appendChild(st);
+})();
+</script>
+
+<script>
+/* v213 ASLFULL A6: 隠蔽(A12)。ボグ/人力/煙幕タブのサブタブ「隠蔽(A12)」(蹂躙(OVR)の右)。
+ * ? の獲得(12.12・12.121・12.122)、喪失チェック(12.14・12.141・12.15・12.2)、ダミー(12.11・12.14)、捜索(12.152・12.154)、
+ * Mopping Up(12.153、A20 の記録と連携)、HIP(12.3〜12.34、シナリオの SSR)、車両と隠蔽(12.41・12.42)。
+ * Concealment Table の表そのものは本文から取れないため、本文で決まる部分で判定する(表で確かめる所は「要確認」と出す)。 */
+(function(){
+  function L(ja,en){ return (typeof S!=='undefined'&&S.lang==='en')?en:ja; }
+  function sc(){ return (S.scen&&S.scen.sel)||null; }
+  function cs(){ try{ return curScen(); }catch(e){ return null; } }
+  var NJ={GER:['ドイツ軍','German'],SOV:['ソ連軍','Russian'],FIN:['フィンランド軍','Finnish']};
+  function nj(n){ var x=NJ[n]; return x?L(x[0],x[1]):n; }
+  function nats(){ var c=cs(); var a=c&&c.f?Object.keys(c.f).filter(function(n){ return NJ[n]; }):[]; return a.length?a:['GER','SOV','FIN']; }
+  /* シナリオの SSR で決まる Stealthy・Lax・Winter Camouflage(st/lax/wc) */
+  var AUTO={BV2:{SOV:{st:1},GER:{lax:1}},BV3:{SOV:{st:1}},BV123:{FIN:{wc:1}},ASLF:{SOV:{wc:1},GER:{wc:1}},ASLH:{GER:{st:1,wc:1},SOV:{lax:1,wc:1}}};
+  function auto(n){ var a=(AUTO[sc()]||{})[n]||{}; var r={st:!!a.st,lax:!!a.lax,wc:!!a.wc,why:[]};
+    if(n==='FIN'&&!a.lax){ r.st=true; r.why.push(L('フィンランドのエリート・1st Line は Stealthy(A25.7)','Finnish Elite/1st Line are Stealthy (A25.7)')); }
+    if(a.st)r.why.push(L('SSR:Stealthy','SSR: Stealthy')); if(a.lax)r.why.push(L('SSR:Lax','SSR: Lax')); if(a.wc)r.why.push(L('SSR:Winter Camouflage(E3.712)','SSR: Winter Camouflage (E3.712)'));
+    return r; }
+  function box(inner,col){ return '<div style="background:#000;border:1px solid '+(col||'#404040')+';border-radius:3px;padding:6px 8px;margin-top:6px">'+inner+'</div>'; }
+  function note(t,col){ return '<div class="rnote" style="color:'+(col||'#8899aa')+';line-height:1.5">'+t+'</div>'; }
+  function head(t,col){ return '<div style="font-size:12px;color:'+(col||'#4499ee')+';font-weight:bold;letter-spacing:0.1em;margin:10px 0 6px;border-bottom:1px solid #1a1a2e;padding-bottom:3px">▼ '+t+'</div>'; }
+  function tog(on,label,js,cls,dis){ return '<button class="b sm'+(cls?' '+cls:'')+(on?' on':'')+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:3px 4px"'+(dis?' disabled':' onclick="'+js+'"')+'>'+label+'</button>'; }
+  function grid(n,inner){ return '<div class="btns" style="display:grid;grid-template-columns:repeat('+n+',1fr);gap:4px">'+inner+'</div>'; }
+  function pick(arr,cur,fn){ return grid(arr.length,arr.map(function(a){ return tog(cur===a[0],a[1],fn+"("+JSON.stringify(a[0]).replace(/"/g,"'")+")"); }).join('')); }
+  function res(t,col){ return box('<div style="font-size:15px;font-weight:bold;color:'+col+';line-height:1.5">'+t+'</div>',col); }
+  function sumc(lbl,v,drm){ return '<div class="sumcard"><div class="lbl">'+lbl+'</div>'+(drm?seg7drm(v):seg7(String(v),'gld'))+'</div>'; }
+  function st(){ if(!S.a12||S.a12.scen!==sc())S.a12={scen:sc(),g:{nat:null,t:'sq',go:true,conc:false,n16:true,l16:false,l17:false,ct:true,ldr:0,lax:false,tem:0,stl:false,wc:false,dr:0},
+      l:{t:'i',los:true,w16:true,ct:true,ev:null,amb:false},d:{los:false,r:'mc',m:0,n:1,drs:[]},s:{hs:1,st:0,ldr:0,lax:0,dr:0},c:{hs:1,st:0,ldr:0,lax:0,dr:0},m:{nat:null,pf:false,bld:false,none:false,two:false}}; return S.a12; }
+  window.A12_set=function(p,k,v){ var o=st()[p]; o[k]=v; if(p==='g'&&k!=='dr')o.dr=0; if(p==='d'&&k!=='drs')o.drs=[]; if((p==='s'||p==='c')&&k!=='dr')o.dr=0; Draw(); };
+  window.A12_gnat=function(n){ var g=st().g; g.nat=n; var a=auto(n); g.stl=a.st; g.lax=a.lax; g.wc=a.wc; g.dr=0; Draw(); };
+  window.A12G_dr=function(v){ st().g.dr=v; Draw(); };
+  window.A12S_dr=function(v){ st().s.dr=v; Draw(); };
+  window.A12C_dr=function(v){ st().c.dr=v; Draw(); };
+  window.A12_auto1=function(p){ st()[p].dr=1+Math.floor(Math.random()*6); Draw(); };
+  window.A12D_roll=function(){ var d=st().d; d.drs=[]; for(var i=0;i<d.n;i++)d.drs.push(2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6)); Draw(); };
+  var UT=[['sq',3,['分隊','Squad']],['hs',2,['HS','HS']],['cr',2,['乗員','Crew']],['smc',1,['SMC','SMC']],['gun',4,['砲を操作中(US# 4)','Manning Gun (US# 4)']],['gunL',5,['大型の砲を操作中(US# 5)','Manning large Gun (US# 5)']],['v',4,['5/8" 車両・騎兵など(US# 4)','5/8" vehicle/Cavalry (US# 4)']],['vL',5,['大型の車両(US# 5)','Large vehicle (US# 5)']]];
+  function us(t){ for(var i=0;i<UT.length;i++)if(UT[i][0]===t)return UT[i][1]; return 0; }
+
+  /* ---- 1 獲得 ---- */
+  function gainCard(){
+    var g=st().g, N=nats(), h='<div class="card" id="aslfullA12Gain"><div class="sh">'+L('? の獲得(A12.12・12.121・12.122)','Gaining "?" (A12.12/.121/.122)')+'</div>';
+    h+=note(L('プレイ中に ? を得られるのは、隠蔽していない Good Order の部隊が、自分の Player Turn の終わりにだけ。1 部隊ずつ判定する','During play, a non-concealed Good Order unit may gain "?" only at the end of its own Player Turn; check each unit separately'));
+    h+=head(L('国(SSR の Stealthy・Lax・Winter Camouflage を入れる)','Nationality (applies SSR Stealthy/Lax/Winter Camouflage)'));
+    h+='<div class="btns" style="display:grid;grid-template-columns:repeat('+N.length+',1fr);gap:4px">'+N.map(function(n){ return natBadgeHTML(n,g.nat===n,'onclick="A12_gnat(\''+n+'\')"'); }).join('')+'</div>';
+    if(g.nat){ var a=auto(g.nat); if(a.why.length)h+=note(a.why.join('。'),'#c8a032'); }
+    h+=head(L('部隊','Unit'));
+    h+=grid(4,UT.map(function(u){ return tog(g.t===u[0],L(u[2][0],u[2][1])+(['sq','hs','cr','smc'].indexOf(u[0])>=0?' (US# '+u[1]+')':''),"A12_set('g','t','"+u[0]+"')"); }).join(''));
+    h+=grid(2,tog(g.go,L('Good Order(混乱・狂乱でない)','Good Order (not broken/berserk)'),"A12_set('g','go',"+!g.go+")")+tog(g.conc,L('すでに隠蔽している','Already concealed'),"A12_set('g','conc',"+!g.conc+")"));
+    h+=head(L('まわりの敵(混乱していない敵の地上部隊。ダミーも含む)','Enemy (unbroken enemy ground units, incl. Dummies)'));
+    h+=grid(2,tog(g.n16,L('16 ヘクス以内に敵がいる','An enemy within 16 hexes'),"A12_set('g','n16',"+!g.n16+")")
+      +tog(g.l16,L('16 ヘクス以内の敵の LOS に入っている','In LOS of an enemy within 16 hexes'),"A12_set('g','l16',"+!g.l16+")",'',!g.n16)
+      +tog(g.l17,L('17 ヘクス以上の敵の LOS に入っている','In LOS of an enemy ≥ 17 hexes away'),"A12_set('g','l17',"+!g.l17+")")
+      +tog(g.ct,L('Concealment Terrain にいる(地形表の赤字)','In Concealment Terrain (red on Terrain Chart)'),"A12_set('g','ct',"+!g.ct+")"));
+    var is58=(g.t==='v'||g.t==='vL'), inf=(g.t==='sq'||g.t==='hs'||g.t==='cr'||g.t==='smc'), r=null, col='#8899aa', dr=false, ck=false;
+    var l16=g.n16&&g.l16;
+    if(g.conc)r=L('すでに隠蔽している(1 部隊に ? は 1 枚だけ)','Already concealed (only one "?" per unit)');
+    else if(!g.go)r=L('獲得できない:Good Order でない(混乱・狂乱)','Cannot gain: not in Good Order'),col='#cc4444';
+    else if(l16)r=L('獲得できない:16 ヘクス以内の混乱していない敵の LOS にいる','Cannot gain: in LOS of an unbroken enemy within 16 hexes'),col='#cc4444';
+    else if(is58&&g.l17&&!g.ct)r=L('獲得できない:5/8" は敵の LOS で Concealment Terrain でなければ距離に関係なく不可(12.2、Case H)','Cannot gain: a 5/8" counter in enemy LOS outside Concealment Terrain (12.2, Case H)'),col='#cc4444';
+    else if(g.n16){ if(g.ct)r=L('獲得できる(16 ヘクス以内の敵の LOS の外・Concealment Terrain)','Gains "?" (out of LOS of enemies within 16 hexes, in Concealment Terrain)'),col='#00dd66'; else dr=true; }
+    else if(g.l17){ if(g.ct&&inf)dr=true; else if(g.ct){ r=L('要確認:17 ヘクス以上の敵の LOS で Concealment Terrain にいる砲・5/8" は Concealment Table で確かめる','To verify: Gun/5/8" in Concealment Terrain in LOS of enemy ≥17 hexes — check the Concealment Table'); col='#c8a032'; ck=true; }
+      else { r=L('獲得できない(要確認):17 ヘクス以上の敵の LOS で Concealment Terrain でない。本文に定めがないので Concealment Table で確かめる','Cannot gain (to verify): in LOS of enemy ≥17 hexes, not in Concealment Terrain — check the Concealment Table'); col='#c8a032'; ck=true; } }
+    else r=L('獲得できる(敵の LOS の外で、16 ヘクス以内に敵がいない)','Gains "?" (out of all enemy LOS, no enemy within 16 hexes)'),col='#00dd66';
+    if(dr){
+      var X=us(g.t), drm=X+(g.ldr||0)+(g.lax?1:0)+(g.tem||0)+(g.stl?-1:0)+(g.wc?-1:0);
+      var t='<div style="font-size:13px;color:#c8a032;font-weight:bold">'+L('Concealment dr:Final dr ≤ 5 で獲得(12.122)','Concealment dr: gains on Final dr ≤ 5 (12.122)')+'</div>';
+      t+=head(L('drm','drm'));
+      t+='<div style="font-size:12px;color:#8899aa">'+L('指揮値(同じ Location の最良の指揮官。指揮官自身には使えない)','Leadership (best leader in Location; not for himself)')+'</div>'+pick([[0,L('なし','None')],[-1,'−1'],[-2,'−2'],[-3,'−3']],g.ldr,"A12_gldr");
+      t+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+L('その Location の TEM と Hindrance(ヘクス辺・高さの TEM は使わない)','TEM + Hindrance of the Location (no hexside/Height Advantage TEM)')+'</div>'+pick([[0,'0'],[-1,'−1'],[-2,'−2'],[-3,'−3'],[-4,'−4'],[-5,'−5']],g.tem,"A12_gtem");
+      t+=grid(3,tog(g.stl,'Stealthy −1',"A12_set('g','stl',"+!g.stl+")")+tog(g.lax,'Lax +1',"A12_set('g','lax',"+!g.lax+")",'red')+tog(g.wc,'Winter Camouflage −1',"A12_set('g','wc',"+!g.wc+")"));
+      t+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px">'+sumc('US#',X)+sumc(L('drm 合計','drm total'),drm,true)+sumc(L('この dr 以下で獲得','Gain on dr ≤'),Math.max(0,5-drm))+'</div>';
+      t+='<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px"><span class="lbl">dr</span><button class="judg3d ylw" style="width:80px;height:40px;font-size:12px" onclick="A12_auto1(\'g\')">AUTO</button></div>'+rDiceHTML(g.dr,false,'A12G_dr');
+      if(g.dr){ var f=g.dr+drm; t+='<div style="margin-top:6px;font-size:15px;font-weight:bold;color:'+(f<=5?'#00dd66':'#cc4444')+'">dr '+g.dr+(drm>=0?' +':' ')+drm+' = '+f+' → '+(f<=5?L('? を得る','Gains "?"'):L('? を得られない','No "?"'))+'</div>'; }
+      h+=box(t,'#c8a032');
+    } else h+=res(r,col);
+    h+=note(L('設置のとき:先に設置する側は OB の ? を Concealment Terrain にだけ置ける。両軍の設置後、16 ヘクス以内の敵すべての LOS の外、または全員から 17 ヘクス以上なら、OB 外の ? を 1 スタックに 1 枚置ける(12.12)','At setup: OB "?" only in Concealment Terrain; after both sides set up, one non-OB "?" per stack if out of LOS of all enemies within 16 hexes or ≥17 hexes from all (12.12)'));
+    return h+'</div>';
+  }
+  window.A12_gldr=function(v){ A12_set('g','ldr',v); };
+  window.A12_gtem=function(v){ A12_set('g','tem',v); };
+
+  /* ---- 2 喪失 ---- */
+  var EV=[
+    ['mc',['MC 失敗・混乱・負傷・Reduced','Failed MC / broken / wounded / Reduced'],'any','12.14'],
+    ['ber',['狂乱・過重スタックになった','Berserk / overstacked'],'los','12.14'],
+    ['ptc',['IFT で PTC 以上(A-P 地雷を除く)','PTC or worse on the IFT (not A-P mines)'],'los','12.14'],
+    ['hit',['5/8":命中・PRC に PTC 以上・地雷で動けなくなった','5/8": hit / PTC+ vs PRC / A-T mine Immobilization'],'los58','12.2'],
+    ['sn',['Sniper の攻撃(dr 1・2)','Sniper attack (dr 1/2)'],'los','12.14'],
+    ['nam',['Non-Assault の移動(ボカージュの陰・塹壕どうしを除く)','Non-Assault Movement (except behind bocage / trench to trench)'],'w16','12.14'],
+    ['og',['開豁地へ移動・前進・Withdrawal','Move/advance/withdraw into Open Ground'],'w16','12.14'],
+    ['fire',['射撃・射撃の指揮・Opportunity Fire の指定','Fires / directs fire / designated Opportunity Firer'],'w16','12.14'],
+    ['cc',['CC で攻撃','Attacks in CC'],'w16','12.14'],
+    ['ent',['敵の歩兵・騎兵が MPh・RtPh にこの Location へ入ろうとした','Enemy Infantry/Cavalry attempts to enter in MPh/RtPh'],'det','12.15'],
+    ['act',['そのほかの行動(LLTC・LLMC、塹壕掘り、Deploy・Recombine、回復、CA の変更、煙幕手榴弾など)','Other actions (LLTC/LLMC, entrench, Deploy/Recombine, rally, change CA, SMOKE grenades, …)'],'w16','12.141'],
+    ['mv58',['5/8":動く・Motion・CA を変える(同じヘクスでも)','5/8": moves / in Motion / changes CA'],'w1658','12.2'],
+    ['ok',['無線・野戦電話、PAATC・Set DC の NTC、SW・砲を落とす・修理、Spotting','Radio/phone, PAATC or Set DC NTC, drop/repair SW/Gun, Spotting'],'keep','12.141']];
+  window.A12_lev=function(v){ A12_set('l','ev',v); };
+  function lossCard(){
+    var l=st().l, h='<div class="card" id="aslfullA12Loss"><div class="sh">'+L('? の喪失チェック(A12.14・12.141・12.15・12.2)','Losing "?" (A12.14/.141/.15/.2)')+'</div>';
+    h+=grid(2,tog(l.t==='i',L('1/2" の歩兵・SMC','1/2" Infantry/SMC'),"A12_set('l','t','i')")+tog(l.t==='v',L('5/8"(車両・PRC・騎兵・馬・据え付けていない砲)','5/8" (vehicle/PRC/Cavalry/horse/non-Emplaced Gun)'),"A12_set('l','t','v')"));
+    h+=head(L('見ている敵(Good Order の敵の地上部隊)','Viewing enemy (Good Order enemy ground unit)'));
+    h+=grid(3,tog(l.los,L('LOS にいる','In its LOS'),"A12_set('l','los',"+!l.los+")")+tog(l.w16,L('16 ヘクス以内','Within 16 hexes'),"A12_set('l','w16',"+!l.w16+")",'',!l.los)+tog(l.ct,L('Concealment Terrain にいる','In Concealment Terrain'),"A12_set('l','ct',"+!l.ct+")"));
+    if(l.t==='v'&&l.los&&!l.ct)h+=res(L('? を失う:5/8" が Good Order の敵の LOS で Concealment Terrain にいない(距離に関係なく、12.2・Case H)','Loses "?": 5/8" in LOS of Good Order enemy and not in Concealment Terrain (12.2, Case H)'),'#cc4444');
+    h+=head(L('起きたこと','What happened'));
+    var ev=EV.filter(function(e){ return l.t==='v'?e[0]!=='nam'&&e[0]!=='og':e[0]!=='hit'&&e[0]!=='mv58'; });
+    h+=grid(2,ev.map(function(e){ return tog(l.ev===e[0],L(e[1][0],e[1][1]),"A12_lev('"+e[0]+"')"); }).join(''));
+    if(l.ev==='cc')h+=grid(1,tog(l.amb,L('Ambush で敵を全部除去・捕獲した','Ambush attack that eliminated/captured all defenders'),"A12_set('l','amb',"+!l.amb+")"));
+    var e=EV.filter(function(x){ return x[0]===l.ev; })[0];
+    if(e){ var lose, why='', w16=l.los&&l.w16;
+      if(e[2]==='any'){ lose=true; why=L('敵の LOS に関係なく失う','regardless of enemy LOS'); }
+      else if(e[2]==='los'||e[2]==='los58'){ lose=l.los; why=lose?L('Good Order の敵の LOS にいる(距離は問わない)','in LOS of a Good Order enemy (any range)'):L('Good Order の敵の LOS の外','out of LOS of Good Order enemies'); }
+      else if(e[2]==='w16'||e[2]==='w1658'){ lose=w16; why=lose?L('16 ヘクス以内の Good Order の敵の LOS にいる','in LOS of a Good Order enemy within 16 hexes'):L('16 ヘクス以内の Good Order の敵の LOS の外','not in LOS of a Good Order enemy within 16 hexes'); }
+      else if(e[2]==='det'){ lose=true; why=L('本物を 1 つ以上見せ、入ろうとした部隊を押し戻す。ダミーしかいなければ ? を全部除去し、入った部隊は進み続ける。HIP はランダム選択の前に ? の下に出す。見せたのが SMC だけなら Infantry OVR を試せる','reveal ≥1 real unit and force the mover back; if only Dummies, all "?" are removed and the mover continues; HIP units are placed under "?" first; if only a SMC is revealed, Infantry OVR may be attempted'); }
+      else { lose=false; why=L('この行動では失わない','this action does not cause loss'); }
+      if(l.ev==='cc'&&l.amb){ lose=false; why=L('敵を全部除去・捕獲した Ambush は例外(11.4)','exception: Ambush attack that eliminated/captured all defenders (11.4)'); }
+      h+=res((lose?L('? を失う','Loses "?"'):L('? はそのまま','Keeps "?"'))+'<div style="font-size:12px;font-weight:normal;color:#8899aa">'+why+'('+e[3]+')</div>',lose?'#cc4444':'#00dd66');
+    }
+    h+=note(L('Hindrance や TEM は喪失を防がない。1 部隊が失っても、同じ Location のほかの部隊は失わない。見ている敵も隠蔽していて、それしか Good Order の敵がいないときは、その敵が一瞬 ? を外して見せる(12.14)。自分から ? を外すのはいつでもよい','Hindrance/TEM do not prevent loss; one unit losing "?" does not affect others; if the only viewer is itself concealed it must momentarily reveal (12.14); owner may remove "?" voluntarily at any time'));
+    h+=note(L('Bypass では喪失しない。その Location で MPh を終えると、ダミーでない部隊の ? を外す(12.151)','Bypass does not cause loss; ending MPh in that Location does (12.151)'));
+    return h+'</div>';
+  }
+
+  /* ---- 3 ダミー ---- */
+  window.A12_dr=function(v){ A12_set('d','r',v); };
+  window.A12_dm=function(v){ A12_set('d','m',v); };
+  window.A12_dn=function(v){ A12_set('d','n',v); };
+  function dummyCard(){
+    var d=st().d, h='<div class="card" id="aslfullA12Dummy"><div class="sh">'+L('ダミー(A12.11・12.14)','Dummies (A12.11/.14)')+'</div>';
+    h+=grid(1,tog(d.los,L('Good Order の敵の LOS にいる','In LOS of a Good Order enemy'),"A12_set('d','los',"+!d.los+")"));
+    h+=head(L('IFT の結果','IFT result'));
+    h+=pick([['kia','KIA'],['k','K/#'],['mc',L('MC','MC')],['ptc','PTC'],['none',L('効果なし','No effect')]],d.r,'A12_dr');
+    var t='';
+    if(d.r==='none')t=res(L('そのまま','No effect'),'#8899aa');
+    else if(d.r==='kia'||d.r==='k')t=res(L('ダミーのスタックを除去','Dummy stack eliminated'),'#cc4444');
+    else if(d.los)t=res(L('除去:LOS 内で PTC 以上を受けたので ? を失い、ダミーとわかる(12.14)','Eliminated: PTC+ in LOS loses "?", revealing the Dummy (12.14)'),'#cc4444');
+    else {
+      t+=note(L('すべての敵の LOS の外なので士気 7 で判定する。持ち主が DR の回数(1 回以上)を宣言し、1 つでも失敗(または Pin)すれば全部除去','Out of all enemy LOS: Morale 7. Owner declares how many DR (≥1); any failure (or Pin) eliminates the stack'));
+      if(d.r==='mc'){ t+='<div style="font-size:12px;color:#8899aa">'+L('MC の数','MC modifier')+'</div>'+pick([[0,'NMC'],[1,'1MC'],[2,'2MC'],[3,'3MC'],[4,'4MC']],d.m,'A12_dm'); }
+      t+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+L('宣言する DR の回数','Number of DR declared')+'</div>'+pick([[1,'1'],[2,'2'],[3,'3'],[4,'4']],d.n,'A12_dn');
+      t+=grid(1,'<button class="judg3d" style="height:40px" onclick="A12D_roll()">▶<span>ROLL</span></button>');
+      if(d.drs.length){ var m=d.r==='mc'?d.m:0, fail=d.drs.some(function(x){ return x+m>7; });
+        t+='<div style="margin-top:6px;font-size:14px;font-weight:bold;color:'+(fail?'#cc4444':'#00dd66')+'">DR '+d.drs.map(function(x){ return x+(m?'+'+m:''); }).join(' / ')+' vs 7 → '+(fail?L('失敗:ダミーを全部除去','Failed: all Dummies eliminated'):L('合格:そのまま','Passed: remains'))+'</div>'; }
+      t=box(t);
+    }
+    h+=t;
+    h+=note(L('移動:Good Order の敵の LOS で Non-Assault の移動、または開豁地に入ると除去。地雷の攻撃の前に、本物がいるか見せることを求められる(見せられなければ除去)。ダミーは設置時と、OB の ? 増援が入るターンにだけ作れる。5/8" のダミーは砲(Emplacement TEM なし)や車両のふりができる','Movement: removed if it moves Non-Assault or into Open Ground in LOS of a Good Order enemy; must show a real unit before mine attacks; created only at setup or with OB "?" reinforcements; 5/8" Dummies may pose as a Gun/vehicle'));
+    return h+'</div>';
+  }
+
+  /* ---- 4 捜索 ---- */
+  function stp(p,k,v,lbl,arr){ return '<div style="font-size:12px;color:#8899aa;margin-top:4px">'+lbl+'</div>'+pick(arr,v,'(function(x){A12_set(\''+p+'\',\''+k+'\',x)})'); }
+  function searchCard(){
+    var s=st().s, c=st().c, h='<div class="card" id="aslfullA12Search"><div class="sh">'+L('捜索(A12.152・12.154)','Search (A12.152/.154)')+'</div>';
+    h+=note(L('MPh の終わりに、Good Order の歩兵・騎兵の MMC(またはそれを含む動いたスタック)が 1 MF を使って振る。pin・Assault Movement では不可。振ったら TI になる。調べたヘクスの ? は外れ、HIP は ? の下に出る。地雷原の存在もわかる','At the end of its move, a Good Order Infantry/Cavalry MMC (or stack containing one) expends 1 MF; NA if pinned or Assault Moving; becomes TI. Searched hexes reveal "?"/HIP and minefields'));
+    var N=[0,1,2,3].map(function(x){ return [x,String(x)]; }), HSN=[1,2,3,4,5,6].map(function(x){ return [x,String(x)]; }), LD=[[0,L('なし','None')],[-1,'−1'],[-2,'−2'],[-3,'−3']];
+    var sdrm=-(s.st||0)-Math.max(0,(s.hs||1)-1)+(s.ldr||0)+(s.lax||0);
+    var t=head(L('捜索する側の Search dr','Searching side: Search dr'));
+    t+=stp('s','hs',s.hs,L('HS 相当の数(1 を超える分ごとに −1)','HS equivalents (−1 per HS > one)'),HSN)+stp('s','st',s.st,L('Stealthy の部隊の数(各 −1)','Stealthy units (−1 each)'),N)+stp('s','ldr',s.ldr,L('参加する最良の指揮官の指揮値','Leadership of best participating leader'),LD)+stp('s','lax',s.lax,L('Lax・CX の数(条件ごとに +1)','Lax/CX conditions (+1 each)'),N);
+    t+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">'+sumc(L('drm 合計','drm total'),sdrm,true)+sumc(L('最終 dr','Final dr'),s.dr?Math.max(0,s.dr+sdrm):'--')+'</div>';
+    t+='<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px"><span class="lbl">dr</span><button class="judg3d ylw" style="width:80px;height:40px;font-size:12px" onclick="A12_auto1(\'s\')">AUTO</button></div>'+rDiceHTML(s.dr,false,'A12S_dr');
+    if(s.dr)t+='<div style="margin-top:6px;font-size:14px;font-weight:bold;color:#c8a032">'+L('調べられない隣のヘクス:'+Math.max(0,s.dr+sdrm)+' 個(攻める側が選ぶ。自分のヘクスはいつも調べられる)','Accessible hexes that may NOT be searched: '+Math.max(0,s.dr+sdrm)+' (ATTACKER\'s choice; own hex always searched)')+'</div>';
+    h+=box(t);
+    var cdrm=-(c.st||0)-Math.max(0,(c.hs||1)-1)+(c.ldr||0)+(c.lax||0);
+    t=head(L('守る側の Casualty dr(12.154)','Defender: Casualty dr (12.154)'),'#cc4444');
+    t+=note(L('調べた Location に Good Order の武装部隊・地雷原・Residual FP・HE FFE があるか、Booby Trap があるときだけ。Search dr 1 回に 1 回','Only if the Location holds an armed Good Order unit/minefield/Residual FP/HE FFE, or Booby Traps; one per Search dr'));
+    t+=stp('c','hs',c.hs,L('隠蔽した守る側の HS 相当の数(1 を超える分ごとに −1)','Concealed defending HS equivalents (−1 per HS > one)'),HSN)+stp('c','st',c.st,L('隠蔽した Stealthy の数(各 −1)','Concealed Stealthy units (−1 each)'),N)+stp('c','ldr',c.ldr,L('隠蔽した最良の指揮官の指揮値(単独でなければ)','Leadership of best concealed leader (if not alone)'),LD)+stp('c','lax',c.lax,L('隠蔽した Lax の数(各 +1)','Concealed Lax units (+1 each)'),N);
+    t+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">'+sumc(L('drm 合計','drm total'),cdrm,true)+sumc(L('この dr 以下で損耗','Casualty on dr ≤'),Math.max(0,1-cdrm))+'</div>';
+    t+='<div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px"><span class="lbl">dr</span><button class="judg3d ylw" style="width:80px;height:40px;font-size:12px" onclick="A12_auto1(\'c\')">AUTO</button></div>'+rDiceHTML(c.dr,false,'A12C_dr');
+    if(c.dr){ var f=c.dr+cdrm; t+='<div style="margin-top:6px;font-size:14px;font-weight:bold;color:'+(f<=1?'#cc4444':'#00dd66')+'">dr '+c.dr+(cdrm>=0?' +':' ')+cdrm+' = '+f+' → '+(f<=1?L('捜索した部隊が損耗(同点はランダム選択)','Searching unit suffers Casualty Reduction'):L('損耗なし','No casualty'))+'</div>'; }
+    h+=box(t,'#cc4444');
+    return h+'</div>';
+  }
+
+  /* ---- 5 Mopping Up ---- */
+  function nqUsed(n){ /* A20 の記録:n の側が No Quarter・Massacre を使ったか */
+    if(sc()==='BV130'||sc()==='BV135')return true;
+    try{ var x=(JSON.parse(localStorage.getItem('aslfull-a20-v1')||'{}')||{})[sc()||'_']||{}; if(x.mass&&x.mass[n])return true;
+      return Object.keys(x.nq||{}).some(function(v){ return v!==n&&x.nq[v]; }); }catch(e){ return false; } }
+  window.A12_mnat=function(n){ A12_set('m','nat',n); };
+  function mopCard(){
+    var m=st().m, N=nats(), h='<div class="card" id="aslfullA12Mop"><div class="sh">Mopping Up(A12.153)</div>';
+    h+='<div class="btns" style="display:grid;grid-template-columns:repeat('+N.length+',1fr);gap:4px">'+N.map(function(n){ return natBadgeHTML(n,m.nat===n,'onclick="A12_mnat(\''+n+'\')"'); }).join('')+'</div>';
+    h+=grid(2,tog(m.pf,L('自分の PFPh。武装・pin なし・Good Order の歩兵 MMC','Own PFPh; armed, unpinned Good Order Infantry MMC'),"A12_set('m','pf',"+!m.pf+")")
+      +tog(m.bld,L('多ヘクス・多層の建物の中(長屋はヘクスごと)','In a multi-hex/multi-level building (Rowhouse: per hex)'),"A12_set('m','bld',"+!m.bld+")")
+      +tog(m.none,L('建物に、隠蔽していない混乱していない敵がいない','No unconcealed unbroken enemy in the building'),"A12_set('m','none',"+!m.none+")")
+      +tog(m.two,L('自分が Control していない地上の全 Location まで 2 ヘクス以内(複数の部隊で分担可)','Within 2 hexes of every uncontrolled ground-level Location (may share)'),"A12_set('m','two',"+!m.two+")"));
+    var nq=m.nat&&nqUsed(m.nat);
+    if(!m.nat)h+=res(L('Mopping Up する側の国を選ぶ','Select the Mopping-Up side'),'#8899aa');
+    else if(nq)h+=res(L(nj(m.nat)+'は No Quarter・Massacre を使ったので Mopping Up できない(A20 の記録'+((sc()==='BV130'||sc()==='BV135')?'・SSR':'')+')',nj(m.nat)+' has used No Quarter/Massacre: Mopping Up NA'),'#cc4444');
+    else if(m.pf&&m.bld&&m.none&&m.two)h+=res(L('Mopping Up できる:宣言した部隊は TI。HIP の敵は ? の下に出し、ダミーは除去。隠蔽した敵がいなくなれば、建物の全 Location を Control し、建物の中の混乱した敵はすべて降伏する(Fortified Building も明らかになる)。1 つの建物に Player Turn 1 回','Mopping Up allowed: declaring units become TI; HIP placed under "?", Dummies removed; if no concealed enemy remains the building is Controlled and broken enemies inside surrender; once per building per Player Turn'),'#00dd66');
+    else h+=res(L('条件がそろっていない','Conditions not met'),'#c8a032');
+    h+=note(L('瓦礫・炎上している建物の Location は建物に数えない。上の階へ階段がなくても行える。12.154 の Casualty dr は捜索と同じ','Rubbled/Blazing Locations are not part of the building; stairwell not required; 12.154 Casualty dr applies'));
+    return h+'</div>';
+  }
+
+  /* ---- 6 HIP ---- */
+  function hipCard(){
+    var c=cs(), h='<div class="card" id="aslfullA12HIP"><div class="sh">HIP(A12.3〜12.34)</div>';
+    var L2=c&&c.ssr?c.ssr.map(function(t,i){ return [i+1,t]; }).filter(function(x){ return /HIP/.test(x[1]); }):[];
+    if(!c)h+=note(L('シナリオを選ぶと、そのシナリオの HIP の SSR を出す','Select a scenario to show its HIP SSR'));
+    else if(!L2.length)h+=note(L(c.id+' には HIP の SSR がない','No HIP SSR in '+c.id));
+    else h+=L2.map(function(x){ return box('<div style="font-size:12px;color:#c8a032;font-weight:bold">'+c.id+' SSR'+x[0]+'</div><div style="font-size:13px;color:#ccddee;line-height:1.5">'+x[1]+'</div>','#c8a03255'); }).join('');
+    h+=note(L('HIP は SSR で許されたときだけ。Concealment Terrain に、紙に記録して置く(AFV は TCA・VCA、5/8" の砲は CA も)。隠蔽と同じに扱う(別の定めがあるときを除く)','HIP only by SSR; recorded secretly in Concealment Terrain (with TCA/VCA/CA); treated as concealed unless stated otherwise'));
+    h+=note(L('見つかったら二度と HIP に戻れない(隠蔽にはなれる)。動く・前進する・CA を変えるなら、先に ? の下に出す(12.31・12.32)','Once revealed, never hidden again (may be concealed); must be placed under "?" before moving/advancing/changing CA (12.31/.32)'));
+    h+=note(L('自分から ? の下に出てよい:敵の ? の獲得を妨げるとき、敵の RtPh に影響させるとき(12.32)。12.15(発見)・捜索・Mopping Up では ? の下に出す','May voluntarily become concealed to deny enemy "?" or affect enemy rout (12.32); placed under "?" by 12.15/Search/Mopping Up'));
+    h+=note(L('ひとりで遊ぶとき:HIP の分隊相当 1 につき、OB の ? を 2 枚に置き換える(12.3)','Solitaire: substitute two "?" per squad-capacity of HIP (12.3)'));
+    return h+'</div>';
+  }
+
+  /* ---- 7 車両と隠蔽 ---- */
+  function vehCard(){
+    var h='<div class="card" id="aslfullA12Veh"><div class="sh">'+L('車両と隠蔽(A12.41・12.42)','Vehicles vs concealment (A12.41/.42)')+'</div>';
+    h+=note(L('混乱していない車両が、Bypass・woods-road を使わずに隠蔽した敵の Location に入ったら、敵の人員はすぐに自分から見せるか、まとめて PAATC(一番低い士気、最良の指揮官の修正、ダミーは士気 7)。失敗すると pin して見せる。合格なら隠蔽のまま(OVR は Area Fire)','An unbroken vehicle entering (not via Bypass/woods-road) a concealed enemy Location forces a voluntary reveal or one combined PAATC (lowest Morale, best leader DRM; Dummies Morale 7). Failure: pinned and revealed; pass: stay concealed (OVR as Area Fire)'));
+    h+=note(L('Location に既知の敵がいなかったときは、PAATC を済ませるまで OVR の MP は使えない(12.41)。Bypass で入った車両は OVR できず、HIP も知らされない。MPh の終わりにその Location にいれば PAATC(12.42)','If no Known enemy was there, OVR MP may not be spent until the PAATC is resolved (12.41); a Bypassing vehicle cannot OVR nor learn of HIP units; PAATC if it ends its MPh there (12.42)'));
+    h+=grid(1,tog(false,L('白兵戦タブの PAATC へ','Go to PAATC (CC tab)'),"NAVTAB('aphcc');AphccSub('aph')"));
+    return h+'</div>';
+  }
+
+  window.ASLFULL_A12_CARD=function(){ return gainCard()+lossCard()+dummyCard()+searchCard()+mopCard()+hipCard()+vehCard(); };
+  if(typeof window.MOVE_PAGE==='function'){
+    var oM=window.MOVE_PAGE;
+    window.MOVE_PAGE=function(){
+      var h=oM.apply(this,arguments);
+      try{
+        var k=h.indexOf("onclick=\"MoveSub('ovr')\">");
+        if(k<0)k=h.indexOf("onclick=\"MoveSub('d14')\">");
+        if(k>=0){ var j=h.indexOf('</button>',k);
+          var b='<button class="b sm'+(S.moveSub==="a12"?" on":"")+'" onclick="MoveSub(\'a12\')">'+L('隠蔽(A12)','Concealment (A12)')+'</button>';
+          h=h.slice(0,j+9)+b+h.slice(j+9); }
+        if(S.moveSub==='a12')h+=window.ASLFULL_A12_CARD();
+      }catch(e){ window.ASLFULL_A12_ERR=String(e&&e.stack||e); }
+      return h; };
+  }
+  window.ASLFULL_A12_ON=true;
 })();
 </script>
 
