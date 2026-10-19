@@ -8008,7 +8008,11 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.278"; // v278: TI と DISRUPT を 1 行にまとめた(TI 裏 DISRUPT ×6、DISRUPT は TI の裏 0)。システム 360 枚は変わらない(ダルマ「修正実施」)。
+var APP_VERSION="ASLFULL-v0.282"; // v282: カウンタータブの国別・システムの表で、カウンター名の下に種類を出す(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v281="ASLFULL-v0.281"; // v281: B1 夜戦 N3: ASLH の射撃・砲撃・対戦車タブに夜の LV +1(E1.7、妨害の合計に自動。例外はボタンで外す)と Gunflash の案内・A 点に GF を置くボタン(E1.8)(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v280="ASLFULL-v0.280"; // v280: B1 夜戦 N2: ASLH のマップに Starshell(3 ヘクスの照明)・Gunflash を置く/外す、A 点の NVR の範囲、A→B が NVR の外かの判定(照明・Gunflash なら見える)(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v279="ASLFULL-v0.279"; // v279: B1 夜戦 N1: ASLH のシナリオタブ・マップタブに夜戦パネル(Base NVR 6・2〜9、NVR Change DR、最初の Starshell、見る側ごとの見える距離)(ダルマ「実施」)。
+var APP_VERSION_HIST_ASLFULL_v278="ASLFULL-v0.278"; // v278: TI と DISRUPT を 1 行にまとめた(TI 裏 DISRUPT ×6、DISRUPT は TI の裏 0)。システム 360 枚は変わらない(ダルマ「修正実施」)。
 var APP_VERSION_HIST_ASLFULL_v277="ASLFULL-v0.277"; // v277: 歩兵・車両などにも種類(分隊・HS はクラス、車両はシリーズ、ほかは項目)を付け、選択中の欄に出す(ダルマ指示)。
 var APP_VERSION_HIST_ASLFULL_v276="ASLFULL-v0.276"; // v276: ケースでカウンターを選ぶと、選択中の欄にマーカーの種類を出す(ダルマ指示)。
 var APP_VERSION_HIST_ASLFULL_v275="ASLFULL-v0.275"; // v275: ケースの「中身の一覧」でシステムカウンターをマーカーの種類ごとに分けて出す(ダルマ指示)。
@@ -31540,7 +31544,7 @@ function LOS_PAGE(){
         +seg7range(hasResult?r.range:null,'HEX','blu')+'</div>';
       h+='<div class="sumcard" style="flex:1 1 0;min-width:0;overflow:hidden"><div class="lbl">'+T('LOS妨害')+'</div>'
         +(hasResult?seg7drm(r.hindranceDrm+snowH):seg7('--','','DRM'))
-        +(snowH>0?'<div style="font-size:11px;color:#e8b84b;margin-top:2px;text-align:center">'+T(aslLvHind(r.range)>0?'LV +1(E3.1・BV130 SSR1)':'降雪+1（射程6+）')+'</div>':'')
+        +(snowH>0?'<div style="font-size:11px;color:#e8b84b;margin-top:2px;text-align:center">'+T(aslLvHind(r.range)>0?((S.scen&&S.scen.sel==='ASLH')?'夜の LV +1(E1.7)':'LV +1(E3.1・BV130 SSR1)'):'降雪+1（射程6+）')+'</div>':'')
         +'</div>';
       h+='<div class="sumcard" style="flex:1 1 0;min-width:0;overflow:hidden"><div class="lbl">'+T('B地点地形')+'</div>'
         +seg7dr(temTxt,hasResult&&temColor!=='gld'?'red':temColor,'TEM')+'</div>';
@@ -44114,6 +44118,231 @@ window.ASLFULL_CARD_IMG={"ASLA":"data:image/webp;base64,UklGRrJ7AwBXRUJQVlA4IKZ7
   }
   window.ASLFULL_NAT_FIX=fix; fix();
   var oD=window.Draw; if(typeof oD==='function'){ window.Draw=function(){ fix(); return oD.apply(this,arguments); }; }
+})();
+</script>
+<script>
+/* ===== ASLFULL v0.279: B1 夜戦 N1 夜戦パネル(NVR、E1.1・E1.12・E1.14・E1.15) ===== */
+(function(){
+  'use strict';
+  if(typeof S==='undefined')return;
+  function T2(x){ return (typeof T==='function')?T(x):x; }
+  function sid(){ try{ return (S.scen&&S.scen.sel)||null; }catch(e){ return null; } }
+  function keep(fn){ var y=(typeof window.scrollY==='number')?window.scrollY:0; fn(); if(typeof saveState==='function')try{ saveState(); }catch(e){} Draw(); window.scrollTo(0,y); }
+  var NIGHT={ASLH:{base:6,min:2,max:9,snow:true,note:'ASLH SSR 1: 基本 NVR 6、雲なし・月なし。Ground Snow なので最大 9・最小 2(E1.15)'}};
+  function cfg(){ return NIGHT[sid()]||null; }
+  function st(){ var c=cfg(); if(!S.aslNight||typeof S.aslNight!=='object'||S.aslNight.sid!==sid())S.aslNight={sid:sid(),nvr:c?c.base:6,star:false,red:null,white:null,res:null}; return S.aslNight; }
+  window.ASLFULL_NIGHT_ST=function(){ return cfg()?st():null; };
+  window.ASLFULL_NIGHT_NVR=function(){ return cfg()?st().nvr:null; };
+  function clamp(v){ var c=cfg(); return Math.max(c.min,Math.min(c.max,v)); }
+  window.ASLFULL_NIGHT_ADJ=function(d){ keep(function(){ var o=st(); o.nvr=clamp(o.nvr+d); o.res=null; }); };
+  window.ASLFULL_NIGHT_STAR=function(v){ keep(function(){ st().star=!!v; }); };
+  function judge(red,white,o){ /* E1.12(雲なし・月なし: 1 ヘクス) */
+    if(red!==6)return {d:0,txt:T2('色 dr が 6 でないので NVR は変わらない')};
+    if(white<=3)return {d:-1,txt:T2('色 dr 6・白 dr ≤3: NVR −1')};
+    if(white>=5)return {d:1,txt:T2('色 dr 6・白 dr ≥5: NVR +1')};
+    return o.star?{d:0,txt:T2('色 dr 6・白 dr 4: 変わらない')}:{d:1,txt:T2('色 dr 6・白 dr 4: 最初の Starshell/IR の前なので +1')};
+  }
+  window.ASLFULL_NIGHT_APPLY=function(red,white){ keep(function(){ var o=st(), j=judge(red,white,o), before=o.nvr; o.red=red; o.white=white; o.nvr=clamp(o.nvr+j.d); o.res={txt:j.txt,from:before,to:o.nvr}; }); };
+  window.ASLFULL_NIGHT_ROLL=function(){
+    var o=st();
+    if(typeof rollAnim==='function'&&typeof rnd==='function'){
+      rollAnim(function(r,w,anim){ if(anim){ o.red=r; o.white=w; o.res=null; Draw(); } else { if(typeof diceToast==='function')try{ diceToast(r,w); }catch(e){} window.ASLFULL_NIGHT_APPLY(r,w); } });
+    } else { window.ASLFULL_NIGHT_APPLY(1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)); }
+  };
+  function see(n){ return {inf:n,bu:Math.floor(n/2),whl:n===0?1:Math.ceil(n*1.5),trk:n===0?2:n*2}; }
+  window.ASLFULL_NIGHT_SEE=see;
+  function card(where){
+    var c=cfg(); if(!c)return '';
+    var o=st(), n=o.nvr, a=see(n), b=see(Math.floor(n/2));
+    var bs='height:40px;min-width:0;padding:0 4px';
+    var h='<div class="card" id="aslfullNightCard'+where+'"><div class="sh">'+T2('夜戦(E1)・NVR')+'</div>'
+      +'<div class="rnote">'+T2(c.note)+'</div>'
+      +'<div style="display:flex;gap:6px;align-items:center;margin-top:6px">'
+      +'<button class="b sm" id="aslfullNvrMinus'+where+'" style="'+bs+';width:60px" onclick="ASLFULL_NIGHT_ADJ(-1)">−1</button>'
+      +'<div class="sumcard" style="flex:1;text-align:center"><div class="lbl">'+T2('Base NVR(ヘクス)')+'</div>'+seg7(String(n),'gld')+'</div>'
+      +'<button class="b sm" id="aslfullNvrPlus'+where+'" style="'+bs+';width:60px" onclick="ASLFULL_NIGHT_ADJ(1)">+1</button></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">'
+      +'<button class="b sm" style="'+bs+'" id="aslfullNvrRoll'+where+'" onclick="ASLFULL_NIGHT_ROLL()">'+T2('NVR Change DR を振る(RPh の始め)')+'</button>'
+      +'<button class="b sm'+(o.star?' on':'')+'" style="'+bs+'" id="aslfullNvrStar'+where+'" onclick="ASLFULL_NIGHT_STAR('+(!o.star)+')">'+(o.star?T2('最初の Starshell/IR: 済み'):T2('最初の Starshell/IR: まだ'))+'</button></div>';
+    if(o.red!=null&&o.white!=null)h+='<div style="margin-top:4px">'+(typeof diceBadge==='function'?diceBadge(o.red,o.white):(o.red+'-'+o.white))+'</div>';
+    if(o.res)h+='<div id="aslfullNvrRes'+where+'" style="font-size:12px;color:#c8a032;margin-top:2px">'+o.res.txt+(o.res.from!==o.res.to?'('+o.res.from+' → '+o.res.to+')':'')+'</div>';
+    h+='<table class="mini" style="width:100%;margin-top:6px;font-size:12px"><thead><tr><th>'+T2('見る側')+'</th><th>'+T2('ふつう')+'</th><th>'+T2('動く装輪車')+'</th><th>'+T2('動く装軌車')+'</th></tr></thead><tbody>'
+      +'<tr><td>'+T2('歩兵・CE の車両など')+'</td><td id="aslfullNvrInf'+where+'">'+a.inf+'</td><td>'+a.whl+'</td><td>'+a.trk+'</td></tr>'
+      +'<tr><td>'+T2('BU の AFV(半分)')+'</td><td id="aslfullNvrBu'+where+'">'+b.inf+'</td><td>'+b.whl+'</td><td>'+b.trk+'</td></tr></tbody></table>'
+      +'<div style="font-size:12px;color:#8899aa;margin-top:6px;line-height:1.6">'
+      +T2('・NVR を超える距離のユニットは見えない(LOS がない)。Gunflash と照明された Location、動いている車両は例外(E1.101)。')+'<br>'
+      +T2('・NVR Change DR は、最初の Player Turn のあとの各 RPh の始めに、Wind Change DR といっしょに振る。色 dr 6 で変わり、白 dr ≤3 で −1、≥5 で +1、4 は変わらない(最初の Starshell/IR の前は +1)(E1.12)。')+'<br>'
+      +T2('・Motion/Non-Stopped・VCA を変えている車両は、NVR の 1.5 倍(切り上げ)まで見える。装軌車は 2 倍まで。NVR 0 なら装輪車 1・装軌車 2。BU の AFV から見る NVR は半分(切り捨て)(E1.14)。')+'</div></div>';
+    return h;
+  }
+  window.ASLFULL_NIGHT_CARD=card;
+  if(typeof window.SCEN_PAGE==='function'){
+    var oS=window.SCEN_PAGE;
+    window.SCEN_PAGE=function(){ var h=oS.apply(this,arguments); try{ h+=window.ASLFULL_NIGHT_CARD('Scen'); }catch(e){ window.ASLFULL_B1_ERR=String(e&&e.stack||e); } return h; };
+  }
+  if(typeof window.LOS_PAGE==='function'){
+    var oL=window.LOS_PAGE;
+    window.LOS_PAGE=function(){ var h=oL.apply(this,arguments); try{ h=window.ASLFULL_NIGHT_CARD('Los')+h; }catch(e){ window.ASLFULL_B1_ERR=String(e&&e.stack||e); } return h; };
+  }
+  window.ASLFULL_B1N1=true;
+})();
+</script>
+<script>
+/* ===== ASLFULL v0.280: B1 夜戦 N2 マップ(Starshell・Gunflash・NVR の範囲、E1.101・E1.81・E1.923) ===== */
+(function(){
+  'use strict';
+  if(typeof S==='undefined'||typeof S_LOS==='undefined'||typeof window.ASLFULL_NIGHT_NVR!=='function')return;
+  function T2(x){ return (typeof T==='function')?T(x):x; }
+  function on(){ return window.ASLFULL_NIGHT_NVR()!=null; }
+  function L(){ if(!S_LOS.aslNight||typeof S_LOS.aslNight!=='object')S_LOS.aslNight={star:{},gf:{},mode:null,ring:true}; return S_LOS.aslNight; }
+  function key(h){ return h.boardId+':'+h.col+':'+h.row; }
+  function hexOf(k){ var p=k.split(':'); return {boardId:p[0],col:+p[1],row:+p[2]}; }
+  function nm(h){ return (typeof losHexNameFromColRow==='function')?(h.boardId.toUpperCase()+T2('盤')+' '+losHexNameFromColRow(h.col,h.row)):key(h); }
+  window.ASLFULL_NIGHT_L=L;
+  window.ASLFULL_NIGHT_MODE=function(m){ if(typeof losSaveMapScroll==='function')try{ losSaveMapScroll(); }catch(e){} var o=L(); o.mode=(o.mode===m)?null:m;
+    if(o.mode){ S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false; } Draw(); };
+  window.ASLFULL_NIGHT_CLR=function(w){ var o=L(); o[w]={}; Draw(); };
+  window.ASLFULL_NIGHT_RING=function(){ var o=L(); o.ring=!o.ring; Draw(); };
+  window.ASLFULL_NIGHT_TOGGLE=function(w,h){ var o=L(), k=key(h); if(o[w][k])delete o[w][k]; else o[w][k]=1; };
+  /* 照明: Starshell から 3 ヘクス以内(E1.923) */
+  function lit(h){ var o=L(); return Object.keys(o.star).some(function(k){ var d=(typeof losHexRangeGlobalIds==='function')?losHexRangeGlobalIds(hexOf(k),h):null; return d!=null&&d<=3; }); }
+  window.ASLFULL_NIGHT_LIT=lit;
+  function gf(h){ return Object.keys(L().gf).some(function(k){ var d=(typeof losHexRangeGlobalIds==='function')?losHexRangeGlobalIds(hexOf(k),h):null; return d===0; }); }
+  /* A・B のヘクス */
+  function ab(){ try{ if(!S_LOS.pxA||!S_LOS.pxB||typeof losHexIdentityAtGlobal!=='function')return null; var a=losHexIdentityAtGlobal(S_LOS.pxA.x,S_LOS.pxA.y), b=losHexIdentityAtGlobal(S_LOS.pxB.x,S_LOS.pxB.y); return (a&&b)?{a:a,b:b}:null; }catch(e){ return null; } }
+  function verdict(){
+    var r=S_LOS.result; if(!r||r.error||r.range==null)return null;
+    var n=window.ASLFULL_NIGHT_NVR(), x=ab(), bl=x?lit(x.b):false, bg=x?gf(x.b):false;
+    if(r.range<=n)return {ok:true,txt:T2('NVR の内(')+r.range+' ≤ '+n+')'};
+    if(bl)return {ok:true,txt:T2('NVR の外(')+r.range+' > '+n+T2(')だが、B は照明の中なので見える(E1.101)')};
+    if(bg)return {ok:true,txt:T2('NVR の外(')+r.range+' > '+n+T2(')だが、B に Gunflash があるので見える(E1.81)')};
+    return {ok:false,txt:T2('NVR の外(')+r.range+' > '+n+T2(')。B は見えない(LOS がない)。動いている車両は N1 の表の距離まで見える(E1.14)')};
+  }
+  window.ASLFULL_NIGHT_VERDICT=verdict;
+  /* 地図のタップ */
+  if(typeof window.LosMapClick==='function'){
+    var oC=window.LosMapClick;
+    window.LosMapClick=function(ev){
+      var o=L();
+      if(on()&&o.mode&&typeof losResolveTapHex==='function'){ var h=null; try{ h=losResolveTapHex(ev); }catch(e){} if(h){ window.ASLFULL_NIGHT_TOGGLE(o.mode,h); Draw(); } return; }
+      return oC.apply(this,arguments);
+    };
+  }
+  /* 地図の重ね表示(マーカー類より下) */
+  if(typeof window.losSSROverlaySVG==='function'){
+    var oO=window.losSSROverlaySVG;
+    window.losSSROverlaySVG=function(dl){
+      var h=oO.apply(this,arguments)||'';
+      try{
+        if(!on())return h;
+        var o=L(), R=(typeof LOS_GEO_HEX_H==='number')?LOS_GEO_HEX_H:50;
+        Object.keys(o.star).forEach(function(k){ var x=hexOf(k), g=losColRowToGlobalCanon(x.boardId,x.col,x.row); if(!g)return; var d=losCanonicalToDisplay(g.x,g.y,dl);
+          h+='<circle class="aslNightLit" cx="'+d.x+'" cy="'+d.y+'" r="'+(R*3.5)+'" fill="rgba(255,240,150,0.28)" stroke="rgba(255,220,80,0.95)" stroke-width="5" stroke-dasharray="14 8"/>'
+            +'<g class="aslNightStar" transform="rotate('+(-S_LOS.viewRot)+' '+d.x+' '+d.y+')"><circle cx="'+d.x+'" cy="'+d.y+'" r="24" fill="#fff6b0" stroke="#333" stroke-width="3"/><text x="'+d.x+'" y="'+(d.y+9)+'" text-anchor="middle" font-size="26" font-weight="900" fill="#333">★</text></g>'; });
+        Object.keys(o.gf).forEach(function(k){ var x=hexOf(k), g=losColRowToGlobalCanon(x.boardId,x.col,x.row); if(!g)return; var d=losCanonicalToDisplay(g.x,g.y,dl);
+          h+='<g class="aslNightGf" transform="rotate('+(-S_LOS.viewRot)+' '+d.x+' '+d.y+')"><rect x="'+(d.x-26)+'" y="'+(d.y-16)+'" width="52" height="32" rx="4" fill="#ff8a00" stroke="#fff" stroke-width="2.5"/><text x="'+d.x+'" y="'+(d.y+7)+'" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">GF</text></g>'; });
+        if(o.ring&&S_LOS.pxA){ var n=window.ASLFULL_NIGHT_NVR(), dA=losCanonicalToDisplay(S_LOS.pxA.x,S_LOS.pxA.y,dl);
+          h+='<circle class="aslNightRing" cx="'+dA.x+'" cy="'+dA.y+'" r="'+(R*(n+0.5))+'" fill="none" stroke="rgba(120,200,255,0.95)" stroke-width="6" stroke-dasharray="18 10"/>'; }
+      }catch(e){ window.ASLFULL_B1N2_ERR=String(e&&e.stack||e); }
+      return h;
+    };
+  }
+  /* マップタブの夜戦パネルに、地図の操作と判定を足す */
+  var oCard=window.ASLFULL_NIGHT_CARD;
+  window.ASLFULL_NIGHT_CARD=function(where){
+    var h=oCard.apply(this,arguments); if(!h||where!=='Los')return h;
+    var o=L(), bs='height:40px;min-width:0;padding:0 4px;white-space:normal;line-height:1.2', ns=Object.keys(o.star).length, ng=Object.keys(o.gf).length;
+    var x='<div id="aslfullNightMap" style="margin-top:8px;border-top:1px solid #404040;padding-top:6px"><div class="lbl">'+T2('地図(タップで置く/外す)')+'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">'
+      +'<button class="b sm'+(o.mode==='star'?' on':'')+'" style="'+bs+'" id="aslfullNightStarMode" onclick="ASLFULL_NIGHT_MODE(\'star\')">'+T2('Starshell を置く')+'('+ns+')</button>'
+      +'<button class="b sm'+(o.mode==='gf'?' on':'')+'" style="'+bs+'" id="aslfullNightGfMode" onclick="ASLFULL_NIGHT_MODE(\'gf\')">'+T2('Gunflash を置く')+'('+ng+')</button>'
+      +'<button class="b sm'+(o.ring?' on':'')+'" style="'+bs+'" id="aslfullNightRing" onclick="ASLFULL_NIGHT_RING()">'+T2('A 点の NVR の範囲')+'</button>'
+      +'<button class="b sm" style="'+bs+'" id="aslfullNightStarClr" onclick="ASLFULL_NIGHT_CLR(\'star\')">'+T2('Starshell を全部外す(CCPh の終わり)')+'</button>'
+      +'<button class="b sm" style="'+bs+'" id="aslfullNightGfClr" onclick="ASLFULL_NIGHT_CLR(\'gf\')">'+T2('Gunflash を全部外す')+'</button><div></div></div>';
+    var v=verdict();
+    if(v)x+='<div id="aslfullNightVerdict" style="margin-top:6px;font-size:13px;font-weight:bold;color:'+(v.ok?'#3ca878':'#e05050')+'">A→B: '+v.txt+'</div>';
+    var lst=Object.keys(o.star).map(function(k){ return '★'+nm(hexOf(k)); }).concat(Object.keys(o.gf).map(function(k){ return 'GF '+nm(hexOf(k)); }));
+    if(lst.length)x+='<div style="font-size:12px;color:#8899aa;margin-top:4px">'+lst.join('・')+'</div>';
+    x+='<div style="font-size:12px;color:#8899aa;margin-top:6px;line-height:1.6">'
+      +T2('・Starshell は 3 ヘクス以内の Location を照明する(地図の薄い黄色の円は目安。判定はヘクスの距離で行う)。CCPh の終わりに外す(E1.923)。')+'<br>'
+      +T2('・撃ったユニットの Location は、LOS のあるユニットに Gunflash として見える。NVR の外でも見える(E1.8・E1.81)。Gunflash を外す時期は要確認。')+'<br>'
+      +T2('・青い点線の円は A 点からの NVR の範囲の目安。')+'</div></div>';
+    var k=h.lastIndexOf('</div>'); return h.slice(0,k)+x+h.slice(k);
+  };
+  window.ASLFULL_B1N2=true;
+})();
+</script>
+<script>
+/* ===== ASLFULL v0.281: B1 夜戦 N3 射撃(夜の +1 LV DRM・Gunflash、E1.7・E1.8) ===== */
+(function(){
+  'use strict';
+  if(typeof S==='undefined'||typeof window.ASLFULL_NIGHT_NVR!=='function')return;
+  function T2(x){ return (typeof T==='function')?T(x):x; }
+  function night(){ return window.ASLFULL_NIGHT_NVR()!=null; }
+  function st(){ return window.ASLFULL_NIGHT_ST(); }
+  function lvOn(){ var o=st(); return !!o&&o.lvOff!==true; }
+  window.ASLFULL_NIGHT_LV_ON=function(){ return night()&&lvOn(); };
+  window.ASLFULL_NIGHT_LV_SET=function(v){ var y=window.pageYOffset||0; var o=st(); if(o)o.lvOff=!v; if(typeof saveState==='function')try{ saveState(); }catch(e){} Draw(); window.scrollTo(0,y); };
+  /* 本体の LV の口(aslLvHind)に足す */
+  if(typeof window.aslLvHind==='function'){
+    var oLv=window.aslLvHind;
+    window.aslLvHind=function(range){ var v=oLv.apply(this,arguments)||0; try{ if(night()&&lvOn()&&typeof range==='number'&&range>=1)v+=1; }catch(e){} return v; };
+  }
+  /* A 点(射手)に Gunflash */
+  window.ASLFULL_NIGHT_GF_A=function(){
+    function put(){ try{ if(!S_LOS.pxA||typeof losHexIdentityAtGlobal!=='function')return false; var a=losHexIdentityAtGlobal(S_LOS.pxA.x,S_LOS.pxA.y); if(!a)return false;
+      var L=window.ASLFULL_NIGHT_L(), k=a.boardId+':'+a.col+':'+a.row; L.gf[k]=1; S.aslNightGfMsg=a.name||k; return true; }catch(e){ return false; } }
+    function done(){ var y=window.pageYOffset||0; Draw(); window.scrollTo(0,y); }
+    if(!S_LOS.pxA){ S.aslNightGfMsg=T2('マップで A 点(射手)を先に決めてください'); done(); return; }
+    if(put()){ done(); return; }
+    if(typeof losLoadBoard==='function'&&S_LOS.boards)Promise.all(S_LOS.boards.map(function(b){ return losLoadBoard(b.id); })).then(function(){ put(); done(); }).catch(function(){ done(); });
+    else done();
+  };
+  function card(kind){
+    if(!night())return '';
+    var on=lvOn(), bs='height:40px;min-width:0;padding:0 4px;white-space:normal;line-height:1.2';
+    var h='<div class="card" id="aslfullNightFire_'+kind+'" style="padding:6px 8px;border-color:#3a5a7a"><div class="sh" style="margin-top:0">'+T2('夜戦(E1.7・E1.8)')+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">'
+      +'<button class="b sm'+(on?' on':'')+'" style="'+bs+'" id="aslfullNightLvOn_'+kind+'" onclick="ASLFULL_NIGHT_LV_SET(true)">'+T2('夜の LV +1 を付ける')+'</button>'
+      +'<button class="b sm'+(!on?' on':'')+'" style="'+bs+'" id="aslfullNightLvOff_'+kind+'" onclick="ASLFULL_NIGHT_LV_SET(false)">'+T2('付けない(例外)')+'</button></div>'
+      +'<div style="font-size:12px;color:'+(on?'#c8a032':'#8899aa')+';margin-top:4px">'+(on?T2('LOS 妨害の合計に夜の LV +1 を入れています(射程 0 の同じヘクスは除く)。FFMO は消えない。'):T2('夜の LV +1 を外しています。'))+'</div>'
+      +'<div style="font-size:12px;color:#8899aa;margin-top:4px;line-height:1.6">'
+      +T2('・付けない攻撃: Fire Lane・地雷・Sniper・DC・特定の巻き添え攻撃・Residual FP・CC・OBA。')+'<br>'
+      +T2('・付けないとき: HA による正の TEM があるとき、目標ヘクスに射手より 1 レベル以上高い地形があるとき、目標が bocage の WA にいるとき、射手と同じヘクス。')+'</div>'
+      +'<div style="margin-top:6px;border-top:1px solid #404040;padding-top:6px"><div style="font-size:12px;color:#ccddee;margin-bottom:4px">'+T2('撃ったユニットの Location は、LOS のあるユニットに Gunflash として見える(B#/X# の DR・照明・NVR にかかわらない)。')+'</div>'
+      +'<button class="b sm" style="'+bs+';width:100%" id="aslfullNightGfA_'+kind+'" onclick="ASLFULL_NIGHT_GF_A()">'+T2('マップの A 点(射手)に Gunflash を置く')+'</button>'
+      +(S.aslNightGfMsg?'<div style="font-size:12px;color:#ff8a00;margin-top:3px">GF: '+S.aslNightGfMsg+'</div>':'')+'</div></div>';
+    return h;
+  }
+  window.ASLFULL_NIGHT_FIRE_CARD=card;
+  [['FIRE_TAB_PAGE','fire'],['GUN_PAGE','gun'],['LATW_PAGE','latw']].forEach(function(p){
+    if(typeof window[p[0]]!=='function')return;
+    var o=window[p[0]];
+    window[p[0]]=function(){ var h=o.apply(this,arguments); try{ h=card(p[1])+h; }catch(e){ window.ASLFULL_B1N3_ERR=String(e&&e.stack||e); } return h; };
+  });
+  window.ASLFULL_B1N3=true;
+})();
+</script>
+<script>
+/* ===== ASLFULL v0.282: 国別・システムの表に種類 ===== */
+(function(){
+  var CATJ={'要塞・マーカー':'要塞・隠蔽'};
+  function kindOf(it){ if(it.typ)return it.typ; var c=CATJ[it.cat]||it.cat;
+    if(it.cat==='分隊'||it.cat==='HS'){ var k=String(it.s||'').split(' · ').filter(function(x){ return x!=='HS'; }).join(' · '); return c+(k?' '+k:''); }
+    if(it.cat==='車両')return c+(it.ser?' '+it.ser:''); return c; }
+  window.ASLFULL_CNT_KIND=function(k){ var L=window.CASE_ITEMS||[]; for(var i=0;i<L.length;i++)if(L[i].k===k)return kindOf(L[i]); return null; };
+  function paint(root){
+    if(!root||!window.CASE_ITEMS)return;
+    [].forEach.call(root.querySelectorAll('section.ckgrp button.ci[data-k]'),function(btn){
+      var td=btn.parentNode; if(!td||td.querySelector('.ckind'))return;
+      var t=window.ASLFULL_CNT_KIND(btn.getAttribute('data-k')); if(!t)return;
+      var sp=document.createElement('div'); sp.className='ckind'; sp.textContent=t;
+      sp.style.cssText='font-size:.7rem;color:#c8a032;line-height:1.2;margin-top:1px;white-space:nowrap';
+      td.appendChild(sp); });
+  }
+  window.ASLFULL_CNT_KINDPAINT=paint;
+  var o=window.ASLFULL_CNT_CHIPIFY;
+  window.ASLFULL_CNT_CHIPIFY=function(root){ var r=o?o.apply(this,arguments):undefined; try{ paint(root); setTimeout(function(){ try{ paint(root); }catch(e){} },0); }catch(e){} return r; };
 })();
 </script>
 </body>
