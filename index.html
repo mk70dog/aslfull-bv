@@ -5424,6 +5424,20 @@ var I18N_EN={
 "指揮官は全ヘクスにいないので使えない(A7.531)":"No leader in every hex, so leadership is not used (A7.531)",
 "悪い TEM・妨害は FG 全体に(A7.52)":"The worst TEM/Hindrance applies to the whole FG (A7.52)",
 "同じ目標へ撃つスタックは FG(A7.5)にまとめて 1 回の射撃にする。隣り合う Location がつながるときだけ。撃つかどうかは見込みと目標の大きさで決める。":"Stacks firing at the same target are combined into one FG (A7.5) as one attack, only when their Locations are chained by adjacency. Whether to fire depends on the odds and the size of the target.",
+"このヘクスに今撃てる自分のスタックはありません":"No stack here can fire now",
+"外すと FG がつながらなくなります(A7.5)":"Removing it would break the FG chain (A7.5)",
+"FG は隣り合う Location のつながりだけです(A7.5)":"A FG needs a chain of adjacent Locations (A7.5)",
+"LOS のない・つながらないスタックを外して撃ちます(A7.52)":"Firing without the stacks that have no LOS or are not chained (A7.52)",
+"スタック":"stacks",
+"合計 FP":"Total FP",
+"地図の撃てる味方のヘクスをタップで足す・外す(隣り合うつながりだけ、A7.5)。":"Tap friendly hexes that can fire to add/remove them (adjacent chain only, A7.5).",
+"指揮官 DRM":"Leader DRM",
+"(全ヘクスにいる・質の低い指揮官、A7.531)":" (leader in every hex, the lowest-quality leader; A7.531)",
+"撃てる目標(見込み)":"Targets (odds)",
+"FG 全員が撃てる目標がありません(LOS・射程)":"No target all FG members can fire at (LOS/range)",
+"FG を解除":"Cancel FG",
+"FG に加える(複数スタックで撃つ)":"Add to FG (fire with several stacks)",
+"FG で撃つ":"Fire as FG",
 "IPC/MF動的計算":"IPC/MF Dynamic Calculator",
   "基本MF（練度）":"Base MF (Troop Quality)",
   "目標タイプ（Target Type）":"Target Type",
@@ -8184,7 +8198,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.314"; // v314: アプリの軍の射撃に FG(A7.5。隣り合う Location の合同射撃・悪い TEM/妨害は全体・指揮官は全 Location にいるときだけ A7.531)。
+var APP_VERSION="ASLFULL-v0.315"; // v315: 自分の側の FG を MAP で選ぶ(「FG に加える」で撃てる味方のヘクスをタップして足す・外す。隣り合うつながりだけ、見込み表示、FG で撃つ)。
+var APP_VERSION_HIST_ASLFULL_v314="ASLFULL-v0.314"; // v314: アプリの軍の射撃に FG(A7.5。隣り合う Location の合同射撃・悪い TEM/妨害は全体・指揮官は全 Location にいるときだけ A7.531)。
 var APP_VERSION_HIST_ASLFULL_v313="ASLFULL-v0.313"; // v313: アプリと対戦を ASLB に(複数の建物への設置・? の隠蔽・建物 1X3 の勝利条件・攻撃側 AI の目標)。
 var APP_VERSION_HIST_ASLFULL_v312="ASLFULL-v0.312"; // v312: 隠蔽(アプリだけで遊ぶとき)と ASLA の勝利条件の判定 → 対戦記録。
 var APP_VERSION_HIST_ASLFULL_v311="ASLFULL-v0.311"; // v311: アプリの軍の回復・移動・潰走・前進・白兵戦の判断。
@@ -45196,6 +45211,7 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
       else if(k==='del'){ o.stacks=o.stacks.filter(function(s){ return s.id!==o.sel; }); o.sel=null; }
       else if(k==='flag'){ var s2=byId(o.sel); if(!s2)return; var f=fl(s2); f[a]=!f[a]; }
       else if(k==='play'){ o.play=a; }
+      else if(k==='fg'){ var s0=byId(o.sel); if(o.fgOn){ fgClear(o); } else if(s0&&canFire(s0)){ o.fgOn=true; o.fg=o.stacks.filter(function(z){ return z.side===s0.side&&z.bd===s0.bd&&z.col===s0.col&&z.row===s0.row&&canFire(z); }).map(function(z){ return z.id; }); } }
       else if(k==='aim'){ o.aim=(o.aim===o.sel)?null:o.sel; }
       else if(k==='tsel'){ var sh=o.shot; if(sh&&sh.tg&&sh.tg.length){ var i2=sh.tg.indexOf(o.sel); o.sel=sh.tg[(i2+1)%sh.tg.length]; } }
       else if(k==='tpin'){ var sh2=o.shot; if(sh2)(sh2.tg||[]).forEach(function(id2){ var t2=byId(id2); if(t2)fl(t2).pin=true; }); }
@@ -45229,11 +45245,11 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
         if(!s5.u.length)o.stacks=o.stacks.filter(function(z){ return z.id!==s5.id; }); o.stacks.push(ns); o.sel=ns.id; }
       else if(k==='merge'){ var s6=byId(o.sel); if(!s6)return; o.stacks.filter(function(z){ return z.id!==s6.id&&z.side===s6.side&&z.bd===s6.bd&&z.col===s6.col&&z.row===s6.row; }).forEach(function(z){
           z.u.forEach(function(y){ var w=s6.u.filter(function(q){ return q.t===y.t; })[0]; if(w){ w.n+=y.n; w.b=(w.b||0)+(y.b||0); } else s6.u.push(y); }); o.stacks=o.stacks.filter(function(q){ return q.id!==z.id; }); }); }
-      else if(k==='battle'){ o.battle=!o.battle; S_LOS.soloMode=!!o.battle; if(o.battle){ S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false;S_LOS.abMode=false;S_LOS.fireHexMode=false; } }
+      else if(k==='battle'){ o.battle=!o.battle; fgClear(o); S_LOS.soloMode=!!o.battle; if(o.battle){ S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false;S_LOS.abMode=false;S_LOS.fireHexMode=false; } }
       else if(k==='next'){
         if(!S.turn)S.turn={cur:1,half:0,ended:false,phase:'rph'};
         var seq=PHASE_SEQ.map(function(p){ return p.id; }), i=seq.indexOf(S.turn.phase||'rph');
-        o.aim=null; o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.adv=false; });
+        o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.adv=false; });
         if(i<0||i<seq.length-1){ S.turn.phase=seq[Math.max(0,i+1)]; }
         else { var before=S.turn.cur+'/'+S.turn.half; S.turn.phase='rph'; if(typeof TurnAdj==='function')TurnAdj(1);
           if((S.turn.cur+'/'+S.turn.half)!==before){ o.stacks.forEach(function(x){ var f=fl(x); f.pin=false; f.fired=false; }); gainConc(o); } }
@@ -45247,7 +45263,8 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
     keep(function(){
       var o=cur(); if(!o)return;
       var here=stackAt(String(bd),col,row), s=byId(o.sel);
-      if(o.aim){ var fr=byId(o.aim); o.aim=null; if(fr&&!(fr.bd===String(bd)&&fr.col===col&&fr.row===row))shoot(o,fr,String(bd),col,row); return; }
+      if(o.fgOn&&!o.aim){ fgTap(o,String(bd),col,row,here); return; }
+      if(o.aim){ var fr=byId(o.aim); o.aim=null; if(fr&&!(fr.bd===String(bd)&&fr.col===col&&fr.row===row)){ if(o.fgOn&&(o.fg||[]).length>1)fgShoot(o,String(bd),col,row); else { fgClear(o); shoot(o,fr,String(bd),col,row); } } else fgClear(o); return; }
       if(s&&!(s.bd===String(bd)&&s.col===col&&s.row===row)){
         var ph0=(S.turn&&S.turn.phase)||'rph', mover=battle()&&((s.side===sideOfHalf()&&(ph0==='mph'||ph0==='aph'))||ph0==='rtph')&&s.bd===String(bd)&&adj(s,col,row);
         if(!here.length||mover||!battle()){ if(moveTo(o,s,String(bd),col,row))o.sel=s.id; else o.sel=null; return; }
@@ -45337,9 +45354,9 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
           var g=losColRowToGlobalCanon(s.bd,s.col,s.row); if(!g)return;
           var key=s.bd+':'+s.col+':'+s.row, k=seen[key]||0; seen[key]=k+1;
           var d=losCanonicalToDisplay(g.x,g.y,dispLayout), x=d.x+k*7-12, y=d.y+k*7-14;
-          var sel=o.sel===s.id, col=SIDE_COL[s.side]||'#8899aa', ai=o.ai===s.side, bk=brk(s);
+          var fgm=!!(o.fgOn&&(o.fg||[]).indexOf(s.id)>=0), sel=o.sel===s.id, col=SIDE_COL[s.side]||'#8899aa', ai=o.ai===s.side, bk=brk(s);
           h+='<g class="aslfull-solo" data-id="'+s.id+'" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">';
-          h+='<rect x="'+x+'" y="'+y+'" width="26" height="22" rx="4" fill="'+col+'" fill-opacity="'+((s.f&&s.f.fired)?0.45:0.9)+'" stroke="'+(sel?'#c8a032':'#0f0f0f')+'" stroke-width="'+(sel?3:1.2)+'"/>';
+          h+='<rect x="'+x+'" y="'+y+'" width="26" height="22" rx="4" fill="'+col+'" fill-opacity="'+((s.f&&s.f.fired)?0.45:0.9)+'" stroke="'+(fgm?'#ffd24a':(sel?'#c8a032':'#0f0f0f'))+'" stroke-width="'+(fgm?4:(sel?3:1.2))+'"'+(fgm?' stroke-dasharray="5 2"':'')+'/>';
           h+='<text x="'+(x+13)+'" y="'+(y+11.5)+'" text-anchor="middle" dominant-baseline="middle" font-family="\'Arial Black\',Arial,sans-serif" font-size="9" font-weight="900" fill="#ffffff">'+(hidden(s)?'?':cnt(s,'mmc')+'·'+cnt(s,'smc'))+'</text>';
           if(ai)h+='<rect x="'+(x+15)+'" y="'+(y-7)+'" width="14" height="10" rx="2" fill="#0f0f0f" stroke="#c8a032" stroke-width="1"/><text x="'+(x+22)+'" y="'+(y-1.6)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="7" font-weight="900" fill="#c8a032">AI</text>';
           if(bk)h+='<circle cx="'+(x+2)+'" cy="'+(y+2)+'" r="4" fill="#cc3333" stroke="#0f0f0f" stroke-width="1"/>';
@@ -45444,6 +45461,45 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
     return {fr:prim.id,frs:P.map(function(q){ return q.s.id; }),tg:tg.id,R:Rmin,fp:fp,col:IFT_LBL[c],drm:drm,tem:tem,hin:hin,ldr:L,ev:ev,p:pEff,score:score,why:why};
   }
   function evalShot(fr,tg,ph){ return evalFG([fr],tg,ph,null); }
+  /* ---------- v315: 自分の側の FG を MAP で選ぶ(A7.5) ---------- */
+  function fgList(o){ return (o.fg||[]).map(byId).filter(Boolean); }
+  function fgClear(o){ o.fgOn=false; o.fg=[]; }
+  function fgTap(o,bd,col,row,here){
+    var cand=here.filter(function(z){ return canFire(z); }), base=byId((o.fg||[])[0]);
+    if(base)cand=cand.filter(function(z){ return z.side===base.side; });
+    if(!cand.length){ toast('このヘクスに今撃てる自分のスタックはありません'); return; }
+    var ids=o.fg||[], inn=cand.every(function(z){ return ids.indexOf(z.id)>=0; }), next;
+    if(inn)next=ids.filter(function(id){ return !cand.some(function(z){ return z.id===id; }); });
+    else next=ids.concat(cand.filter(function(z){ return ids.indexOf(z.id)<0; }).map(function(z){ return z.id; }));
+    var L=next.map(byId).filter(Boolean);
+    if(L.length&&!connected(L)){ toast(inn?'外すと FG がつながらなくなります(A7.5)':'FG は隣り合う Location のつながりだけです(A7.5)'); return; }
+    o.fg=next; if(!next.length)o.fgOn=false;
+  }
+  function fgShoot(o,bd,col,row){
+    var L=fgList(o); if(!L.length){ fgClear(o); return; }
+    var tg=stackAt(bd,col,row).filter(function(x){ return x.side!==L[0].side; });
+    if(!tg.length){ toast('目標のヘクスに敵のスタックはありません'); fgClear(o); return; }
+    var ok=L.filter(function(q){ return partOf(q,tg[0],null); });
+    if(!ok.length){ var f0=L[0]; fgClear(o); shoot(o,f0,bd,col,row); return; }
+    var comp=[ok[0]], rest=ok.slice(1), g=true;
+    while(g&&rest.length){ g=false; for(var i=0;i<rest.length;i++){ if(comp.some(function(q){ return dist(q,rest[i])<=1; })){ comp.push(rest[i]); rest.splice(i,1); g=true; break; } } }
+    if(comp.length<L.length)toast('LOS のない・つながらないスタックを外して撃ちます(A7.52)');
+    fgClear(o); shoot(o,comp.length>1?comp:comp[0],bd,col,row);
+  }
+  function fgHTML(o){
+    if(!o.fgOn||!battle())return ''; var L=fgList(o); if(!L.length)return '';
+    var ph=(S.turn&&S.turn.phase)||'rph', fp=L.reduce(function(p,q){ return p+stackFP(q); },0);
+    var h='<div id="aslfullSoloFg" style="margin-top:8px;border:1px solid #c8a032;border-radius:4px;padding:6px"><div class="lbl">FG ('+L.length+' '+T2('スタック')+')</div>';
+    h+='<div style="font-size:12px;color:#ccddee;line-height:1.5">'+L.map(hexNm).join(' + ')+'　'+T2('合計 FP')+' '+(Math.round(fp*10)/10)+'</div>';
+    h+='<div style="font-size:11px;color:#8899aa;line-height:1.5">'+T2('地図の撃てる味方のヘクスをタップで足す・外す(隣り合うつながりだけ、A7.5)。')+'</div>';
+    if(L.length>1){ var ld=fgLdr(L.map(function(q){ return {s:q}; })); h+='<div style="font-size:11px;color:#ffcc66;line-height:1.5">'+((typeof ld==='number')?T2('指揮官 DRM')+' '+ld+T2('(全ヘクスにいる・質の低い指揮官、A7.531)'):T2('指揮官は全ヘクスにいないので使えない(A7.531)'))+'</div>'; }
+    var cache={}, ev=[]; foes(o,L[0].side).forEach(function(t){ var e=evalFG(L,t,ph,cache); if(e)ev.push({t:t,e:e}); });
+    ev.sort(function(a,b){ return b.e.score-a.e.score; });
+    if(ev.length){ h+='<div class="lbl" style="margin-top:4px">'+T2('撃てる目標(見込み)')+'</div>';
+      ev.slice(0,4).forEach(function(x){ var e=x.e; h+='<div style="font-size:12px;color:#ccddee;line-height:1.5">→ '+hexNm(x.t)+'　'+T2('射程')+' '+e.R+'・FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')・DRM '+(e.drm>=0?'+':'')+e.drm+'・'+T2('MC 以上の見込み')+' <b>'+Math.round(e.p*100)+'%</b></div>'; }); }
+    else h+='<div style="font-size:12px;color:#8899aa">'+T2('FG 全員が撃てる目標がありません(LOS・射程)')+'</div>';
+    return h+'</div>';
+  }
   window.ASLFULL_SOLO_EVALFG=function(ids,b){ var L=(ids||[]).map(byId).filter(Boolean), y=byId(b); return (L.length&&y)?evalFG(L,y,(S.turn&&S.turn.phase)||'rph',null):null; };
   window.ASLFULL_SOLO_EVAL=function(a,b){ var x=byId(a),y=byId(b); return (x&&y)?evalShot(x,y,(S.turn&&S.turn.phase)||'rph'):null; };
   function aiFirePhase(o){ if(!battle()||!o.ai)return false; var ph=(S.turn&&S.turn.phase)||'rph', me=sideOfHalf();
@@ -45733,10 +45789,12 @@ function aslCcExtraDrm(c){ if(!c)return 0; return (c.cc_defWd?(-2+(c.cc_defWdSta
       if(battle()){ var me=sideOfHalf(), ph=phaseObj(), mine=(s.side===me), tx=GUIDE[ph.id]?GUIDE[ph.id][mine?0:1]:'';
         if(tx)h+='<div style="font-size:12px;color:#c8a032;line-height:1.5;margin-top:6px">'+T2(ph.abbr)+'：'+T2(tx)+'</div>';
         var acts='';
-        if(canFire(s))acts+='<button class="b sm'+(o.aim===s.id?' on':'')+'" id="aslfullSoloFire" style="height:40px" onclick="ASLFULL_SOLO(\'aim\')">'+T2(o.aim===s.id?'目標のヘクスをタップ(もう一度で取り消し)':'撃つ')+'</button>';
+        if(canFire(s))acts+='<button class="b sm'+(o.fgOn?' on':'')+'" id="aslfullSoloFg0" style="height:40px" onclick="ASLFULL_SOLO(\'fg\')">'+T2(o.fgOn?'FG を解除':'FG に加える(複数スタックで撃つ)')+'</button>'
+          +'<button class="b sm'+(o.aim===s.id?' on':'')+'" id="aslfullSoloFire" style="height:40px" onclick="ASLFULL_SOLO(\'aim\')">'+T2(o.aim===s.id?'目標のヘクスをタップ(もう一度で取り消し)':(o.fgOn&&(o.fg||[]).length>1?'FG で撃つ':'撃つ'))+'</button>';
         if(mine&&ph.id==='mph')acts+='<div style="font-size:12px;color:#ccddee;line-height:40px;text-align:center">'+T2('使った MF')+' <b style="color:#c8a032">'+((s.f&&s.f.mf)||0)+' / '+maxMF(s)+'</b>　'+T2('隣のヘクスをタップで 1 ヘクスずつ')+'</div>';
         if(mine&&ph.id==='aph')acts+='<div style="font-size:12px;color:#ccddee;line-height:40px;text-align:center">'+T2((s.f&&s.f.adv)?'前進済み':'隣のヘクスをタップで前進(1 ヘクス)')+'</div>';
         if(acts)h+='<div style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:6px">'+acts+'</div>';
+        h+=fgHTML(o);
         var hasB=s.u.some(function(z){ return kind(z.t)!=='sw'&&z.b>0; }), mixed=hasB&&s.u.some(function(z){ return z.n-(z.b||0)>0; });
         var mates=o.stacks.filter(function(z){ return z.id!==s.id&&z.side===s.side&&z.bd===s.bd&&z.col===s.col&&z.row===s.row; }).length;
         var foes=o.stacks.filter(function(z){ return z.side!==s.side&&z.bd===s.bd&&z.col===s.col&&z.row===s.row; }).length;
