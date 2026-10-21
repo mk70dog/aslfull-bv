@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
+var APP_VERSION="ASLFULL-v0.394"; // v394: 臨機射撃パネルに射撃側スタックの中身。
+var APP_VERSION_HIST_ASLFULL_v393="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
 var APP_VERSION_HIST_ASLFULL_v392="ASLFULL-v0.392"; // v392: 狙撃兵パネルの陣営を App(国)/Player(国) 表示、ボタンは Player→App。
 var APP_VERSION_HIST_ASLFULL_v391="ASLFULL-v0.391"; // v391: アプリの移動の跡を点線で表示。
 var APP_VERSION_HIST_ASLFULL_v390="ASLFULL-v0.390"; // v390: 臨機射撃パネルの各案に「表示」ボタン(マップに A→B)。
@@ -46218,7 +46219,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var h='<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:10px 12px;max-height:62vh;overflow:auto">';
     h+='<div style="font-size:15px;font-weight:bold;color:#c8a032">'+T2('臨機射撃のチャンス')+'</div>';
     h+='<div style="font-size:13px;color:#ccddee;margin:2px 0 6px">'+T2('動いた')+': <b style="color:'+(SIDE_COL[t.side]||'#ccddee')+'">'+hexNm(t)+'</b>　'+(hidden(t)?'?':t.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・'))+(t.f&&t.f.mf?'　MF '+t.f.mf:'')+'</div>';
-    d.items.forEach(function(e,i){ var an=(e.frs||[e.fr]).map(function(id){ var q=byId(id); return q?hexNm(q):'?'; }).join('+'); var dd=[]; if(e.tem)dd.push('TEM +'+e.tem); if(e.hin)dd.push(T2('妨害')+' +'+e.hin); if(e.ldr)dd.push(T2('指揮官')+' '+e.ldr); dd=dd.concat(e.why);
+    d.items.forEach(function(e,i){ var an=(e.frs||[e.fr]).map(function(id){ var q=byId(id); if(!q)return '?'; return hexNm(q)+'<span style="color:#9fb4c8">('+q.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・')+')</span>'; }).join('+'); var dd=[]; if(e.tem)dd.push('TEM +'+e.tem); if(e.hin)dd.push(T2('妨害')+' +'+e.hin); if(e.ldr)dd.push(T2('指揮官')+' '+e.ldr); dd=dd.concat(e.why);
       h+='<div style="border-top:1px solid #333;padding:6px 0;font-size:13px;color:#ccddee;line-height:1.5"><b style="color:'+(e.go?'#ff7a3a':'#8899aa')+'">'+(e.go?T2('おすすめ'):T2('見送り向き'))+'</b>　'+(e.frs&&e.frs.length>1?'<b style="color:#c8a032">FG</b> ':'')+ffLbl(e)+an+' → '+hexNm(t)
         +'　'+T2('射程')+' '+e.R+'・FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')・DRM '+(e.drm>=0?'+':'')+e.drm+(dd.length?' ['+dd.join('、')+']':'')+'　'+T2('MC 以上の見込み')+' <b>'+Math.round(e.p*100)+'%</b>'
         +'<div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:2" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
