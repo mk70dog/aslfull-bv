@@ -8338,7 +8338,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.357"; // v357: VASL カウンター画像を SVG の 3 倍描画に差し替え+ケース図の部屋を同じ幅に(数字・文字がくっきり。元の絵(兵の絵)は 48px のまま)。
+var APP_VERSION="ASLFULL-v0.358"; // v358: ケースの割り振りの各箱に「表示する」チェック(初期は非表示)と「設定」の折りたたみ(初期は閉じる)。
+var APP_VERSION_HIST_ASLFULL_v357="ASLFULL-v0.357"; // v357: // v357: VASL カウンター画像を SVG の 3 倍描画に差し替え+ケース図の部屋を同じ幅に(数字・文字がくっきり。元の絵(兵の絵)は 48px のまま)。
 var APP_VERSION_HIST_ASLFULL_v356="ASLFULL-v0.356"; // v356: // v356: シナリオタブの BATTLE RECORD ボタンの左に Barbarossa の画像。
 var APP_VERSION_HIST_ASLFULL_v355="ASLFULL-v0.355"; // v355: // v355: 「対戦をやめる」も確認なしで実行。
 var APP_VERSION_HIST_ASLFULL_v354="ASLFULL-v0.354"; // v354: // v354: 「最初からやり直す」は確認なしで実行。
@@ -45325,6 +45326,35 @@ window.ASLFULL_VASL_TAB={"imgs":{"MS/RFP02.gif":"data:image/png;base64,iVBORw0KG
 
 /* v357: ケース図の部屋は、入っている数に関係なく同じ幅にする(行ごとの fr 指定を打ち消して、部屋の数で等分) */
 (function(){ window.ASLFULL_CNT_CHIP_CSS=(window.ASLFULL_CNT_CHIP_CSS||'')+'#aslfullCntRoot .crowg{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}'; })();
+
+/* v358: ケースの割り振りの各箱に「表示する」チェック(初期は表示しない)と「設定」の折りたたみ(初期は閉じる)。
+ * 箱は再描画で作り直されるので、MutationObserver で毎回付け直す。保存: aslfull-case-show-v1 / aslfull-case-cfg-v1(箱の番号 → 1) */
+(function(){
+  var KS='aslfull-case-show-v1', KC='aslfull-case-cfg-v1';
+  function rd(k){ try{ return JSON.parse(localStorage.getItem(k)||'{}')||{}; }catch(e){ return {}; } }
+  function wr(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+  var SH=rd(KS), CF=rd(KC), busy=false, pend=false;
+  function btn(cls,txt,on){ var b=document.createElement('button'); b.type='button'; b.className='b sm '+cls; b.setAttribute('aria-pressed',on?'true':'false'); b.style.cssText='margin-left:8px;height:30px;padding:0 10px;font-size:13px;white-space:nowrap'+(on?';outline:2px solid #00dd66':''); b.textContent=(on?'☑ ':'☐ ')+txt; return b; }
+  function apply(){
+    pend=false; var v=document.getElementById('caseView'); if(!v)return; busy=true;
+    try{
+      [].forEach.call(v.querySelectorAll('.cbox'),function(bx){
+        var id=bx.id.replace('cbox',''), h=bx.querySelector('.cbh'); if(!h)return;
+        var on=!!SH[id], cf=!!CF[id];
+        var b1=h.querySelector('.cvshow'), b2=h.querySelector('.cvcfg');
+        if(!b1){ b1=btn('cvshow','表示する',on); b1.addEventListener('click',function(e){ e.stopPropagation(); SH[id]=SH[id]?0:1; wr(KS,SH); apply(); }); h.appendChild(b1); }
+        if(!b2){ b2=btn('cvcfg','設定',cf); b2.addEventListener('click',function(e){ e.stopPropagation(); CF[id]=CF[id]?0:1; wr(KC,CF); apply(); }); h.appendChild(b2); }
+        b1.textContent=(on?'☑ ':'☐ ')+'表示する'; b1.setAttribute('aria-pressed',on?'true':'false'); b1.style.outline=on?'2px solid #00dd66':'';
+        b2.textContent=(cf?'☑ ':'☐ ')+'設定'; b2.setAttribute('aria-pressed',cf?'true':'false'); b2.style.outline=cf?'2px solid #00dd66':''; b2.style.display=on?'':'none';
+        [].forEach.call(bx.children,function(c){ if(c===h)return; var hide=!on||(c.classList.contains('cfgb')&&!cf); c.style.display=hide?'none':''; });
+      });
+    }finally{ busy=false; }
+  }
+  function sched(){ if(busy||pend)return; pend=true; (window.requestAnimationFrame||setTimeout)(apply); }
+  function start(){ new MutationObserver(function(){ if(document.getElementById('caseView'))sched(); }).observe(document.body,{childList:true,subtree:true}); }
+  document.addEventListener('click',function(e){ var g=e.target&&e.target.closest&&e.target.closest('#caseView [data-goto]'); if(!g)return; var id=g.getAttribute('data-goto'); if(!SH[id]){ SH[id]=1; wr(KS,SH); apply(); } },true); /* 上の箱の一覧から選んだら、その箱を表示する */
+  if(document.body)start(); else document.addEventListener('DOMContentLoaded',start);
+})();
 </script>
 <script>
 /* VASL のカウンター画像(VASL dist/images から tools/vaslcnt.py で生成。手で編集しない) */
