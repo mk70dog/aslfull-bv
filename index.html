@@ -5279,7 +5279,7 @@ var I18N_EN={
 "実物で遊ぶ":"Real board & counters",
 "対戦モード":"Battle mode",
 "対戦モード終了":"Exit battle mode",
-"次のフェイズ":"Next phase",
+"次のフェイズ":"Next phase","一時停止":"Pause",
 "遊び方":"How to play",
 "Pin":"Pin",
 "隠蔽 ?":"Concealed ?",
@@ -8326,7 +8326,12 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.374"; // v374: ケース図 — 部屋の枠線を戻し、数値(×n・N 枚)を枠線で囲む。
+var APP_VERSION="ASLFULL-v0.379"; // v379: 対戦モードの帯の表記(アプリ枠・◀️フェイズ・フェイズ▶️・一時停止)。
+var APP_VERSION_HIST_ASLFULL_v378="ASLFULL-v0.378"; // v378: 射撃結果ポップアップに「drmの詳細を表示する」。
+var APP_VERSION_HIST_ASLFULL_v377="ASLFULL-v0.377"; // v377: 狙撃兵パネルのダイスを他のタブと同じ表示に。「反対側にする」→「国籍に変更」。
+var APP_VERSION_HIST_ASLFULL_v376="ASLFULL-v0.376"; // v376: ヘクス確認ボタンの文字を 11px に。
+var APP_VERSION_HIST_ASLFULL_v375="ASLFULL-v0.375"; // v375: ヘクス確認ボタンを 2 行表示(フォントサイズは他のボタンと同じ)。
+var APP_VERSION_HIST_ASLFULL_v374="ASLFULL-v0.374"; // v374: ケース図 — 部屋の枠線を戻し、数値(×n・N 枚)を枠線で囲む。
 var APP_VERSION_HIST_ASLFULL_v373="ASLFULL-v0.373"; // v373: ケース図 — 部屋を枠線で囲む・「幅 ○%」を削除。
 var APP_VERSION_HIST_ASLFULL_v372="ASLFULL-v0.372"; // v372: ケース図の手のマーク(✋)と○/◎マークを削除。
 var APP_VERSION_HIST_ASLFULL_v371="ASLFULL-v0.371"; // v371: カウンタータブのケース図 — 一部屋に 4 種類以上のカウンターは 2 列で表示(縦に間伸びしない・重ならない)。
@@ -35275,8 +35280,8 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   function pending(){return snp().queue.filter(function(q){return q.status!=='done';}).length;}
   function btn(lbl,on,extra,style){return '<button class="b sm" style="padding:4px 9px;'+(style||'')+'" onclick="'+on+'"'+(extra||'')+'>'+lbl+'</button>';}
   function dieBtns(fnName,sel){
-    var h='';for(var v=1;v<=6;v++){h+='<button class="b sm'+(sel===v?' on':'')+'" style="min-width:30px" onclick="'+fnName+'('+v+')">'+v+'</button>';}
-    return h;
+    var red=/(_dir|_chkR|_r)$/.test(fnName); /* v377: 他のタブと同じダイス表示(赤=RED、それ以外=WHITE) */
+    return rDiceHTML(sel,red,fnName,false);
   }
   function sec(title,body){return '<div style="margin-top:10px;border-top:1px solid #2a3a4a;padding-top:8px"><div style="color:#d4a017;font-weight:bold;margin-bottom:4px">'+title+'</div>'+body+'</div>';}
   function ownerOfSniper(it){return inv(it.rollerAx);} // 撃ってくる狙撃兵 = DRを振った側の相手
@@ -35298,7 +35303,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     }
     h+='<div id="sniperWhy" style="margin-top:8px;padding:8px;background:#2a2410;border:1px solid #d4a017;border-radius:4px;color:#ffe08a"><b>'+L('なぜ発動したか','Why it fired')+'</b>: '+(it.ctx?esc(it.ctx)+' → ':'')+esc(it.src)+' '+L('の DR','DR')+' <b>'+it.r+'+'+it.w+' = '+it.dr+'</b> '+L('が','matches')+' '+sideLbl(ownerOfSniper(it))+' '+L('の SAN','SAN')+' <b>'+sanOf(ownerOfSniper(it))+'</b> '+L('と同じ数。DR を振った側の相手の SAN と一致すると狙撃兵が発動します(A14.1)','(A14.1: a DR equal to the opponent SAN activates the sniper)')+'</div>';
     h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border-radius:4px">'+esc(it.src)+'　DR <b>'+it.dr+'</b> ('+it.r+'+'+it.w+')　'+L('フェイズ','Phase')+': '+(it.ph?PH_LBL[it.ph]:L('不明','unknown'))+'<br>';
-    h+=L('DRを振った側','Rolled by')+': <b>'+sideLbl(it.rollerAx)+'</b> <span style="color:#8899aa;font-size:12px">('+(it.rollerSrc==='nat'?L('選択中の国籍から','from selected nationality'):it.rollerSrc==='san'?L('SANの一致から','from SAN match'):L('フェイズと手番から推定','estimated from phase/turn'))+')</span> '+btn(L('反対側にする','Swap'),'SNP_flip()')+'<br>';
+    h+=L('DRを振った側','Rolled by')+': <b>'+sideLbl(it.rollerAx)+'</b> <span style="color:#8899aa;font-size:12px">('+(it.rollerSrc==='nat'?L('選択中の国籍から','from selected nationality'):it.rollerSrc==='san'?L('SANの一致から','from SAN match'):L('フェイズと手番から推定','estimated from phase/turn'))+')</span> '+btn(L('国籍に変更','Change side'),'SNP_flip()')+'<br>';
     h+=L('攻撃する狙撃兵','Attacking Sniper')+': <b>'+sideLbl(ownerOfSniper(it))+'</b>'+(it.rollerAx!=null?' (SAN '+sanOf(ownerOfSniper(it))+')':'')+'</div>';
     if(it.rollerAx===null){
       h+='<div style="margin-top:8px;color:#ffcc66">'+L('DRを振った側を特定できません。選んでください：','Cannot tell who rolled. Choose:')+' '+btn(L('枢軸が振った','Axis rolled'),'SNP_setRoller(true)')+' '+btn(L('連合が振った','Allied rolled'),'SNP_setRoller(false)')+'</div>';
@@ -35312,7 +35317,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
       h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+L('フェイズが記録されていません。PFPh・MPh・DFPh・AFPhのDRなら発動します(それ以外は「発動しない」で閉じる)。','Phase unknown. Activates only for PFPh/MPh/DFPh/AFPh DRs (otherwise dismiss).')+'</div>';
     }
     // 1. 攻撃dr
-    var b1='<div>'+L('狙撃攻撃のdr(A14.2)：','Sniper attack dr (A14.2): ')+'</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+dieBtns('SNP_atk',it.atk)+btn('🎲','SNP_atk(0)')+'</div>';
+    var b1='<div>'+L('狙撃攻撃のdr(A14.2)：','Sniper attack dr (A14.2): ')+'</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+dieBtns('SNP_atk',it.atk)+'<button class="judg3d grn" style="width:80px;height:40px;font-size:12px;vertical-align:middle" onclick="SNP_atk(0)">ROLL DICE</button>'+'</div>';
     if(it.atk!=null){
       if(it.atk>=3)b1+='<div style="margin-top:6px"><b>'+L('効果なし','No effect')+'</b>（dr '+it.atk+'）</div>';
       else b1+='<div style="margin-top:6px;color:#ff8866"><b>'+L('有効な攻撃','Effective attack')+'</b>（dr '+it.atk+'）</div>';
@@ -35323,7 +35328,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
       var b2='<div style="font-size:12px;color:#8899aa">'+L('攻撃を放棄して狙撃兵カウンターを再配置することもできます(A14.2)。','You may forfeit this attack to reposition the Sniper counter (A14.2).')+' '+btn(L('放棄して再配置','Forfeit & reposition'),'SNP_forfeit()')+'</div>';
       b2+='<div style="margin-top:6px">'+L('ランダム位置DR(C1.31準用、初期精度drなし)：','Random Location DR (as C1.31, no Accuracy dr):')+'</div>';
       b2+='<div style="margin-top:4px">'+L('有色dr＝方向','Colored dr = direction')+'　<span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_dir',it.dir)+'</span></div>';
-      b2+='<div style="margin-top:4px">'+L('白dr＝距離','White dr = hexes')+'　<span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_dist',it.dist)+'</span> '+btn('🎲','SNP_locRoll()')+'</div>';
+      b2+='<div style="margin-top:4px">'+L('白dr＝距離','White dr = hexes')+'　<span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_dist',it.dist)+'</span> '+'<button class="judg3d grn" style="width:80px;height:40px;font-size:12px;vertical-align:middle" onclick="SNP_locRoll()">ROLL DICE</button>'+'</div>';
       if(it.dir&&it.dist){
         b2+='<div style="margin-top:6px;padding:6px;background:#1a2430;border-radius:4px">'+L('狙撃兵カウンターの今のヘクスから<b>方向'+it.dir+'</b>へ<b>'+it.dist+'ヘクス</b>のヘクスが目標。狙撃兵カウンターをそこへ移す。','Target hex: <b>'+it.dist+' hexes</b> in <b>direction '+it.dir+'</b> from the Sniper counter. Move the Sniper counter there.')+'<br><span style="font-size:12px;color:#8899aa">'+L('方向の番号はAR(砲撃要請)カウンターの方位表示に従う(マップ表示は方位の確認後に対応)。','Direction numbers follow the AR counter grid reference (map display after verification).')+'</span></div>';
       }
@@ -35359,7 +35364,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
         b5+='<div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap">'+p[1]+'　'+btn('−','SNP_chk(\''+p[0]+'\','+Math.max(0,(c[p[0]]||0)-1)+')','','flex:0 0 auto;width:auto')+' <b>'+(c[p[0]]||0)+'</b> '+btn('＋','SNP_chk(\''+p[0]+'\','+((c[p[0]]||0)+1)+')','','flex:0 0 auto;width:auto')+'</div>';
       });
       b5+='<div style="margin-top:4px">DRM: <b>'+(drm>0?'+':'')+drm+'</b>　'+L('赤','Red')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_chkR',c.r)+'</span></div>';
-      b5+='<div style="margin-top:4px">'+L('白','White')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_chkW',c.w)+'</span> '+btn('🎲','SNP_chkRoll()')+'</div>';
+      b5+='<div style="margin-top:4px">'+L('白','White')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('SNP_chkW',c.w)+'</span> '+'<button class="judg3d grn" style="width:80px;height:40px;font-size:12px;vertical-align:middle" onclick="SNP_chkRoll()">ROLL DICE</button>'+'</div>';
       if(c.r&&c.w){
         var fdr=c.r+c.w+drm;
         var rr=fdr<=2?L('狙撃兵を除去。狙撃兵側のSANを1減らす','Sniper eliminated; its side\'s SAN -1'):fdr===3?L('狙撃兵はピン(このプレイヤーターンの攻撃・再配置不可)','Sniper pinned (no further attacks/repositioning this Player Turn)'):L('効果なし','No effect');
@@ -35560,7 +35565,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   }
   function btn(lbl,on,style){return '<button class="b sm" style="padding:4px 9px;'+(style||'')+'" onclick="'+on+'">'+lbl+'</button>';}
   function tog(lbl,key,val,drmTxt){return '<button class="b sm'+(val?' on':'')+'" style="padding:4px 8px" onclick="HOB_tog(\''+key+'\')">'+lbl+(drmTxt?' <span style="color:#8899aa">'+drmTxt+'</span>':'')+'</button>';}
-  function dieBtns(fn,sel){var h='';for(var v=1;v<=6;v++)h+='<button class="b sm'+(sel===v?' on':'')+'" style="min-width:30px" onclick="'+fn+'('+v+')">'+v+'</button>';return h;}
+  function dieBtns(fn,sel){return rDiceHTML(sel,/(_dir|_chkR|_r)$/.test(fn),fn,false);} /* v377: 他のタブと同じダイス表示 */
   function sec(t,b){return '<div style="margin-top:10px;border-top:1px solid #3a2a4a;padding-top:8px"><div style="color:#cc66cc;font-weight:bold;margin-bottom:4px">'+t+'</div>'+b+'</div>';}
   function natName(n){return n?(typeof T==='function'&&NAT_FULL_LBL&&NAT_FULL_LBL[n]?T(NAT_FULL_LBL[n]):n):L('未選択','not selected');}
 
@@ -35588,7 +35593,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     b2+='</div><div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:nowrap">'+L('その他の修正','Other')+' '+btn('−','HOB_adj(-1)','flex:0 0 auto;width:auto')+' <b>'+(it.adj>0?'+':'')+it.adj+'</b> '+btn('＋','HOB_adj(1)','flex:0 0 auto;width:auto')+'</div>';
     b2+='<div style="margin-top:4px">DRM: <b>'+(drm>0?'+':'')+drm+'</b> <span style="font-size:12px;color:#aa99bb">'+L('(国籍：ソ連+2、英・フィンランド−1、自由仏+1、連合少数国+2、伊・枢軸少数国+3。混乱はその2で回復した場合も+1)','(Nationality: Russian +2, British/Finnish −1, French +1, Allied Minor +2, Italian/Axis Minor +3. Broken +1 even if rallied by that 2)')+'</span></div>';
     h+=sec(L('2. HoB DRM','2. HoB DRM'),b2);
-    var b3='<div>'+L('赤','Red')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('HOB_r',it.r)+'</span></div><div style="margin-top:4px">'+L('白','White')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('HOB_w',it.w)+'</span> '+btn('🎲','HOB_roll()')+'</div>';
+    var b3='<div>'+L('赤','Red')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('HOB_r',it.r)+'</span></div><div style="margin-top:4px">'+L('白','White')+' <span style="display:inline-flex;gap:3px;flex-wrap:wrap">'+dieBtns('HOB_w',it.w)+'</span> '+'<button class="judg3d grn" style="width:80px;height:40px;font-size:12px;vertical-align:middle" onclick="HOB_roll()">ROLL DICE</button>'+'</div>';
     b3+='<div style="margin-top:6px">'+tog(L('非エリートの伊・枢軸少数国','Non-elite Italian/Axis Minor'),'axmNonElite',it.axmNonElite)+' '+tog(L('降伏しない種類(政治将校・Fanatic・対ロシアのSS等)','Never surrenders (Commissar, Fanatic, SS vs Russians, etc.)'),'noSurrender',it.noSurrender)+' '+tog(L('LOS内に既知の敵がいない','No Known enemy in LOS'),'noEnemyLos',it.noEnemyLos)+'</div>';
     h+=sec(L('3. HoB DR','3. HoB DR'),b3);
     if(it.r&&it.w){
@@ -45888,7 +45893,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(!s.f.asl&&!s.f.cx&&!s.f.noDT)h+=B(false,'#cc3333','dt','急速'); }
     if((s&&canFire(s))||o.fgOn){ var inG=!!(s&&(o.fg||[]).indexOf(s.id)>=0); h+=B(!!o.fgOn,'#ffd24a','fgtog',inG?'FG−':'FG+')+(o.fgOn?B(false,'#cc6666','fg','FG解除'):''); }
     if(ph==='mph'||ph==='aph'){ var ut=mvuTop(o); h+='<button class="tb-reset" id="aslfullSoloUndo" style="'+base+'flex:1;min-width:0;color:'+(ut?'#99ccff':'#556677')+';"'+(ut?'':' disabled')+' onclick="ASLFULL_SOLO(\'mvundo\')">戻る</button>'; }
-    h+=B(!!o.hx,'#66ddaa','hxtog','ヘクス確認');
+    h+=B(!!o.hx,'#66ddaa','hxtog','<span style="display:block;line-height:1.15;white-space:normal;font-size:11px">ヘクス<br>確認</span>');
     return h; };
   /* LOS の右: 撃つ・分割 */
   window.ASLFULL_BATTLE_TB2=function(base){ var o=cur(); if(!o||!battle())return ''; var s=byId(o.sel), h='';
@@ -46080,6 +46085,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         FJUDGE(); var res=f.res;
         if(!res||!res.ift){ rec.notes.push(T2('射撃タブで自動の判定ができませんでした。射撃タブで手で判定してください')); rec.manual.push(T2('射撃タブで JUDGE')); finish(); return; }
         if(mover){ var mvn=[]; if(f.ffnam)mvn.push('FFNAM −1'); else mvn.push(T2('警戒移動: FFNAM なし')); if(f.ffmo)mvn.push('FFMO −1'); else if(e.tem>0)mvn.push(T2('FFMO なし(TEM がある)')); rec.notes.push(T2('目標は移動中')+': '+mvn.join('・')); }
+        try{ var dd=[], kn=0, fx=function(l,v){ if(v){ dd.push([l,v]); kn+=v; } };
+          fx(T2('TEM'),fireTemEff(f)); fx(T2('高度優位'),fireHeightAdvActive(f)?1:0); fx(T2('指揮官'),fireEffLdr(f)); fx('CX',f.cx?1:0); fx(T2('LOS妨害'),fireHindTotal(f));
+          var rest=res.drm-kn; if(rest){ var nm=[]; if(f.ffmo)nm.push('FFMO'); if(f.ffnam)nm.push('FFNAM'); if(f.hazardous)nm.push(T2('危険移動')); dd.push([nm.length?nm.join('・'):T2('その他'),rest]); }
+          rec.dd=dd; }catch(e0){ rec.dd=null; }
         rec.rd=f.rd; rec.wd=f.wd; rec.dr=f.rd+'+'+f.wd+'='+res.raw; rec.drm=res.drm; rec.mod=res.mod; rec.col=res.ift.col; rec.ci=IFT_LBL.indexOf(String(res.ift.col)); rec.res=String(res.ift.r);
         if(res.cow)rec.notes.push(T2('畏縮(Cowering): 1 列下げて判定'));
         if(res.drm!==e.drm)rec.notes.push('DRM '+res.drm+' ('+T2('見込みは')+' '+e.drm+')');
@@ -46285,7 +46294,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var h='<div id="aslfullSoloPop" style="position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px"><div style="background:#1b1f27;border:2px solid #c8a032;border-radius:8px;max-width:680px;width:100%;max-height:88vh;overflow:auto;padding:14px">';
     h+='<div style="font-size:16px;font-weight:bold;color:#c8a032">'+T2(r.title||PH_FIRE[r.ph]||'臨機射撃')+(q.length>1?' (1/'+q.length+')':'')+'</div>';
     h+='<div style="font-size:15px;color:#ccddee;margin-top:6px">'+r.from+(r.fg?' <b style="color:#c8a032">FG</b>':'')+' → '+r.to+'</div>';
-    if(r.res!=null&&r.ph!=='rph'){ h+='<div style="font-size:13px;color:#ccddee;line-height:1.7;margin-top:4px">FP '+(Math.round(r.fp*10)/10)+'('+T2('列')+' '+r.col+')・DRM '+(r.drm>=0?'+':'')+r.drm+'<br>'+diceOf(r.dr,r.rd,r.wd,30)+'DR '+(String(r.dr).indexOf('=')>0?String(r.dr).split('=')[1]:r.dr)+' → '+r.mod+'　'+T2('結果')+' <b style="color:#ff7a3a;font-size:17px">'+r.res+'</b></div>'; }
+    if(r.res!=null&&r.ph!=='rph'){ h+='<div style="font-size:13px;color:#ccddee;line-height:1.7;margin-top:4px">FP '+(Math.round(r.fp*10)/10)+'('+T2('列')+' '+r.col+')・DRM '+(r.drm>=0?'+':'')+r.drm+'<br>'+diceOf(r.dr,r.rd,r.wd,30)+'DR '+(String(r.dr).indexOf('=')>0?String(r.dr).split('=')[1]:r.dr)+' → '+r.mod+'　'+T2('結果')+' <b style="color:#ff7a3a;font-size:17px">'+r.res+'</b></div>';
+      if(r.dd&&r.drm!=null)h+='<details id="aslfullSoloDrmDet" style="margin-top:4px;font-size:13px;color:#ccddee"><summary style="cursor:pointer;color:#7f9bb8">'+T2('drmの詳細を表示する')+'</summary><div style="line-height:1.7;padding:2px 0 0 10px">'+(r.dd.length?r.dd.map(function(x){ return x[0]+' <b>'+(x[1]>0?'+':'')+x[1]+'</b>'; }).join('<br>'):T2('修正なし'))+'<br>'+T2('合計')+' DRM <b>'+(r.drm>=0?'+':'')+r.drm+'</b></div></details>'; }
     r.notes.forEach(function(x){ h+='<div style="font-size:12px;color:#ffcc66;margin-top:4px">'+x+'</div>'; });
     if(r.units.length){ h+='<div class="lbl" style="margin-top:8px">'+T2(r.ph==='rph'?'回復を試した部隊':'目標の部隊')+'</div>';
       r.units.forEach(function(u){ h+='<div style="font-size:13px;color:#ccddee;line-height:1.6;border-top:1px solid #333;padding:2px 0"><b style="color:#c8a032">'+u.h+'</b> '+u.t+(u.dr?'　'+diceOf(u.dr,null,null,20)+'DR '+(String(u.dr).indexOf('=')>0?String(u.dr).split('=')[1]:u.dr)+(u.mod!=null&&u.mod!==undefined?' → '+u.mod:'')+(u.mor!=null?' ('+T2('士気')+' '+u.mor+')':''):'')+'　<b style="color:#ff7a3a">'+u.txt+'</b></div>'; }); }
@@ -46913,11 +46923,11 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var me=sideOfHalf(), ph=phaseObj(), t=S.turn||{cur:1,half:0};
     var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto 1fr auto auto '+((o.ai&&o.play==='app')?'auto ':'')+'auto;gap:6px;align-items:center">';
     h+='<div style="font-family:\'Courier New\',monospace;font-weight:bold;font-size:16px;color:#c8a032">T'+t.cur+(t.ended?' END':(t.half?T2(' 裏'):T2(' 表')))+'</div>';
-    h+='<div style="font-size:13px;color:#ccddee"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px">'+T2(o.play==='app'?'アプリだけで遊ぶ':'実物で遊ぶ')+'</span></div>';
-    h+='<button class="b sm" id="aslfullPrevPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'prev\')">◀ '+T2('前のフェイズ')+'</button>';
-    h+='<button class="b sm" id="aslfullNextPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'next\')"'+(t.ended?' disabled':'')+'>'+T2('次のフェイズ')+' ▶</button>';
+    h+='<div style="font-size:13px;color:#ccddee"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px;border:1px solid #8899aa;border-radius:3px;padding:0 5px">'+T2(o.play==='app'?'アプリ':'実物で遊ぶ')+'</span></div>';
+    h+='<button class="b sm" id="aslfullPrevPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'prev\')">◀️'+T2('フェイズ')+'</button>';
+    h+='<button class="b sm" id="aslfullNextPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'next\')"'+(t.ended?' disabled':'')+'>'+T2('フェイズ')+'▶️</button>';
     if(o.ai&&o.play==='app')h+='<button class="b sm'+(RUNNING?' on':'')+'" id="aslfullSoloRun" style="'+bs+'" onclick="ASLFULL_SOLO(\'aiturn\')">'+T2(RUNNING?'実行中…':'アプリの番を進める')+'</button>';
-    h+='<button class="b sm on" style="'+bs+'" onclick="ASLFULL_SOLO(\'battle\')">'+T2('一時停止(盤は残す)')+'</button>';
+    h+='<button class="b sm on" style="'+bs+'" onclick="ASLFULL_SOLO(\'battle\')">'+T2('一時停止')+'</button>';
     h+='</div>';
     if(o.aim)h+='<div style="font-size:12px;color:#ff7a3a;line-height:1.4;margin-top:4px">'+T2('撃つ: 目標のヘクスをタップしてください')+'</div>';
     if(o.play!=='app')h+='<div style="font-size:11px;color:#8899aa;line-height:1.4;margin-top:4px">'+T2('実物のカウンターを動かしたら、地図でも同じに動かします(スタックをタップ → 動かす先をタップ)。')+'</div>';
