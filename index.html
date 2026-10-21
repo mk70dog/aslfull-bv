@@ -8328,7 +8328,11 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.389"; // v389: 対戦モードの帯をツールバーの上へ・帯を横一列。
+var APP_VERSION="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
+var APP_VERSION_HIST_ASLFULL_v392="ASLFULL-v0.392"; // v392: 狙撃兵パネルの陣営を App(国)/Player(国) 表示、ボタンは Player→App。
+var APP_VERSION_HIST_ASLFULL_v391="ASLFULL-v0.391"; // v391: アプリの移動の跡を点線で表示。
+var APP_VERSION_HIST_ASLFULL_v390="ASLFULL-v0.390"; // v390: 臨機射撃パネルの各案に「表示」ボタン(マップに A→B)。
+var APP_VERSION_HIST_ASLFULL_v389="ASLFULL-v0.389"; // v389: 対戦モードの帯をツールバーの上へ・帯を横一列。
 var APP_VERSION_HIST_ASLFULL_v388="ASLFULL-v0.388"; // v388: カウンタータブの冒頭説明を削除・「数に入れていないもの」を非表示・ケースの箱ボタン(ドイツ A〜システム 2)を横一列・区画/固定のメッセージを非表示。
 var APP_VERSION_HIST_ASLFULL_v387="ASLFULL-v0.387"; // v387: Motorcycle(Cycle) のカウンターにオートバイの絵(白い台紙だけだった)。
 var APP_VERSION_HIST_ASLFULL_v386="ASLFULL-v0.386"; // v386: システムカウンターの名称を下表示に統一。
@@ -35145,7 +35149,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     return z;
   }
   function sideKey(ax){return ax===true?'axis':ax===false?'allied':null;}
-  function sideLbl(ax){return ax===true?L('枢軸','Axis'):ax===false?L('連合','Allied'):L('不明','Unknown');}
+  function sideLbl(ax){var rl=window.ASLFULL_SOLO_ROLE&&ASLFULL_SOLO_ROLE(ax);if(rl)return rl;return ax===true?L('枢軸','Axis'):ax===false?L('連合','Allied'):L('不明','Unknown');}
   function normPh(p){
     if(!p)return null;
     var m={PFPh:'pfph',DFF:'mph',MPh:'mph',DFPh:'dfph',AFPh:'afph',RPh:'rph',RtPh:'rtph',APh:'aph',CCPh:'ccph'};
@@ -35315,7 +35319,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     }
     h+='<div id="sniperWhy" style="margin-top:8px;padding:8px;background:#2a2410;border:1px solid #d4a017;border-radius:4px;color:#ffe08a"><b>'+L('なぜ発動したか','Why it fired')+'</b>: '+(it.ctx?esc(it.ctx)+' → ':'')+esc(it.src)+' '+L('の DR','DR')+' <b>'+it.r+'+'+it.w+' = '+it.dr+'</b> '+L('が','matches')+' '+sideLbl(ownerOfSniper(it))+' '+L('の SAN','SAN')+' <b>'+sanOf(ownerOfSniper(it))+'</b> '+L('と同じ数。DR を振った側の相手の SAN と一致すると狙撃兵が発動します(A14.1)','(A14.1: a DR equal to the opponent SAN activates the sniper)')+'</div>';
     h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border-radius:4px">'+esc(it.src)+'　DR <b>'+it.dr+'</b> ('+it.r+'+'+it.w+')　'+L('フェイズ','Phase')+': '+(it.ph?PH_LBL[it.ph]:L('不明','unknown'))+'<br>';
-    h+=L('DRを振った側','Rolled by')+': <b>'+sideLbl(it.rollerAx)+'</b> <span style="color:#8899aa;font-size:12px">('+(it.rollerSrc==='nat'?L('選択中の国籍から','from selected nationality'):it.rollerSrc==='san'?L('SANの一致から','from SAN match'):L('フェイズと手番から推定','estimated from phase/turn'))+')</span> '+btn(L('国籍に変更','Change side'),'SNP_flip()')+'<br>';
+    h+=L('DRを振った側','Rolled by')+': <b>'+sideLbl(it.rollerAx)+'</b> <span style="color:#8899aa;font-size:12px">('+(it.rollerSrc==='nat'?L('選択中の国籍から','from selected nationality'):it.rollerSrc==='san'?L('SANの一致から','from SAN match'):L('フェイズと手番から推定','estimated from phase/turn'))+')</span> '+btn((function(){var a=window.ASLFULL_SOLO_ROLE&&ASLFULL_SOLO_ROLE(it.rollerAx),b=window.ASLFULL_SOLO_ROLE&&ASLFULL_SOLO_ROLE(inv(it.rollerAx));return(a&&b)?(a.replace(/\(.*/,'')+'→'+b.replace(/\(.*/,'')):(it.rollerAx===true?L('枢軸→連合','Axis→Allied'):it.rollerAx===false?L('連合→枢軸','Allied→Axis'):L('枢軸→連合','Axis→Allied'));})(),'SNP_flip()')+'<br>';
     h+=L('攻撃する狙撃兵','Attacking Sniper')+': <b>'+sideLbl(ownerOfSniper(it))+'</b>'+(it.rollerAx!=null?' (SAN '+sanOf(ownerOfSniper(it))+')':'')+'</div>';
     if(it.rollerAx===null){
       h+='<div style="margin-top:8px;color:#ffcc66">'+L('DRを振った側を特定できません。選んでください：','Cannot tell who rolled. Choose:')+' '+btn(L('枢軸が振った','Axis rolled'),'SNP_setRoller(true)')+' '+btn(L('連合が振った','Allied rolled'),'SNP_setRoller(false)')+'</div>';
@@ -45718,19 +45722,24 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function cnt(s,k){ return s.u.filter(function(x){ return kind(x.t)===k; }).reduce(function(p,x){ return p+x.n; },0); }
   function brk(s){ return s.u.reduce(function(p,x){ return p+(x.b||0); },0); }
   function hexNm(s){ try{ return s.bd+losHexNameFromColRow(s.col,s.row); }catch(e){ return s.bd+'?'; } }
+  window.ASLFULL_SOLO_ROLE=function(ax){ try{ var o=cur(); if(ax==null)return null; var sc=scObj(); if(!sc||!sc.f)return null; var NJ={GER:'ドイツ',SOV:'ソ連',FIN:'フィンランド'}, ks=Object.keys(sc.f).filter(function(n){ return !!AXIS_NATS[n]===!!ax; }); if(ks.length!==1)return null; var n=ks[0]; return (o&&o.on&&o.ai)?((n===o.ai?'App':'Player')+'('+(NJ[n]||n)+')'):(NJ[n]||n); }catch(e){ return null; } }; /* v392 */
   window.ASLFULL_SOLO=function(k,a,b){
     keep(function(){
       var o=st(), id=sid();
       if(k!=='confirm'&&k!=='reset'&&k!=='quit')o.cf=null;
       if(o.busy&&k!=='popclose'&&k!=='autoundo'){ toast('アプリの射撃を解決中です'); return; }
-      if(o.dff&&k!=='dffgo'&&k!=='dffskip'&&k!=='popclose'&&k!=='autoundo'&&k!=='dffauto'){ toast('臨機射撃のパネルで答えてください'); return; }
+      if(o.dff&&k!=='dffgo'&&k!=='dffskip'&&k!=='popclose'&&k!=='autoundo'&&k!=='dffauto'&&k!=='dffshow'&&k!=='dffback'){ toast('臨機射撃のパネルで答えてください'); return; }
       if(o.popQ&&o.popQ.length&&k!=='popclose'&&k!=='autoundo'){ toast('臨機射撃のポップアップを閉じてください'); return; }
       if(k==='popclose'){ if(o.popQ)o.popQ.shift(); }
       else if(k==='detclose'){ o.det=null; }
       else if(k==='automv'){ o.autoMv=!(o.autoMv==null?true:o.autoMv); }
-      else if(k==='dffauto'){ o.dffOn=!dffOn(o); if(!o.dffOn)o.dff=null; }
-      else if(k==='dffskip'){ var dt=o.dff&&byId(o.dff.tid); logAdd(o,T2('あなたの臨機射撃')+': '+(dt?hexNm(dt):'')+' '+T2('撃たない(待つ)')); o.dff=null; }
-      else if(k==='dffgo'){ var di=o.dff&&o.dff.items[a]; if(!di)return; var dtid=o.dff.tid; o.dff=null; o.busy=true;
+      else if(k==='dffauto'){ o.dffOn=!dffOn(o); if(!o.dffOn)o.dff=null; o.dffView=null; }
+      else if(k==='dffback'){ o.dffView=null; }
+      else if(k==='dffshow'){ var sv=o.dff&&o.dff.items[a], st0=o.dff&&byId(o.dff.tid); if(!sv||!st0)return; var sf=byId((sv.frs||[sv.fr])[0]); if(!sf)return;
+        var pa=losColRowToGlobalCanon(sf.bd,sf.col,sf.row), pb=losColRowToGlobalCanon(st0.bd,st0.col,st0.row); o.dffView=a; S_LOS.pxA=pa; S_LOS.pxB=pb; S_LOS.result=null; S_LOS.soloMode=true;
+        Promise.all(S_LOS.boards.map(function(q){ return losLoadBoard(q.id); })).then(function(){ try{ S_LOS.result=losCheckLOSGlobal(pa.x,pa.y,pb.x,pb.y,S_LOS.orchardSeason,S_LOS.grainSeason); }catch(e){} if(typeof saveState==='function')saveState(); Draw(); }); }
+      else if(k==='dffskip'){ o.dffView=null; var dt=o.dff&&byId(o.dff.tid); logAdd(o,T2('あなたの臨機射撃')+': '+(dt?hexNm(dt):'')+' '+T2('撃たない(待つ)')); o.dff=null; }
+      else if(k==='dffgo'){ var di=o.dff&&o.dff.items[a]; if(!di)return; var dtid=o.dff.tid; o.dff=null; o.dffView=null; o.busy=true;
         autoFire(o,di,function(){ var it2=dffItems(o,dtid); o.dff=(it2.length&&byId(dtid))?{tid:dtid,items:it2}:null; o.busy=false; if(typeof saveState==='function')saveState(); Draw(); }); return; }
       else if(k==='auto'){ o.auto=!autoOn(o); }
       else if(k==='autoundo'){ var la=o.lastAuto; if(!la||!la.snap)return; o.dff=null; o.stacks=JSON.parse(la.snap); o.sel=null; o.shot=null; o.aiPlan=null; o.popQ=[]; logAdd(o,T2('取り消し')+': '+la.label); o.lastAuto=null; }
@@ -45810,7 +45819,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         if(e2.type==='rally'){ o.sel=s8.id; openRally(o,s8,e2.i); return; }
         if(e2.type==='cc'){ if(o.play==='app'){ ccAll(o,s8); Draw(); return; } o.sel=s8.id; if(typeof NAVTAB==='function')NAVTAB('aphcc'); if(typeof AphccSub==='function')AphccSub('cc'); return; }
         if(e2.type==='split'){ alogAdd(o,T2('分割')+' '+hexNm(s8)); o.sel=s8.id; var bu=[]; s8.u.forEach(function(z){ if(kind(z.t)!=='sw'&&z.b>0){ bu.push({t:z.t,n:z.b,b:z.b}); z.n-=z.b; z.b=0; } }); if(bu.length){ s8.u=s8.u.filter(function(z){ return z.n>0; }); o.seq=(o.seq||0)+1; o.stacks.push({id:'s'+o.seq,side:s8.side,bd:s8.bd,col:s8.col,row:s8.row,grp:s8.grp,u:bu,f:{dm:!!(s8.f&&s8.f.dm)}}); } actAsync(o); return; }
-        if(e2.to){ alogMv(o,e2,s8); if(e2.type==='adv'){ var f9=fl(s8); f9.adv=true; s8.bd=e2.to.bd; s8.col=e2.to.col; s8.row=e2.to.row; } else { if(e2.dt){ var fd2=fl(s8); if(!fd2.cx&&!fd2.noDT){ fd2.cx=true; fd2.dt=((fd2.mf||0)>0?1:2); } } moveTo(o,s8,e2.to.bd,e2.to.col,e2.to.row); if(e2.asl)fl(s8).asl=true; } o.sel=s8.id; if(e2.type!=='adv')actAsync(o); if(e2.type==='move')residualThen(o,s8,function(){ if(byId(s8.id)&&dffOn(o))humanDff(o,s8.id); }); } }
+        if(e2.to){ alogMv(o,e2,s8); if(e2.type==='adv'){ var f9=fl(s8), p9=[s8.bd,s8.col,s8.row]; f9.adv=true; s8.bd=e2.to.bd; s8.col=e2.to.col; s8.row=e2.to.row; trAdd(s8,p9); } else { if(e2.dt){ var fd2=fl(s8); if(!fd2.cx&&!fd2.noDT){ fd2.cx=true; fd2.dt=((fd2.mf||0)>0?1:2); } } moveTo(o,s8,e2.to.bd,e2.to.col,e2.to.row); if(e2.asl)fl(s8).asl=true; } o.sel=s8.id; if(e2.type!=='adv')actAsync(o); if(e2.type==='move')residualThen(o,s8,function(){ if(byId(s8.id)&&dffOn(o))humanDff(o,s8.id); }); } }
       else if(k==='mc'||k==='rally'){ var s3=byId(o.sel); if(!s3)return; if(k==='mc')openMC(o,s3,a); else openRally(o,s3,a); return; }
       else if(k==='apply'){ var p=o.pend; if(!p){ return; } var s4=byId(p.sid); if(a==='close'||!s4){ o.pend=null; return; }
         var i4=s4.u.findIndex(function(z){ return z.t===p.label; }); var x4=s4.u[i4];
@@ -45860,7 +45869,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='next'){
         if(!S.turn)S.turn={cur:1,half:0,ended:false,phase:'rph'};
         var seq=PHASE_SEQ.map(function(p){ return p.id; }), i=seq.indexOf(S.turn.phase||'rph');
-        o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.dt=0; f.adv=false; f.asl=false; f.ffAt=null; if(S.turn.phase==='mph')f.noDT=false; if(S.turn.phase==='rph')f.dm=false; });
+        o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.dt=0; f.adv=false; f.asl=false; f.ffAt=null; if(S.turn.phase==='mph'){ f.noDT=false; f.tr=null; } if(S.turn.phase==='rph')f.dm=false; });
         if(i<0||i<seq.length-1){ S.turn.phase=seq[Math.max(0,i+1)]; }
         else { var before=S.turn.cur+'/'+S.turn.half; S.turn.phase='rph'; if(typeof TurnAdj==='function')TurnAdj(1);
           if((S.turn.cur+'/'+S.turn.half)!==before){ o.stacks.forEach(function(x){ var f=fl(x); f.pin=false; f.fired=false; f.ff=0; f.ffAt=null; }); gainConc(o); } }
@@ -45932,7 +45941,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function mvuSig(o){ return JSON.stringify(o.stacks.map(function(z){ return [z.id,z.u,(z.f&&z.f.pin)?1:0]; })); }
   function pushMvu(o,s){ if(s.side===o.ai)return; if(!o.mvu)o.mvu=[]; var t=S.turn||{cur:1,half:0}; o.mvu.push({id:s.id,bd:s.bd,col:s.col,row:s.row,f:JSON.stringify(s.f||{}),ph:(S.turn&&S.turn.phase)||'rph',tn:t.cur+'/'+t.half,base:mvuSig(o)}); if(o.mvu.length>40)o.mvu.shift(); }
   function mvuTop(o){ var e=o&&o.mvu&&o.mvu[o.mvu.length-1]; if(!e)return null; var t=S.turn||{cur:1,half:0}; if(e.ph!==((S.turn&&S.turn.phase)||'rph')||e.tn!==(t.cur+'/'+t.half))return null; return e; }
-  function moveTo(o,s,bd,col,row){
+  function trAdd(s,p0){ if(s.bd===p0[0]&&s.col===p0[1]&&s.row===p0[2])return; var f=fl(s); if(!f.tr||!f.tr.length)f.tr=[p0]; f.tr.push([s.bd,s.col,s.row]); } /* v391: 移動の跡 */
+  function moveTo(o,s,bd,col,row){ var p0=[s.bd,s.col,s.row], r0=moveTo0(o,s,bd,col,row); trAdd(s,p0); return r0; }
+  function moveTo0(o,s,bd,col,row){
     var ph=(S.turn&&S.turn.phase)||'rph', mine=battle()&&(s.side===sideOfHalf()), f=fl(s);
     if(battle()&&mine&&ph==='mph'&&adj(s,col,row)&&s.bd===bd){
       if(f.fired){ toast('このターンに撃ったスタックは動けません'); return true; }
@@ -46202,13 +46213,15 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function ffLbl(e){ var m=0; (e.frs||[e.fr]).forEach(function(i){ var q=byId(i); m=Math.max(m,(q&&q.f&&q.f.ff)||0); }); return m===0?'':('<span style="color:#ffcc66">['+(m===1?T2('続けて射撃(FP ½)'):'FPF('+T2('撃った側にも NMC')+')')+']</span> '); }
   function dffHTML(o){
     var d=o&&o.dff; if(!d||!battle()||(o.popQ&&o.popQ.length))return ''; var t=byId(d.tid); if(!t)return '';
+    if(o.dffView!=null&&d.items[o.dffView]){ var ve=d.items[o.dffView], van=(ve.frs||[ve.fr]).map(function(id){ var q=byId(id); return q?hexNm(q):'?'; }).join('+');
+      return '<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:8px 12px"><div style="font-size:13px;color:#ccddee;margin-bottom:6px">'+T2('マップ表示中')+': <b style="color:#ff7a3a">A</b> '+van+' → <b style="color:#ff7a3a">B</b> '+hexNm(t)+'　'+T2('射程')+' '+ve.R+'</div><div style="display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffback\')">'+T2('パネルに戻る')+'</button><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffgo\','+o.dffView+')">'+T2('撃つ')+'</button></div></div>'; }
     var h='<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:10px 12px;max-height:62vh;overflow:auto">';
     h+='<div style="font-size:15px;font-weight:bold;color:#c8a032">'+T2('臨機射撃のチャンス')+'</div>';
     h+='<div style="font-size:13px;color:#ccddee;margin:2px 0 6px">'+T2('動いた')+': <b style="color:'+(SIDE_COL[t.side]||'#ccddee')+'">'+hexNm(t)+'</b>　'+(hidden(t)?'?':t.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・'))+(t.f&&t.f.mf?'　MF '+t.f.mf:'')+'</div>';
     d.items.forEach(function(e,i){ var an=(e.frs||[e.fr]).map(function(id){ var q=byId(id); return q?hexNm(q):'?'; }).join('+'); var dd=[]; if(e.tem)dd.push('TEM +'+e.tem); if(e.hin)dd.push(T2('妨害')+' +'+e.hin); if(e.ldr)dd.push(T2('指揮官')+' '+e.ldr); dd=dd.concat(e.why);
       h+='<div style="border-top:1px solid #333;padding:6px 0;font-size:13px;color:#ccddee;line-height:1.5"><b style="color:'+(e.go?'#ff7a3a':'#8899aa')+'">'+(e.go?T2('おすすめ'):T2('見送り向き'))+'</b>　'+(e.frs&&e.frs.length>1?'<b style="color:#c8a032">FG</b> ':'')+ffLbl(e)+an+' → '+hexNm(t)
         +'　'+T2('射程')+' '+e.R+'・FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')・DRM '+(e.drm>=0?'+':'')+e.drm+(dd.length?' ['+dd.join('、')+']':'')+'　'+T2('MC 以上の見込み')+' <b>'+Math.round(e.p*100)+'%</b>'
-        +'<div style="margin-top:4px"><button class="b sm" style="height:44px;width:100%" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
+        +'<div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:2" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
     h+='<div style="margin-top:6px"><button class="b sm" id="aslfullSoloDffSkip" style="height:44px;width:100%" onclick="ASLFULL_SOLO(\'dffskip\')">'+T2('撃たない(待つ)')+'</button></div>';
     return h+'</div>';
   }
@@ -46368,6 +46381,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var h=oW.apply(this,arguments);
       try{
         var o=cur(); if(!o||!o.on)return h;
+        o.stacks.forEach(function(s){ var tr=s.f&&s.f.tr; if(!tr||tr.length<2||s.side!==o.ai)return; var pts=[]; tr.forEach(function(p){ var gg=losColRowToGlobalCanon(p[0],p[1],p[2]); if(!gg)return; var dd=losCanonicalToDisplay(gg.x,gg.y,dispLayout); pts.push(dd.x.toFixed(1)+','+dd.y.toFixed(1)); });
+          if(pts.length<2)return; var c0=SIDE_COL[s.side]||'#ff7a3a', sp=pts[0].split(',');
+          h+='<g class="aslfull-trail" pointer-events="none"><polyline points="'+pts.join(' ')+'" fill="none" stroke="#000" stroke-opacity="0.55" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="2 9"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+c0+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="2 9"/><circle cx="'+sp[0]+'" cy="'+sp[1]+'" r="6" fill="none" stroke="'+c0+'" stroke-width="2.5" stroke-dasharray="3 3"/></g>'; });
         var seen={};
         o.stacks.forEach(function(s){
           var g=losColRowToGlobalCanon(s.bd,s.col,s.row); if(!g)return;
