@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.394"; // v394: 臨機射撃パネルに射撃側スタックの中身。
+var APP_VERSION="ASLFULL-v0.395"; // v395: 臨機射撃パネルに FP の内訳。
+var APP_VERSION_HIST_ASLFULL_v394="ASLFULL-v0.394"; // v394: 臨機射撃パネルに射撃側スタックの中身。
 var APP_VERSION_HIST_ASLFULL_v393="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
 var APP_VERSION_HIST_ASLFULL_v392="ASLFULL-v0.392"; // v392: 狙撃兵パネルの陣営を App(国)/Player(国) 表示、ボタンは Player→App。
 var APP_VERSION_HIST_ASLFULL_v391="ASLFULL-v0.391"; // v391: アプリの移動の跡を点線で表示。
@@ -46212,6 +46213,14 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(typeof saveState==='function')saveState(); Draw(); },function(){ o.busy=false; });
   }
   function ffLbl(e){ var m=0; (e.frs||[e.fr]).forEach(function(i){ var q=byId(i); m=Math.max(m,(q&&q.f&&q.f.ff)||0); }); return m===0?'':('<span style="color:#ffcc66">['+(m===1?T2('続けて射撃(FP ½)'):'FPF('+T2('撃った側にも NMC')+')')+']</span> '); }
+  function fpBreak(e){ /* v395: FP の内訳(partOf と同じ計算を、表示用に項目ごとに分ける) */
+    var R=e.R, rows=[], tot=0; (e.frs||[e.fr]).forEach(function(id){ var q=byId(id); if(!q)return; var it=[]; var pin=!!(q.f&&q.f.pin);
+      q.u.forEach(function(x){ if(!(x.n>0))return; var k=kind(x.t), n=x.n-(k==='sw'?0:(x.b||0)), nm=x.t+(x.n>1?'×'+x.n:''), v=0;
+        if(k==='mmc'){ var z=unitFP(q.side,x.t); v=Math.max(n,0)*rangeFP(z.fp,z.rng,R)*(pin?0.5:1); var tag=''; if(x.b)tag+='[破損'+x.b+'→0]'; if(R>z.rng)tag+='[射程'+z.rng+'超→½]'; if(pin)tag+='[Pin→½]'; it.push(nm+tag+' '+(Math.round(v*10)/10)); tot+=v; }
+        else if(k==='sw'){ var w=swFP(x.t); if(w){ v=n*rangeFP(w.fp,w.rng,R); it.push(nm+(R>w.rng?'[射程'+w.rng+'超→½]':'')+' '+(Math.round(v*10)/10)); tot+=v; } } });
+      rows.push(hexNm(q)+': '+it.join(' + ')); });
+    var mult=R===0?'×3(PBF 同ヘクス)':(R===1?'×2(隣接 PBF)':''), f0=(Math.round(tot*10)/10), r=Math.round(e.fp*10)/10;
+    return rows.join(' / ')+' = '+f0+(mult?' '+mult:'')+((Math.abs(tot*(R===0?3:R===1?2:1)-e.fp)>0.05)?' → 他の補正で '+r:'')+' → FP '+r; }
   function dffHTML(o){
     var d=o&&o.dff; if(!d||!battle()||(o.popQ&&o.popQ.length))return ''; var t=byId(d.tid); if(!t)return '';
     if(o.dffView!=null&&d.items[o.dffView]){ var ve=d.items[o.dffView], van=(ve.frs||[ve.fr]).map(function(id){ var q=byId(id); return q?hexNm(q):'?'; }).join('+');
@@ -46222,7 +46231,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     d.items.forEach(function(e,i){ var an=(e.frs||[e.fr]).map(function(id){ var q=byId(id); if(!q)return '?'; return hexNm(q)+'<span style="color:#9fb4c8">('+q.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・')+')</span>'; }).join('+'); var dd=[]; if(e.tem)dd.push('TEM +'+e.tem); if(e.hin)dd.push(T2('妨害')+' +'+e.hin); if(e.ldr)dd.push(T2('指揮官')+' '+e.ldr); dd=dd.concat(e.why);
       h+='<div style="border-top:1px solid #333;padding:6px 0;font-size:13px;color:#ccddee;line-height:1.5"><b style="color:'+(e.go?'#ff7a3a':'#8899aa')+'">'+(e.go?T2('おすすめ'):T2('見送り向き'))+'</b>　'+(e.frs&&e.frs.length>1?'<b style="color:#c8a032">FG</b> ':'')+ffLbl(e)+an+' → '+hexNm(t)
         +'　'+T2('射程')+' '+e.R+'・FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')・DRM '+(e.drm>=0?'+':'')+e.drm+(dd.length?' ['+dd.join('、')+']':'')+'　'+T2('MC 以上の見込み')+' <b>'+Math.round(e.p*100)+'%</b>'
-        +'<div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:2" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
+        +'<div style="font-size:11px;color:#8fa4b8;margin-top:2px">'+T2('FP の内訳')+': '+fpBreak(e)+'</div><div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:2" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
     h+='<div style="margin-top:6px"><button class="b sm" id="aslfullSoloDffSkip" style="height:44px;width:100%" onclick="ASLFULL_SOLO(\'dffskip\')">'+T2('撃たない(待つ)')+'</button></div>';
     return h+'</div>';
   }
