@@ -433,22 +433,7 @@ body{
   background:#000000;
   padding:9px 8px 12px;
 }
-body::before{
-  content:"";
-  position:fixed;inset:4px;pointer-events:none;z-index:9999;
-  border:2px solid #101010;border-radius:5px;
-  box-shadow:0 0 0 2px #000;
-  -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);
-}
-body::after{
-  content:"";
-  position:fixed;inset:8px;pointer-events:none;z-index:9998;border-radius:3px;
-  background-image:
-    radial-gradient(rgba(255,255,255,.02) .7px, transparent .8px);
-  background-size:4px 4px;
-  opacity:.30;
-  -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);
-}
+/* v368: 固定の飾り枠(body::before/::after)は、iPad の黒い横線の疑いがあるため外した(黒地で見た目はほぼ同じ) */
 #stickytop,#main,#ftr{position:relative;z-index:10}
 #stickytop{
   border:2px solid #2f3338;border-radius:5px 5px 0 0;overflow:hidden;
@@ -8338,7 +8323,9 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.367"; // v367: iPad の黒い横線の対策その 2(固定の飾り枠の 22px ぼかしの影をやめ、固定の層を独立させた)。
+var APP_VERSION="ASLFULL-v0.369"; // v369: LOS 測定が OK のとき、撃つボタンで射撃のポップアップ。LOS の B 地点のスタックにも A と同じ枠と印。
+var APP_VERSION_HIST_ASLFULL_v368="ASLFULL-v0.368"; // v368: 地図の「撃つ」→ 目標を選ぶと、射撃の内容のポップアップ(射撃実施/中止)。黒い横線の対策その 3(固定の飾り枠を外した)。
+var APP_VERSION_HIST_ASLFULL_v367="ASLFULL-v0.367"; // v367: iPad の黒い横線の対策その 2(固定の飾り枠の 22px ぼかしの影をやめ、固定の層を独立させた)。
 var APP_VERSION_HIST_ASLFULL_v366="ASLFULL-v0.366"; // v366: 対戦モードのボタン配置(LOS の左に 戻る・ヘクス確認、右に 撃つ・分割。FG に加える(詳細内)削除。アプリの番を進めるを 次のフェイズ の右へ)。
 var APP_VERSION_HIST_ASLFULL_v365="ASLFULL-v0.365"; // v365: Barbarossa の画像を BATTLE RECORD ボタンの中の左に表示(別の枠をやめた)。
 var APP_VERSION_HIST_ASLFULL_v364="ASLFULL-v0.364"; // v364: // v364: カウンタータブ — 箱の「設定」が閉じている間はカウンターの選択・移動ができない。かわりにカウンターを押すと、兵士=詳細・システム=意味・車両/砲/SW=ユニットタブと同じノートをポップアップ。
@@ -45815,6 +45802,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='merge'){ var s6=byId(o.sel); if(!s6)return; o.stacks.filter(function(z){ return z.id!==s6.id&&z.side===s6.side&&z.bd===s6.bd&&z.col===s6.col&&z.row===s6.row; }).forEach(function(z){
           z.u.forEach(function(y){ var w=s6.u.filter(function(q){ return q.t===y.t; })[0]; if(w){ w.n+=y.n; w.b=(w.b||0)+(y.b||0); } else s6.u.push(y); }); o.stacks=o.stacks.filter(function(q){ return q.id!==z.id; }); }); }
       else if(k==='battle'){ o.battle=!o.battle; fgClear(o); S_LOS.soloMode=!!o.battle; if(o.battle){ S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false;S_LOS.abMode=false;S_LOS.fireHexMode=false; } }
+      else if(k==='pregoo'){ var pp=o.pre; o.pre=null; if(!pp)return; var pl=pp.frs.map(byId).filter(Boolean); if(!pl.length)return; shoot(o,pl.length>1?pl:pl[0],pp.bd,pp.col,pp.row); }
+      else if(k==='losshoot'){ var lc2=losCand(o); if(!lc2){ toast('LOS が OK で、A に撃てる自分のスタック・B に敵がいるときに撃てます'); return; } o.sel=lc2.fr.id; fgClear(o); o.aim=null; shootAsk(o,lc2.fr,lc2.tg.bd,lc2.tg.col,lc2.tg.row); }
+      else if(k==='precancel'){ o.pre=null; o.aim=null; fgClear(o); }
       else if(k==='mvundo'){
         var me2=mvuTop(o); if(!me2){ toast('戻せる動きがありません(このフェイズで動かした分だけ)'); return; }
         if(mvuSig(o)!==me2.base){ o.mvu=[]; toast('そのあと射撃で損害や Pin があったので戻せません'); return; }
@@ -45855,11 +45845,12 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     keep(function(){
       var o=cur(); if(!o)return;
       if(o.busy||o.dff||(o.popQ&&o.popQ.length)){ toast(o.busy?'アプリの射撃を解決中です':(o.dff?'臨機射撃のパネルで答えてください':'臨機射撃のポップアップを閉じてください')); return; }
+      if(o.pre)return;
       if(o.lpMode){ o.det={bd:String(bd),col:col,row:row}; return; }
       if(o.hx){ var hs=o.hxSel; o.hxSel=(hs&&hs.bd===String(bd)&&hs.col===col&&hs.row===row)?null:{bd:String(bd),col:col,row:row}; return; }
       var here=stackAt(String(bd),col,row), s=byId(o.sel); o.cf=null;
       if(o.fgOn&&!o.aim){ fgTap(o,String(bd),col,row,here); return; }
-      if(o.aim){ var fr=byId(o.aim); o.aim=null; if(fr&&!(fr.bd===String(bd)&&fr.col===col&&fr.row===row)){ if(o.fgOn&&(o.fg||[]).length>1)fgShoot(o,String(bd),col,row); else { fgClear(o); shoot(o,fr,String(bd),col,row); } } else fgClear(o); return; }
+      if(o.aim){ var fr=byId(o.aim); o.aim=null; if(fr&&!(fr.bd===String(bd)&&fr.col===col&&fr.row===row)){ if(o.fgOn&&(o.fg||[]).length>1)fgShoot(o,String(bd),col,row); else { fgClear(o); shootAsk(o,fr,String(bd),col,row); } } else fgClear(o); return; }
       if(s&&!(s.bd===String(bd)&&s.col===col&&s.row===row)){
         var ph0=(S.turn&&S.turn.phase)||'rph', mover=battle()&&((s.side===sideOfHalf()&&(ph0==='mph'||ph0==='aph'))||ph0==='rtph')&&s.bd===String(bd)&&adj(s,col,row);
         if(!here.length||mover||!battle()){ if(moveTo(o,s,String(bd),col,row))o.sel=s.id; else o.sel=null; return; }
@@ -45883,10 +45874,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var base=mmc?(smc?6:4):6; return base+((s.f&&s.f.dt)||0); }
   window.ASLFULL_SOLO_MAXMF=maxMF;
   window.ASLFULL_BATTLE_TB=function(base){ var o=cur(); if(!o||!battle())return ''; var s=byId(o.sel), ph=(S.turn&&S.turn.phase)||'rph', h='';
-    function B(on,col,fn,lbl){ return '<button class="tb-reset" style="'+base+'flex:1;min-width:0;'+(on?'color:#fff;border-color:'+col+';background:linear-gradient(180deg,#203040,#101820);':'color:'+col+';')+'" onclick="ASLFULL_SOLO(\''+fn+'\')">'+lbl+'</button>'; }
+    function B(on,col,fn,lbl){ return '<button class="tb-reset" style="'+base+'flex:1;min-width:0;font-size:12px;font-weight:700;'+(on?'color:#fff;border-color:'+col+';background:linear-gradient(180deg,#203040,#101820);':'color:'+col+';')+'" onclick="ASLFULL_SOLO(\''+fn+'\')">'+lbl+'</button>'; }
     if(s&&ph==='mph'&&s.side===sideOfHalf()&&s.side!==o.ai&&s.f&&!s.f.fired&&!s.f.pin){
-      if(!s.f.asl&&!s.f.cx&&!((s.f.mf||0)>0))h+=B(!!o.asl,'#ffcc66','asl','警戒移動');
-      if(!s.f.asl&&!s.f.cx&&!s.f.noDT)h+=B(false,'#ff9a3d','dt','急速移動'); }
+      if(!s.f.asl&&!s.f.cx&&!((s.f.mf||0)>0))h+=B(!!o.asl,'#4499ee','asl','警戒移動');
+      if(!s.f.asl&&!s.f.cx&&!s.f.noDT)h+=B(false,'#cc3333','dt','急速移動'); }
     if((s&&canFire(s))||o.fgOn){ var inG=!!(s&&(o.fg||[]).indexOf(s.id)>=0); h+=B(!!o.fgOn,'#ffd24a','fgtog',inG?'FG−':'FG+')+(o.fgOn?B(false,'#cc6666','fg','FG解除'):''); }
     if(ph==='mph'||ph==='aph'){ var ut=mvuTop(o); h+='<button class="tb-reset" id="aslfullSoloUndo" style="'+base+'flex:1;min-width:0;color:'+(ut?'#99ccff':'#556677')+';"'+(ut?'':' disabled')+' onclick="ASLFULL_SOLO(\'mvundo\')">戻る</button>'; }
     h+=B(!!o.hx,'#66ddaa','hxtog','ヘクス確認');
@@ -45894,9 +45885,12 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   /* LOS の右: 撃つ・分割 */
   window.ASLFULL_BATTLE_TB2=function(base){ var o=cur(); if(!o||!battle())return ''; var s=byId(o.sel), h='';
     function B2(id,on,col,fn,lbl){ return '<button class="tb-reset" id="'+id+'" style="'+base+'flex:1;min-width:0;'+(on?'color:#fff;border-color:'+col+';background:linear-gradient(180deg,#203040,#101820);':'color:'+col+';')+'" onclick="ASLFULL_SOLO(\''+fn+'\')">'+lbl+'</button>'; }
-    if(!s||o.hx)return '';
-    if(canFire(s))h+=B2('aslfullSoloFire',o.aim===s.id,'#ff7a3a','aim',o.aim===s.id?'目標?':((o.fgOn&&(o.fg||[]).length>1)?'FGで撃つ':'撃つ'));
-    if(s.u.reduce(function(p,x){ return p+x.n; },0)>1)h+=B2('aslfullSoloSplitOpen',!!(o.spl&&o.spl.id===s.id),'#c8a032','splitopen','分割');
+    if(o.hx)return '';
+    var lc=(s&&canFire(s))?null:losCand(o);
+    if(!s&&!lc)return '';
+    if(s&&canFire(s))h+=B2('aslfullSoloFire',o.aim===s.id,'#ff7a3a','aim',o.aim===s.id?'目標?':((o.fgOn&&(o.fg||[]).length>1)?'FGで撃つ':'撃つ'));
+    else if(lc)h+=B2('aslfullSoloFire',false,'#ff7a3a','losshoot','撃つ');
+    if(s&&s.u.reduce(function(p,x){ return p+x.n; },0)>1)h+=B2('aslfullSoloSplitOpen',!!(o.spl&&o.spl.id===s.id),'#c8a032','splitopen','分割');
     return h; };
   function mvuSig(o){ return JSON.stringify(o.stacks.map(function(z){ return [z.id,z.u,(z.f&&z.f.pin)?1:0]; })); }
   function pushMvu(o,s){ if(s.side===o.ai)return; if(!o.mvu)o.mvu=[]; var t=S.turn||{cur:1,half:0}; o.mvu.push({id:s.id,bd:s.bd,col:s.col,row:s.row,f:JSON.stringify(s.f||{}),ph:(S.turn&&S.turn.phase)||'rph',tn:t.cur+'/'+t.half,base:mvuSig(o)}); if(o.mvu.length>40)o.mvu.shift(); }
@@ -46191,7 +46185,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(f.mf>0)r.push(['move','MV','#aaffaa']);
     if(s.u.some(function(x){ return Math.min(x.dis||0,x.b||0)>0; }))r.push(['disrupt','DS','#ff9a9a']);
     return r; }
-  function vStackSVG(o,s,d,k,col,fgm,sel,isA){
+  function vStackSVG(o,s,d,k,col,fgm,sel,isA,isB){
     var V=vcnt(), h='', SZ=38, ST=7, pcs, hid=hidden(s);
     if(hid){ var q=V.q[s.side]; pcs=[{rel:q,t:'?'}]; } else pcs=vPieces(s,V);
     var vis=pcs.slice(-6), extra=pcs.length-vis.length, n=vis.length;
@@ -46203,7 +46197,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(pc.rel&&V.imgs[pc.rel])h+='<image href="'+V.imgs[pc.rel]+'" x="'+px+'" y="'+py+'" width="'+SZ+'" height="'+SZ+'"'+(pc.dim?' opacity="0.55"':'')+'/>';
       else h+='<rect x="'+px+'" y="'+py+'" width="'+SZ+'" height="'+SZ+'" rx="3" fill="'+col+'" stroke="#0f0f0f"/><text x="'+(px+SZ/2)+'" y="'+(py+SZ/2)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="9" font-weight="900" fill="#fff">'+String(pc.t).replace(/[<>&]/g,'')+'</text>'; });
     h+='</g>';
-    if(isA){ h+='<rect x="'+(bx-2)+'" y="'+(by-2)+'" width="'+(w+8)+'" height="'+(w+8)+'" rx="5" fill="none" stroke="#1a5cb0" stroke-width="4"/><circle cx="'+(bx+9)+'" cy="'+(by+w-3)+'" r="9" fill="#1a5cb0" stroke="#fff" stroke-width="1.5"/><text x="'+(bx+9)+'" y="'+(by+w-3)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="12" font-weight="900" fill="#fff">A</text>'; }
+    if(isA||isB){ var abl=isA?'A':'B'; h+='<rect x="'+(bx-2)+'" y="'+(by-2)+'" width="'+(w+8)+'" height="'+(w+8)+'" rx="5" fill="none" stroke="#1a5cb0" stroke-width="4"/><circle cx="'+(bx+9)+'" cy="'+(by+w-3)+'" r="9" fill="#1a5cb0" stroke="#fff" stroke-width="1.5"/><text x="'+(bx+9)+'" y="'+(by+w-3)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="12" font-weight="900" fill="#fff">'+abl+'</text>'; }
     if(extra>0)h+='<rect x="'+(bx+w-14)+'" y="'+(by-2)+'" width="20" height="11" rx="3" fill="#0f0f0f" stroke="#c8a032"/><text x="'+(bx+w-4)+'" y="'+(by+4)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="8" font-weight="900" fill="#c8a032">+'+extra+'</text>';
     if(o.ai===s.side)h+='<rect x="'+bx+'" y="'+(by-4)+'" width="14" height="10" rx="2" fill="#0f0f0f" stroke="#c8a032" stroke-width="1"/><text x="'+(bx+7)+'" y="'+(by+1.4)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="7" font-weight="900" fill="#c8a032">AI</text>';
     var f=s.f||{}, tags=[]; if(!hid){ sysMarks(o,s).forEach(function(m){ if(!(V.mk&&V.imgs[V.mk[m[0]]]))tags.push([m[1],m[2]]); }); }
@@ -46320,7 +46314,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
           var d=losCanonicalToDisplay(g.x,g.y,dispLayout), x=d.x+k*7-12, y=d.y+k*7-14;
           var fgm=!!(o.fgOn&&(o.fg||[]).indexOf(s.id)>=0), sel=o.sel===s.id, col=SIDE_COL[s.side]||'#8899aa', ai=o.ai===s.side, bk=brk(s);
           var hxo=(o.hx&&o.hxSel&&battle()&&s.bd===o.hxSel.bd&&s.col===o.hxSel.col&&s.row===o.hxSel.row)?' opacity="0.12"':'';
-          if(vOn(o)){ h+='<g class="aslfull-solo" data-id="'+s.id+'"'+hxo+' transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">'+vStackSVG(o,s,d,k,col,fgm,sel,!!(S_LOS.pxA&&Math.hypot(S_LOS.pxA.x-g.x,S_LOS.pxA.y-g.y)<32))+'</g>'; return; }
+          if(vOn(o)){ h+='<g class="aslfull-solo" data-id="'+s.id+'"'+hxo+' transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">'+vStackSVG(o,s,d,k,col,fgm,sel,!!(S_LOS.pxA&&Math.hypot(S_LOS.pxA.x-g.x,S_LOS.pxA.y-g.y)<32),!!(S_LOS.pxB&&Math.hypot(S_LOS.pxB.x-g.x,S_LOS.pxB.y-g.y)<32))+'</g>'; return; }
           h+='<g class="aslfull-solo" data-id="'+s.id+'"'+hxo+' transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">';
           h+='<rect x="'+x+'" y="'+y+'" width="26" height="22" rx="4" fill="'+col+'" fill-opacity="'+((s.f&&s.f.fired)?0.45:0.9)+'" stroke="'+(fgm?'#ffd24a':(sel?'#c8a032':'#0f0f0f'))+'" stroke-width="'+(fgm?4:(sel?3:1.2))+'"'+(fgm?' stroke-dasharray="5 2"':'')+'/>';
           h+='<text x="'+(x+13)+'" y="'+(y+11.5)+'" text-anchor="middle" dominant-baseline="middle" font-family="\'Arial Black\',Arial,sans-serif" font-size="9" font-weight="900" fill="#ffffff">'+(hidden(s)?'?':cnt(s,'mmc')+'·'+cnt(s,'smc'))+'</text>';
@@ -46447,16 +46441,60 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(L.length&&!connected(L)){ toast(inn?'外すと FG がつながらなくなります(A7.5)':'FG は隣り合う Location のつながりだけです(A7.5)'); return; }
     o.fg=next; if(!next.length)o.fgOn=false;
   }
+  /* v368: 撃つ → 目標を選んだら、射撃の内容をポップアップで見せて、射撃実施/中止を選ばせる */
+  function shootAsk(o,fr0,bd,col,row){
+    var FRS=Array.isArray(fr0)?fr0:[fr0], ph=(S.turn&&S.turn.phase)||'rph';
+    var tg=stackAt(bd,col,row).filter(function(x){ return x.side!==FRS[0].side; });
+    var e=null; try{ if(FIRE_SUB[ph]&&tg.length)e=evalFG(FRS,tg[0],ph,null); }catch(err){ e=null; }
+    if(!e||window.ASLFULL_SOLO_NOASK){ shoot(o,fr0,bd,col,row); return; } /* ASLFULL_SOLO_NOASK: テスト用(確認の画面を飛ばす) */
+    o.pre={frs:FRS.map(function(q){ return q.id; }),bd:String(bd),col:col,row:row,ph:ph,e:{fp:e.fp,col:e.col,R:e.R,drm:e.drm,tem:e.tem,hin:e.hin,why:e.why||[]}};
+  }
+  /* v369: LOS 測定(A→B)が OK で、A に今撃てる自分のスタック・B に敵がいるときの射撃(撃つボタンから) */
+  function losCand(o){
+    try{ if(!battle()||!S_LOS.pxA||!S_LOS.pxB)return null; var r=S_LOS.result; if(!r||r.blocked||r.error)return null;
+      function at(P,f){ return o.stacks.filter(function(z){ var g=losColRowToGlobalCanon(z.bd,z.col,z.row); return g&&Math.hypot(P.x-g.x,P.y-g.y)<32&&f(z); }); }
+      var A=at(S_LOS.pxA,function(z){ return canFire(z); }); if(!A.length)return null;
+      var Bt=at(S_LOS.pxB,function(z){ return z.side!==A[0].side; }); if(!Bt.length)return null;
+      return {fr:A[0],tg:Bt[0]}; }catch(e){ return null; }
+  }
+  function preSide(L){ var h='';
+    L.forEach(function(q){ var hid=hidden(q);
+      h+='<div style="margin-top:4px"><div style="font-size:12px;color:'+(SIDE_COL[q.side]||'#ccddee')+'">'+T2(NATJ[q.side]||q.side)+' '+hexNm(q)+'</div><div style="display:flex;flex-wrap:wrap;gap:2px;align-items:center">';
+      if(hid){ var qv=vcnt()&&vcnt().q[q.side]; h+=(qv?vImgTag(qv):'')+'<span style="font-size:13px;color:#8899aa">? ('+T2('隠蔽中')+')</span>'; }
+      else q.u.forEach(function(x){ if(x.n-(kind(x.t)==='sw'?0:(x.b||0))<=0&&kind(x.t)!=='sw')return; h+=vUnitImgs(q,x)||('<span style="font-size:12px;color:#ccddee;border:1px solid #444;border-radius:3px;padding:2px 4px">'+x.t+'×'+x.n+'</span>'); });
+      h+='</div></div>'; });
+    return h; }
+  function preHTML(o){
+    var p=o&&o.pre; if(!p||!battle())return ''; var L=p.frs.map(byId).filter(Boolean); if(!L.length)return '';
+    var tg=stackAt(p.bd,p.col,p.row).filter(function(x){ return x.side!==L[0].side; }), e=p.e;
+    function card(lbl,v){ return '<div class="sumcard" style="min-width:0;overflow:hidden"><div class="lbl">'+lbl+'</div><div style="display:flex;align-items:center">'+v+'</div></div>'; }
+    var h='<div id="aslfullSoloPre" style="position:fixed;left:0;top:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px"><div style="background:#1b1f27;border:2px solid #c8a032;border-radius:8px;max-width:680px;width:100%;max-height:88vh;overflow:auto;padding:14px">';
+    h+='<div style="font-size:16px;font-weight:bold;color:#c8a032">'+T2(PH_FIRE[p.ph]||'射撃')+(L.length>1?' (FG '+L.length+T2(' スタック')+')':'')+'</div>';
+    h+='<div class="lbl" style="margin-top:8px">'+T2('射撃側')+'</div>'+preSide(L);
+    h+='<div class="lbl" style="margin-top:8px">'+T2('射撃相手')+'</div>'+preSide(tg);
+    h+='<div class="sum" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;border:1px solid #404040;border-radius:3px;padding:5px;margin-top:10px">';
+    h+=card(T2('合計FP'),seg7fp(Math.round(e.fp*10)/10,'FP','grn'));
+    h+=card('IFT',seg7(String(e.col),'grn','IFT'));
+    h+=card(T2('レンジ'),seg7range(e.R,'HEX','blu',true));
+    h+=card(T2('合計DRM'),seg7drm(e.drm));
+    h+=card(T2('LOS妨害'),seg7drm(e.hin,'LOS'));
+    h+=card('TEM',seg7drm(e.tem,'TEM'));
+    h+='</div>';
+    if(e.why&&e.why.length)h+='<div style="font-size:12px;color:#ffcc66;line-height:1.5;margin-top:6px">'+e.why.join('・')+'</div>';
+    h+='<div style="font-size:11px;color:#8899aa;line-height:1.5;margin-top:4px">'+T2('見込みの数字です。「射撃実施」で射撃タブへ進み、そこで確定します。')+'</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button class="b sm" id="aslfullSoloPreGo" style="height:44px" onclick="ASLFULL_SOLO(\'pregoo\')">'+T2('射撃実施')+'</button><button class="b sm" id="aslfullSoloPreCancel" style="height:44px" onclick="ASLFULL_SOLO(\'precancel\')">'+T2('中止')+'</button></div>';
+    return h+'</div></div>';
+  }
   function fgShoot(o,bd,col,row){
     var L=fgList(o); if(!L.length){ fgClear(o); return; }
     var tg=stackAt(bd,col,row).filter(function(x){ return x.side!==L[0].side; });
     if(!tg.length){ toast('目標のヘクスに敵のスタックはありません'); fgClear(o); return; }
     var ok=L.filter(function(q){ return partOf(q,tg[0],null); });
-    if(!ok.length){ var f0=L[0]; fgClear(o); shoot(o,f0,bd,col,row); return; }
+    if(!ok.length){ var f0=L[0]; fgClear(o); shootAsk(o,f0,bd,col,row); return; }
     var comp=[ok[0]], rest=ok.slice(1), g=true;
     while(g&&rest.length){ g=false; for(var i=0;i<rest.length;i++){ if(comp.some(function(q){ return dist(q,rest[i])<=1; })){ comp.push(rest[i]); rest.splice(i,1); g=true; break; } } }
     if(comp.length<L.length)toast('LOS のない・つながらないスタックを外して撃ちます(A7.52)');
-    fgClear(o); shoot(o,comp.length>1?comp:comp[0],bd,col,row);
+    fgClear(o); shootAsk(o,comp.length>1?comp:comp[0],bd,col,row);
   }
   function fgHTML(o){
     if(!o.fgOn||!battle())return ''; var L=fgList(o); if(!L.length)return '';
@@ -46953,7 +46991,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   }
   if(typeof window.LOS_PAGE==='function'){
     var oP=window.LOS_PAGE;
-    window.LOS_PAGE=function(){ var h=oP.apply(this,arguments); lpInstall(); try{ var b=band(); if(b){ var i=h.indexOf(MAP_ANCHOR); h=(i>=0)?h.slice(0,i)+b+h.slice(i):b+h; } h+=mapCard()+popHTML(cur())+dffHTML(cur())+detHTML(cur()); }catch(e){ window.ASLFULL_SOLO_ERR=String(e&&e.stack||e); } return h; };
+    window.LOS_PAGE=function(){ var h=oP.apply(this,arguments); lpInstall(); try{ var b=band(); if(b){ var i=h.indexOf(MAP_ANCHOR); h=(i>=0)?h.slice(0,i)+b+h.slice(i):b+h; } h+=mapCard()+popHTML(cur())+preHTML(cur())+dffHTML(cur())+detHTML(cur()); }catch(e){ window.ASLFULL_SOLO_ERR=String(e&&e.stack||e); } return h; };
   }
 
   /* ---------- v332: 射撃タブの結果の下に「目標のカウンターに反映」(MC・PTC・K・KIA を半自動で) ---------- */
