@@ -8328,7 +8328,10 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.396"; // v396: 臨機射撃パネル中も長押しで詳細。
+var APP_VERSION="ASLFULL-v0.399"; // v399: App の狙撃兵を見える自動操作に(攻撃 dr・ランダム位置 DR)。速度設定つき。
+var APP_VERSION_HIST_ASLFULL_v398="ASLFULL-v0.398"; // v398: 臨機射撃パネルの 表示・撃つ・撃たない を横並び一列に。
+var APP_VERSION_HIST_ASLFULL_v397="ASLFULL-v0.397"; // v397: FP の内訳の「破損」を「混乱」に、文字サイズを 13px に。
+var APP_VERSION_HIST_ASLFULL_v396="ASLFULL-v0.396"; // v396: 臨機射撃パネル中も長押しで詳細。
 var APP_VERSION_HIST_ASLFULL_v395="ASLFULL-v0.395"; // v395: 臨機射撃パネルに FP の内訳。
 var APP_VERSION_HIST_ASLFULL_v394="ASLFULL-v0.394"; // v394: 臨機射撃パネルに射撃側スタックの中身。
 var APP_VERSION_HIST_ASLFULL_v393="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
@@ -35283,6 +35286,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     z.queue.push(it);
     if(z.queue.length>20)z.queue=z.queue.slice(-20);
     z.open=true;
+    try{ snpAutoStart(it); }catch(e){}
     try{
       logResult(function(){return{tabLbl:L('狙撃兵','Sniper'),
         text:it.src+' DR'+dr+' = '+L('SAN','SAN')+' → '+(phOk===false?L('フェイズ外(発動せず)','outside phase (no attack)'):L('狙撃兵発動','Sniper activated')),
@@ -35316,6 +35320,8 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     h+='<div style="background:#0d1520;border:1px solid #d4a017;border-radius:6px;max-width:560px;width:100%;padding:12px;color:#dde6ee;font-size:14px;line-height:1.5">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:17px;font-weight:bold;color:#d4a017">'+L('狙撃兵 (A14)','Sniper (A14)')+'</div>'+btn(L('閉じる','Close'),'SNP_close()')+'</div>';
     h+='<div style="color:#8899aa;font-size:12px">SAN: '+L('枢軸','Axis')+' '+(z.san.axis==null?'—':z.san.axis)+' / '+L('連合','Allied')+' '+(z.san.allied==null?'—':z.san.allied)+'　'+L('未処理','pending')+': '+pending()+'</div>';
+    h+='<div style="margin-top:6px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;font-size:12px;color:#8899aa">'+L('App 操作の速度','App speed')+' '+[['slow',L('遅い','Slow')],['normal',L('普通','Normal')],['fast',L('速い','Fast')],['instant',L('即時','Instant')]].map(function(p){return '<button class="b sm'+(((z.spd||'normal')===p[0])?' on':'')+'" style="flex:1;padding:4px 6px" onclick="SNP_spd(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
+    if(it&&it.autoMsg)h+='<div id="sniperAuto" style="margin-top:8px;padding:8px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;color:#9fe8bd"><b>'+(it.autoRun?'▶ ':'')+'App</b>: '+esc(it.autoMsg)+(it.autoRun?' '+btn(L('手動にする','Take over'),'SNP_autoStop()'):'')+'</div>';
     if(!it){
       h+='<div style="margin-top:10px">'+L('処理待ちの狙撃兵攻撃はありません。','No pending sniper attacks.')+'</div></div>';
       el.innerHTML=h;return;
@@ -35396,6 +35402,24 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     el.innerHTML=h;
   }
 
+  /* v399: App の狙撃兵(撃つ側が App)の自動操作。パネルを開いたまま、手順を間を置いて見せる */
+  var SNP_SPD={slow:1600,normal:900,fast:350,instant:0}, autoTok=0;
+  function spdMs(){ var z=snp(); var v=SNP_SPD[z.spd||'normal']; return v==null?900:v; }
+  function isAppSniper(it){ try{ var r=window.ASLFULL_SOLO_ROLE&&ASLFULL_SOLO_ROLE(ownerOfSniper(it)); return !!(r&&/^App\(/.test(r)); }catch(e){ return false; } }
+  function snpAutoStart(it){
+    if(!it||it.status!=='open'||it.phOk===false||!isAppSniper(it))return;
+    var tok=++autoTok; it.autoRun=true; it.autoMsg=L('App が狙撃兵を操作します','App is operating the Sniper');
+    function alive(){ var c=cur(); return tok===autoTok&&c===it&&it.autoRun&&it.status==='open'; }
+    function step(ms,fn){ setTimeout(function(){ if(!alive())return; fn(); },spdMs()===0?0:ms*spdMs()/900); }
+    function say(m){ it.autoMsg=m; saveState(); render(); }
+    function end(m){ it.autoRun=false; it.autoMsg=m; saveState(); render(); }
+    step(900,function(){ it.atk=d6(); it.forfeit=false; say(L('App: 攻撃 dr を振った → ','App rolled the attack dr → ')+it.atk);
+      if(it.atk>=3){ step(1200,function(){ it.status='done'; it.autoRun=false; it.autoMsg=null; try{ logResult(function(){return{tabLbl:L('狙撃兵','Sniper'),text:L('App の狙撃兵: 攻撃 dr ','App Sniper: attack dr ')+it.atk+L(' → 効果なし',' → no effect'),color:'#d4a017'};}); }catch(e){} saveState(); if(!cur()){ snp().open=false; saveState(); } render(); }); return; }
+      step(1100,function(){ it.dir=d6(); it.dist=d6(); say(L('App: 有効な攻撃。ランダム位置 DR → 方向 ','App: effective attack. Random Location DR → direction ')+it.dir+L('、距離 ','; hexes ')+it.dist);
+        step(900,function(){ end(L('App の操作はここまで。狙撃兵カウンターを方向'+it.dir+'へ'+it.dist+'ヘクス動かし、下の手順(目標の選択・結果)を進めてください','App stopped here. Move the Sniper counter '+it.dist+' hexes in direction '+it.dir+', then continue with the steps below')); }); }); }); }
+  window.SNP_autoStart=function(){ var it=cur(); if(it)snpAutoStart(it); };
+  window.SNP_autoStop=function(){ autoTok++; var it=cur(); if(it){ it.autoRun=false; it.autoMsg=null; } saveState(); render(); };
+  window.SNP_spd=function(k){ snp().spd=k; saveState(); render(); };
   function upd(fn){var it=cur();if(!it)return;fn(it);saveState();render();}
   window.SNP_close=function(){snp().open=false;saveState();render();};
   window.SNP_open=function(){snp().open=true;saveState();render();};
@@ -46218,7 +46242,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function fpBreak(e){ /* v395: FP の内訳(partOf と同じ計算を、表示用に項目ごとに分ける) */
     var R=e.R, rows=[], tot=0; (e.frs||[e.fr]).forEach(function(id){ var q=byId(id); if(!q)return; var it=[]; var pin=!!(q.f&&q.f.pin);
       q.u.forEach(function(x){ if(!(x.n>0))return; var k=kind(x.t), n=x.n-(k==='sw'?0:(x.b||0)), nm=x.t+(x.n>1?'×'+x.n:''), v=0;
-        if(k==='mmc'){ var z=unitFP(q.side,x.t); v=Math.max(n,0)*rangeFP(z.fp,z.rng,R)*(pin?0.5:1); var tag=''; if(x.b)tag+='[破損'+x.b+'→0]'; if(R>z.rng)tag+='[射程'+z.rng+'超→½]'; if(pin)tag+='[Pin→½]'; it.push(nm+tag+' '+(Math.round(v*10)/10)); tot+=v; }
+        if(k==='mmc'){ var z=unitFP(q.side,x.t); v=Math.max(n,0)*rangeFP(z.fp,z.rng,R)*(pin?0.5:1); var tag=''; if(x.b)tag+='['+T2('混乱')+x.b+'→0]'; if(R>z.rng)tag+='[射程'+z.rng+'超→½]'; if(pin)tag+='[Pin→½]'; it.push(nm+tag+' '+(Math.round(v*10)/10)); tot+=v; }
         else if(k==='sw'){ var w=swFP(x.t); if(w){ v=n*rangeFP(w.fp,w.rng,R); it.push(nm+(R>w.rng?'[射程'+w.rng+'超→½]':'')+' '+(Math.round(v*10)/10)); tot+=v; } } });
       rows.push(hexNm(q)+': '+it.join(' + ')); });
     var mult=R===0?'×3(PBF 同ヘクス)':(R===1?'×2(隣接 PBF)':''), f0=(Math.round(tot*10)/10), r=Math.round(e.fp*10)/10;
@@ -46226,15 +46250,14 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function dffHTML(o){
     var d=o&&o.dff; if(!d||!battle()||(o.popQ&&o.popQ.length))return ''; var t=byId(d.tid); if(!t)return '';
     if(o.dffView!=null&&d.items[o.dffView]){ var ve=d.items[o.dffView], van=(ve.frs||[ve.fr]).map(function(id){ var q=byId(id); return q?hexNm(q):'?'; }).join('+');
-      return '<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:8px 12px"><div style="font-size:13px;color:#ccddee;margin-bottom:6px">'+T2('マップ表示中')+': <b style="color:#ff7a3a">A</b> '+van+' → <b style="color:#ff7a3a">B</b> '+hexNm(t)+'　'+T2('射程')+' '+ve.R+'</div><div style="display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffback\')">'+T2('パネルに戻る')+'</button><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffgo\','+o.dffView+')">'+T2('撃つ')+'</button></div></div>'; }
+      return '<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:8px 12px"><div style="font-size:13px;color:#ccddee;margin-bottom:6px">'+T2('マップ表示中')+': <b style="color:#ff7a3a">A</b> '+van+' → <b style="color:#ff7a3a">B</b> '+hexNm(t)+'　'+T2('射程')+' '+ve.R+'</div><div style="display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffback\')">'+T2('パネルに戻る')+'</button><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffgo\','+o.dffView+')">'+T2('撃つ')+'</button><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffskip\')">'+T2('撃たない(待つ)')+'</button></div></div>'; }
     var h='<div id="aslfullSoloDff" style="position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#1b1f27;border-top:2px solid #c8a032;padding:10px 12px;max-height:62vh;overflow:auto">';
     h+='<div style="font-size:15px;font-weight:bold;color:#c8a032">'+T2('臨機射撃のチャンス')+'</div>';
     h+='<div style="font-size:13px;color:#ccddee;margin:2px 0 6px">'+T2('動いた')+': <b style="color:'+(SIDE_COL[t.side]||'#ccddee')+'">'+hexNm(t)+'</b>　'+(hidden(t)?'?':t.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・'))+(t.f&&t.f.mf?'　MF '+t.f.mf:'')+'</div>';
     d.items.forEach(function(e,i){ var an=(e.frs||[e.fr]).map(function(id){ var q=byId(id); if(!q)return '?'; return hexNm(q)+'<span style="color:#9fb4c8">('+q.u.filter(function(x){ return x.n>0; }).map(function(x){ return x.t+(x.n>1?'×'+x.n:''); }).join('・')+')</span>'; }).join('+'); var dd=[]; if(e.tem)dd.push('TEM +'+e.tem); if(e.hin)dd.push(T2('妨害')+' +'+e.hin); if(e.ldr)dd.push(T2('指揮官')+' '+e.ldr); dd=dd.concat(e.why);
       h+='<div style="border-top:1px solid #333;padding:6px 0;font-size:13px;color:#ccddee;line-height:1.5"><b style="color:'+(e.go?'#ff7a3a':'#8899aa')+'">'+(e.go?T2('おすすめ'):T2('見送り向き'))+'</b>　'+(e.frs&&e.frs.length>1?'<b style="color:#c8a032">FG</b> ':'')+ffLbl(e)+an+' → '+hexNm(t)
         +'　'+T2('射程')+' '+e.R+'・FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')・DRM '+(e.drm>=0?'+':'')+e.drm+(dd.length?' ['+dd.join('、')+']':'')+'　'+T2('MC 以上の見込み')+' <b>'+Math.round(e.p*100)+'%</b>'
-        +'<div style="font-size:11px;color:#8fa4b8;margin-top:2px">'+T2('FP の内訳')+': '+fpBreak(e)+'</div><div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:2" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button></div></div>'; });
-    h+='<div style="margin-top:6px"><button class="b sm" id="aslfullSoloDffSkip" style="height:44px;width:100%" onclick="ASLFULL_SOLO(\'dffskip\')">'+T2('撃たない(待つ)')+'</button></div>';
+        +'<div style="font-size:13px;color:#8fa4b8;margin-top:2px;line-height:1.5">'+T2('FP の内訳')+': '+fpBreak(e)+'</div><div style="margin-top:4px;display:flex;gap:8px"><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffshow\','+i+')">'+T2('表示')+'</button><button class="b sm" style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffgo\','+i+')">'+T2('撃つ')+'</button><button class="b sm"'+(i===0?' id="aslfullSoloDffSkip"':'')+' style="height:44px;flex:1" onclick="ASLFULL_SOLO(\'dffskip\')">'+T2('撃たない(待つ)')+'</button></div></div>'; });
     return h+'</div>';
   }
 
