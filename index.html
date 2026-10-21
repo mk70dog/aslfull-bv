@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.395"; // v395: 臨機射撃パネルに FP の内訳。
+var APP_VERSION="ASLFULL-v0.396"; // v396: 臨機射撃パネル中も長押しで詳細。
+var APP_VERSION_HIST_ASLFULL_v395="ASLFULL-v0.395"; // v395: 臨機射撃パネルに FP の内訳。
 var APP_VERSION_HIST_ASLFULL_v394="ASLFULL-v0.394"; // v394: 臨機射撃パネルに射撃側スタックの中身。
 var APP_VERSION_HIST_ASLFULL_v393="ASLFULL-v0.393"; // v393: 狙撃兵パネルの陣営を対戦モード外でも国名表示(ドイツ→ソ連)。
 var APP_VERSION_HIST_ASLFULL_v392="ASLFULL-v0.392"; // v392: 狙撃兵パネルの陣営を App(国)/Player(国) 表示、ボタンは Player→App。
@@ -45730,7 +45731,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var o=st(), id=sid();
       if(k!=='confirm'&&k!=='reset'&&k!=='quit')o.cf=null;
       if(o.busy&&k!=='popclose'&&k!=='autoundo'){ toast('アプリの射撃を解決中です'); return; }
-      if(o.dff&&k!=='dffgo'&&k!=='dffskip'&&k!=='popclose'&&k!=='autoundo'&&k!=='dffauto'&&k!=='dffshow'&&k!=='dffback'){ toast('臨機射撃のパネルで答えてください'); return; }
+      if(o.dff&&k!=='dffgo'&&k!=='dffskip'&&k!=='popclose'&&k!=='autoundo'&&k!=='dffauto'&&k!=='dffshow'&&k!=='dffback'&&k!=='detclose'){ toast('臨機射撃のパネルで答えてください'); return; }
       if(o.popQ&&o.popQ.length&&k!=='popclose'&&k!=='autoundo'){ toast('臨機射撃のポップアップを閉じてください'); return; }
       if(k==='popclose'){ if(o.popQ)o.popQ.shift(); }
       else if(k==='detclose'){ o.det=null; }
@@ -45892,6 +45893,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   window.ASLFULL_SOLO_TAP=function(bd,col,row){
     keep(function(){
       var o=cur(); if(!o)return;
+      if(o.lpMode&&o.dff&&!o.busy&&!(o.popQ&&o.popQ.length)){ o.det={bd:String(bd),col:col,row:row}; return; } /* v396: 臨機射撃パネル中も長押しで詳細 */
       if(o.busy||o.dff||(o.popQ&&o.popQ.length)){ toast(o.busy?'アプリの射撃を解決中です':(o.dff?'臨機射撃のパネルで答えてください':'臨機射撃のポップアップを閉じてください')); return; }
       if(o.pre)return;
       if(o.lpMode){ o.det={bd:String(bd),col:col,row:row}; return; }
