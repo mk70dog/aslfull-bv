@@ -8338,7 +8338,11 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.351"; // v351: カウンタータブの全カウンターを VASL 画像にする(251 種中 247 種。Dice・TCA・Turn・Unarmed は文字のまま)。
+var APP_VERSION="ASLFULL-v0.355"; // v355: 「対戦をやめる」も確認なしで実行。
+var APP_VERSION_HIST_ASLFULL_v354="ASLFULL-v0.354"; // v354: // v354: 「最初からやり直す」は確認なしで実行。
+var APP_VERSION_HIST_ASLFULL_v353="ASLFULL-v0.353"; // v353: // v353: 「このスタックを消す」ボタンも消す。
+var APP_VERSION_HIST_ASLFULL_v352="ASLFULL-v0.352"; // v352: // v352: 「選択を外す」「目標を選ぶ」ボタンを消す(マップのタップで足りる)。
+var APP_VERSION_HIST_ASLFULL_v351="ASLFULL-v0.351"; // v351: // v351: カウンタータブの全カウンターを VASL 画像にする(251 種中 247 種。Dice・TCA・Turn・Unarmed は文字のまま)。
 var APP_VERSION_HIST_ASLFULL_v350="ASLFULL-v0.350"; // v350: // v350: 詳細表示で、LMG などの SW は実際のゲームのように、使う分隊と同じ行に重ねて表示。
 var APP_VERSION_HIST_ASLFULL_v349="ASLFULL-v0.349"; // v349: // v349: アプリ側の射撃は確認なしで自動(PFPh・AFPh・DFPh になったら「撃つ」の案を順に実行。実物のときも)。
 var APP_VERSION_HIST_ASLFULL_v348="ASLFULL-v0.348"; // v348: // v348: 射撃・士気・回復の結果ポップアップで、出目を赤白のサイコロの絵で表示。
@@ -46584,7 +46588,6 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/gif;base64,R0lGODlh
           var left=0; s.u.forEach(function(x,i){ if(kind(x.t)==='mmc')left+=x.n-(sp2.c[i]||0); });
           if(sqt>3||left>3)h+='<div style="font-size:12px;color:#ff7a3a;margin-top:4px">'+T2('1 ヘクスの分隊は 3 つまで(A5.1)')+'</div>';
           h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"><button class="b sm" id="aslfullSoloSplitGo" style="height:40px" onclick="ASLFULL_SOLO(\'splitgo\')">'+T2('この部隊を分ける')+'</button><button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'splitopen\')">'+T2('やめる')+'</button></div></div>'; } }
-      h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'sel\',\''+s.id+'\')">'+T2('選択を外す')+'</button><button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'del\')">'+T2('このスタックを消す')+'</button></div>';
     }
     h+=shotHTML(o);
     h+=pendHTML(o);
@@ -46606,7 +46609,6 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/gif;base64,R0lGODlh
     h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px">';
     if(!sh.blocked)h+='<button class="b sm" style="height:40px" onclick="NAVTAB(\'fire\')">'+T2('射撃タブへ')+'</button>';
     if(tg.length&&r0&&!sh.applied){ h+='<button class="b sm" id="aslfullSoloShotApply" style="height:40px;grid-column:1/-1;background:#4a3a14" onclick="ASLFULL_SOLO(\'shotapply\')">'+T2('結果を目標に反映(MC・KIA は自動)')+'</button>'; }
-    if(tg.length){ h+='<button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'tsel\')">'+T2('目標を選ぶ')+'</button>'; }
     h+='<button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'shotclr\')">'+T2('閉じる')+'</button></div>';
     h+='<div style="font-size:11px;color:#8899aa;line-height:1.5;margin-top:4px">'+T2('MC などの結果は士気/損耗タブで判定し、目標を選んで混乱・数を直します。')+'</div>';
     return h+'</div>';
@@ -46651,8 +46653,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/gif;base64,R0lGODlh
     } else {
       var cf=o.cf;
       h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">'
-        +'<button class="b sm'+(cf==='reset'?' on':'')+'" id="aslfullSoloReset" style="height:40px" onclick="ASLFULL_SOLO(\''+(cf==='reset'?'reset':'confirm')+'\',\'reset\')">'+T2(cf==='reset'?'本当にやり直す(元に戻せません)':'最初からやり直す')+'</button>'
-        +'<button class="b sm'+(cf==='quit'?' on':'')+'" id="aslfullSoloQuit" style="height:40px" onclick="ASLFULL_SOLO(\''+(cf==='quit'?'quit':'confirm')+'\',\'quit\')">'+T2(cf==='quit'?'本当にやめる(スタックを全部消します)':'対戦をやめる')+'</button></div>';
+        +'<button class="b sm'+(cf==='reset'?' on':'')+'" id="aslfullSoloReset" style="height:40px" onclick="ASLFULL_SOLO(\'reset\')">'+T2('最初からやり直す')+'</button>'
+        +'<button class="b sm'+(cf==='quit'?' on':'')+'" id="aslfullSoloQuit" style="height:40px" onclick="ASLFULL_SOLO(\'quit\')">'+T2('対戦をやめる')+'</button></div>';
       h+='<div style="font-size:11px;color:#8899aa;line-height:1.5;margin-top:4px">'+T2('最初からやり直す: OB の配置・T1 の最初のフェイズ・Pin や撃った印・勝利条件の記録を最初に戻します。対戦をやめる: スタックを全部消して対戦モードを閉じます。どちらも 2 回押すと実行します(ほかを押すと取り消し)。')+'</div>';
     }
     if(mine&&o.stacks.length){
