@@ -437,9 +437,8 @@ body::before{
   content:"";
   position:fixed;inset:4px;pointer-events:none;z-index:9999;
   border:2px solid #101010;border-radius:5px;
-  box-shadow:
-    0 0 0 2px #000,
-    0 0 22px rgba(0,0,0,.85);
+  box-shadow:0 0 0 2px #000;
+  -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);
 }
 body::after{
   content:"";
@@ -448,6 +447,7 @@ body::after{
     radial-gradient(rgba(255,255,255,.02) .7px, transparent .8px);
   background-size:4px 4px;
   opacity:.30;
+  -webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);
 }
 #stickytop,#main,#ftr{position:relative;z-index:10}
 #stickytop{
@@ -8338,7 +8338,9 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.365"; // v365: Barbarossa の画像を BATTLE RECORD ボタンの中の左に表示(別の枠をやめた)。
+var APP_VERSION="ASLFULL-v0.367"; // v367: iPad の黒い横線の対策その 2(固定の飾り枠の 22px ぼかしの影をやめ、固定の層を独立させた)。
+var APP_VERSION_HIST_ASLFULL_v366="ASLFULL-v0.366"; // v366: 対戦モードのボタン配置(LOS の左に 戻る・ヘクス確認、右に 撃つ・分割。FG に加える(詳細内)削除。アプリの番を進めるを 次のフェイズ の右へ)。
+var APP_VERSION_HIST_ASLFULL_v365="ASLFULL-v0.365"; // v365: Barbarossa の画像を BATTLE RECORD ボタンの中の左に表示(別の枠をやめた)。
 var APP_VERSION_HIST_ASLFULL_v364="ASLFULL-v0.364"; // v364: // v364: カウンタータブ — 箱の「設定」が閉じている間はカウンターの選択・移動ができない。かわりにカウンターを押すと、兵士=詳細・システム=意味・車両/砲/SW=ユニットタブと同じノートをポップアップ。
 var APP_VERSION_HIST_ASLFULL_v363="ASLFULL-v0.363"; // v363: // v363: 装甲戦闘車両・砲撃・軽対戦車兵器タブの武器選択を VASL のカウンター画像に(車両 209・砲 94・軽対戦車 9。3 倍描画で高解像度)。
 var APP_VERSION_HIST_ASLFULL_v362="ASLFULL-v0.362"; // v362: // v362: カウンタータブの Fire Lane を Firelane 1 のカウンターに(以前は矢印だけの画像)。
@@ -31700,6 +31702,7 @@ function LOS_PAGE(){
   // 2026-08修正(ダルマ指示「A▶︎Bに変更」): ボタン表記を「A→B」から「A▶︎B」に変更。
   h+=(window.ASLFULL_BATTLE_TB?ASLFULL_BATTLE_TB(tbBase):'');
   h+='<button class="tb-reset" style="'+tbBase+(abModeActive?tbOn:'color:#66ccff;')+'flex:1;min-width:0" onclick="LosActivateABMode()">'+((window.ASLFULL_BATTLE&&window.ASLFULL_BATTLE())?'LOS':'A▶︎B')+'</button>';
+  h+=(window.ASLFULL_BATTLE_TB2?ASLFULL_BATTLE_TB2(tbBase):'');
   // 2026-08修正(ダルマ指示): SMOKEボタンの色をライトグレーに変更
   // 2026-08修正(ダルマ指示「煙幕ボタン文字ダークイエロー」): 非アクティブ時の文字色を
   // グレー(#8899aa)からダークイエロー(#998a00)に変更。
@@ -31776,7 +31779,7 @@ function LOS_PAGE(){
   // コンテナだけを中心基準でCSS回転させることで、90/270度時の縦横入れ替えにも対応する
   // (盤面画像・A/B地点・LOS線はすべて内側コンテナの子要素としてまとめて回転する)。
   h+='<div id="losMapWrap" onclick="LosMapClick(event)" onmousedown="LosPanStart(event);LosEnemyDragStart(event);LosRouteVcaDragStart(event)" ontouchstart="LosPanStart(event);LosEnemyDragStart(event);LosRouteVcaDragStart(event)" ontouchmove="LosPanMove(event);LosEnemyDragMove(event);LosRouteVcaDragMove(event)" ontouchend="LosPanEnd();LosEnemyDragEnd();LosRouteVcaDragEnd()" style="position:relative;width:'+outerWpx+'px;height:'+outerHpx+'px;margin:auto;flex-shrink:0;cursor:'+(S_LOS.panMode?'grab':'crosshair')+'">'; // 2026-09修正(ダルマ指摘「行軍の際に最初に向きの設定ができない、敵軍と同じ仕組みで向きを設定できるようにする」): LosRouteVcaDragStart/Move/Endを既存のPan/敵軍ドラッグ系ハンドラと並記(routeVcaMode時のみ動作するようガード済み、他モードとの競合なし)
-  h+='<div style="position:absolute;left:50%;top:50%;width:'+innerWpx+'px;height:'+innerHpx+'px;transform:translate(-50%,-50%) rotate('+S_LOS.viewRot+'deg);transform-origin:center center">';
+  h+='<div style="position:absolute;left:50%;top:50%;width:'+innerWpx+'px;height:'+innerHpx+'px;margin-left:-'+Math.floor(innerWpx/2)+'px;margin-top:-'+Math.floor(innerHpx/2)+'px;transform:rotate('+S_LOS.viewRot+'deg);transform-origin:center center">'; /* v366: 小数 px の translate をやめた(iPad の黒い横線対策) */
   S_LOS.boards.forEach(function(b,bi){
     // 2026-08削除(Kato指示): SSR画像丸ごと差し替え方式(GrainToMarsh/WoodsToOrchard)は
     // 複雑化・位置ズレ問題のため撤廃。地形コード置換(LOS_SSR_TEMPLATES)による判定は
@@ -45812,6 +45815,14 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='merge'){ var s6=byId(o.sel); if(!s6)return; o.stacks.filter(function(z){ return z.id!==s6.id&&z.side===s6.side&&z.bd===s6.bd&&z.col===s6.col&&z.row===s6.row; }).forEach(function(z){
           z.u.forEach(function(y){ var w=s6.u.filter(function(q){ return q.t===y.t; })[0]; if(w){ w.n+=y.n; w.b=(w.b||0)+(y.b||0); } else s6.u.push(y); }); o.stacks=o.stacks.filter(function(q){ return q.id!==z.id; }); }); }
       else if(k==='battle'){ o.battle=!o.battle; fgClear(o); S_LOS.soloMode=!!o.battle; if(o.battle){ S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false;S_LOS.abMode=false;S_LOS.fireHexMode=false; } }
+      else if(k==='mvundo'){
+        var me2=mvuTop(o); if(!me2){ toast('戻せる動きがありません(このフェイズで動かした分だけ)'); return; }
+        if(mvuSig(o)!==me2.base){ o.mvu=[]; toast('そのあと射撃で損害や Pin があったので戻せません'); return; }
+        var s2=byId(me2.id); o.mvu.pop(); if(!s2){ toast('そのスタックはもうありません'); return; }
+        s2.bd=me2.bd; s2.col=me2.col; s2.row=me2.row; s2.f=JSON.parse(me2.f); o.sel=s2.id; o.aiPlan=null; o.shot=null; o.asl=false;
+        logAdd(o,T2('1 手戻した')+': '+hexNm(s2));
+      }
+      else if(k==='hxtog'){ o.hx=!o.hx; o.hxSel=null; if(o.hx){ o.sel=null; o.aim=null; fgClear(o); } }
       else if(k==='prev'){
         if(!S.turn)S.turn={cur:1,half:0,ended:false,phase:'rph'};
         var seqp=PHASE_SEQ.map(function(p){ return p.id; }), ip=seqp.indexOf(S.turn.phase||'rph');
@@ -45845,6 +45856,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var o=cur(); if(!o)return;
       if(o.busy||o.dff||(o.popQ&&o.popQ.length)){ toast(o.busy?'アプリの射撃を解決中です':(o.dff?'臨機射撃のパネルで答えてください':'臨機射撃のポップアップを閉じてください')); return; }
       if(o.lpMode){ o.det={bd:String(bd),col:col,row:row}; return; }
+      if(o.hx){ var hs=o.hxSel; o.hxSel=(hs&&hs.bd===String(bd)&&hs.col===col&&hs.row===row)?null:{bd:String(bd),col:col,row:row}; return; }
       var here=stackAt(String(bd),col,row), s=byId(o.sel); o.cf=null;
       if(o.fgOn&&!o.aim){ fgTap(o,String(bd),col,row,here); return; }
       if(o.aim){ var fr=byId(o.aim); o.aim=null; if(fr&&!(fr.bd===String(bd)&&fr.col===col&&fr.row===row)){ if(o.fgOn&&(o.fg||[]).length>1)fgShoot(o,String(bd),col,row); else { fgClear(o); shoot(o,fr,String(bd),col,row); } } else fgClear(o); return; }
@@ -45876,7 +45888,19 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(!s.f.asl&&!s.f.cx&&!((s.f.mf||0)>0))h+=B(!!o.asl,'#ffcc66','asl','警戒移動');
       if(!s.f.asl&&!s.f.cx&&!s.f.noDT)h+=B(false,'#ff9a3d','dt','急速移動'); }
     if((s&&canFire(s))||o.fgOn){ var inG=!!(s&&(o.fg||[]).indexOf(s.id)>=0); h+=B(!!o.fgOn,'#ffd24a','fgtog',inG?'FG−':'FG+')+(o.fgOn?B(false,'#cc6666','fg','FG解除'):''); }
+    if(ph==='mph'||ph==='aph'){ var ut=mvuTop(o); h+='<button class="tb-reset" id="aslfullSoloUndo" style="'+base+'flex:1;min-width:0;color:'+(ut?'#99ccff':'#556677')+';"'+(ut?'':' disabled')+' onclick="ASLFULL_SOLO(\'mvundo\')">戻る</button>'; }
+    h+=B(!!o.hx,'#66ddaa','hxtog','ヘクス確認');
     return h; };
+  /* LOS の右: 撃つ・分割 */
+  window.ASLFULL_BATTLE_TB2=function(base){ var o=cur(); if(!o||!battle())return ''; var s=byId(o.sel), h='';
+    function B2(id,on,col,fn,lbl){ return '<button class="tb-reset" id="'+id+'" style="'+base+'flex:1;min-width:0;'+(on?'color:#fff;border-color:'+col+';background:linear-gradient(180deg,#203040,#101820);':'color:'+col+';')+'" onclick="ASLFULL_SOLO(\''+fn+'\')">'+lbl+'</button>'; }
+    if(!s||o.hx)return '';
+    if(canFire(s))h+=B2('aslfullSoloFire',o.aim===s.id,'#ff7a3a','aim',o.aim===s.id?'目標?':((o.fgOn&&(o.fg||[]).length>1)?'FGで撃つ':'撃つ'));
+    if(s.u.reduce(function(p,x){ return p+x.n; },0)>1)h+=B2('aslfullSoloSplitOpen',!!(o.spl&&o.spl.id===s.id),'#c8a032','splitopen','分割');
+    return h; };
+  function mvuSig(o){ return JSON.stringify(o.stacks.map(function(z){ return [z.id,z.u,(z.f&&z.f.pin)?1:0]; })); }
+  function pushMvu(o,s){ if(s.side===o.ai)return; if(!o.mvu)o.mvu=[]; var t=S.turn||{cur:1,half:0}; o.mvu.push({id:s.id,bd:s.bd,col:s.col,row:s.row,f:JSON.stringify(s.f||{}),ph:(S.turn&&S.turn.phase)||'rph',tn:t.cur+'/'+t.half,base:mvuSig(o)}); if(o.mvu.length>40)o.mvu.shift(); }
+  function mvuTop(o){ var e=o&&o.mvu&&o.mvu[o.mvu.length-1]; if(!e)return null; var t=S.turn||{cur:1,half:0}; if(e.ph!==((S.turn&&S.turn.phase)||'rph')||e.tn!==(t.cur+'/'+t.half))return null; return e; }
   function moveTo(o,s,bd,col,row){
     var ph=(S.turn&&S.turn.phase)||'rph', mine=battle()&&(s.side===sideOfHalf()), f=fl(s);
     if(battle()&&mine&&ph==='mph'&&adj(s,col,row)&&s.bd===bd){
@@ -45888,7 +45912,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var used=(f.mf||0)+c.cost, mx=maxMF(s);
       if(used>mx){ toast('MF が足りません('+used+' / '+mx+')'+((f.cx||f.noDT)?'':'。急速歩移動(CX)にすると +'+((f.mf||0)>0?1:2))); return true; }
       var wantA=!!o.asl&&s.side!==o.ai; if(wantA){ if(f.cx){ toast('急速歩移動(CX)のスタックは警戒移動できません'); return true; } if((f.mf||0)>0){ toast('警戒移動は動く前に宣言します(このスタックはもう動いています)'); return true; } if(!(c.cost<mx)){ toast('警戒移動は、MF を使い切らない 1 ヘクスだけの移動です(このヘクスは MF '+c.cost+' / '+mx+')'); return true; } }
-      f.mf=used; if(wantA){ f.asl=true; o.asl=false; } s.col=col; s.row=row; if(f.conc&&o.ai===s.side){ try{ if(seenBy({bd:s.bd,col:s.col,row:s.row},foes(o,s.side)))f.conc=false; }catch(e){} } if(o.ai&&o.ai!==s.side)setTimeout(function(){ residualThen(o,s,function(){ if(!byId(s.id))return; if(autoOn(o))autoRespond(o,s.id); else planAsync(o,s.id); }); },0); return true;
+      pushMvu(o,s); f.mf=used; if(wantA){ f.asl=true; o.asl=false; } s.col=col; s.row=row; if(f.conc&&o.ai===s.side){ try{ if(seenBy({bd:s.bd,col:s.col,row:s.row},foes(o,s.side)))f.conc=false; }catch(e){} } if(o.ai&&o.ai!==s.side)setTimeout(function(){ residualThen(o,s,function(){ if(!byId(s.id))return; if(autoOn(o))autoRespond(o,s.id); else planAsync(o,s.id); }); },0); return true;
     }
     if(battle()&&ph==='rtph'&&adj(s,col,row)&&s.bd===bd){
       var c2=hexCost(bd,col,row); if(c2.cost==null){ toast(c2.unknown?'このヘクスの MF が分かりません(地図の読み込みを待ってもう一度)':'このヘクスには入れません'); return true; }
@@ -45897,7 +45921,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(battle()&&mine&&ph==='aph'&&adj(s,col,row)&&s.bd===bd){
       if(f.adv){ toast('このスタックはこの APh にもう前進しました'); return true; }
       if(f.pin){ toast('Pin されたスタックは前進できません(A7.8)'); return true; }
-      f.adv=true; s.col=col; s.row=row; return true;
+      pushMvu(o,s); f.adv=true; s.col=col; s.row=row; return true;
     }
     /* v335: 対戦中は移動フェイズ(MPh・RtPh・APh の決まった動き)以外では動かせない。隣のヘクスへの移動と、アプリだけで遊ぶときの移動は止める(実物で遊ぶときの遠くへの置き直しだけは通す) */
     if(battle()&&(adj(s,col,row)&&s.bd===bd||o.play==='app')){
@@ -45953,7 +45977,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   /* ---------- v318: アプリの臨機射撃を自動で解決(射撃 → IFT → 目標の MC → 反映) ---------- */
   function d6(){ if(window.__forceD6&&window.__forceD6.length)return window.__forceD6.shift(); return 1+Math.floor(Math.random()*6); }
   function autoOn(o){ return o.auto==null?true:!!o.auto; } /* v349: アプリ側の射撃は確認なしで自動(実物のときも) */
-  function logAdd(o,t){ if(!o.log)o.log=[]; o.log.unshift(t); if(o.log.length>40)o.log.length=40; }
+  function logAdd(o,t){ o.logN=(o.logN||0)+1; if(!o.log)o.log=[]; o.log.unshift(t); if(o.log.length>40)o.log.length=40; }
   function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
   function entryOf(s,t,br){ return s.u.filter(function(z){ return z.t===t&&z.n>0&&(br?(z.b||0)>0:z.n-(z.b||0)>0); })[0]; }
   function tidy(o,s){ s.u=s.u.filter(function(z){ return z.n>0; }); if(!s.u.some(function(z){ return kind(z.t)!=='sw'; })&&!s.u.length)o.stacks=o.stacks.filter(function(q){ return q.id!==s.id; }); }
@@ -46295,8 +46319,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
           var key=s.bd+':'+s.col+':'+s.row, k=seen[key]||0; seen[key]=k+1;
           var d=losCanonicalToDisplay(g.x,g.y,dispLayout), x=d.x+k*7-12, y=d.y+k*7-14;
           var fgm=!!(o.fgOn&&(o.fg||[]).indexOf(s.id)>=0), sel=o.sel===s.id, col=SIDE_COL[s.side]||'#8899aa', ai=o.ai===s.side, bk=brk(s);
-          if(vOn(o)){ h+='<g class="aslfull-solo" data-id="'+s.id+'" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">'+vStackSVG(o,s,d,k,col,fgm,sel,!!(S_LOS.pxA&&Math.hypot(S_LOS.pxA.x-g.x,S_LOS.pxA.y-g.y)<32))+'</g>'; return; }
-          h+='<g class="aslfull-solo" data-id="'+s.id+'" transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">';
+          var hxo=(o.hx&&o.hxSel&&battle()&&s.bd===o.hxSel.bd&&s.col===o.hxSel.col&&s.row===o.hxSel.row)?' opacity="0.12"':'';
+          if(vOn(o)){ h+='<g class="aslfull-solo" data-id="'+s.id+'"'+hxo+' transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">'+vStackSVG(o,s,d,k,col,fgm,sel,!!(S_LOS.pxA&&Math.hypot(S_LOS.pxA.x-g.x,S_LOS.pxA.y-g.y)<32))+'</g>'; return; }
+          h+='<g class="aslfull-solo" data-id="'+s.id+'"'+hxo+' transform="rotate('+(-(S_LOS.viewRot||0))+' '+d.x+' '+d.y+')">';
           h+='<rect x="'+x+'" y="'+y+'" width="26" height="22" rx="4" fill="'+col+'" fill-opacity="'+((s.f&&s.f.fired)?0.45:0.9)+'" stroke="'+(fgm?'#ffd24a':(sel?'#c8a032':'#0f0f0f'))+'" stroke-width="'+(fgm?4:(sel?3:1.2))+'"'+(fgm?' stroke-dasharray="5 2"':'')+'/>';
           h+='<text x="'+(x+13)+'" y="'+(y+11.5)+'" text-anchor="middle" dominant-baseline="middle" font-family="\'Arial Black\',Arial,sans-serif" font-size="9" font-weight="900" fill="#ffffff">'+(hidden(s)?'?':cnt(s,'mmc')+'·'+cnt(s,'smc'))+'</text>';
           if(ai)h+='<rect x="'+(x+15)+'" y="'+(y-7)+'" width="14" height="10" rx="2" fill="#0f0f0f" stroke="#c8a032" stroke-width="1"/><text x="'+(x+22)+'" y="'+(y-1.6)+'" text-anchor="middle" dominant-baseline="middle" font-family="Arial,sans-serif" font-size="7" font-weight="900" fill="#c8a032">AI</text>';
@@ -46694,7 +46719,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     boardsReady().then(stepRun,function(){ runStop(o,'地図の読み込みを待ってもう一度'); });
   }
   function runHTML(o){ if(!battle()||!o.ai||o.play!=='app')return '';
-    return '<div style="margin-top:8px"><button class="b sm'+(RUNNING?' on':'')+'" id="aslfullSoloRun" style="height:44px;width:100%" onclick="ASLFULL_SOLO(\'aiturn\')">'+T2(RUNNING?'実行中…':'アプリの番を進める')+'</button><div style="font-size:11px;color:#8899aa;line-height:1.5;margin-top:3px">'+T2('アプリの手番のフェイズを自動で進め、あなたの番の手前で止まります(あなたの臨機射撃のパネル・回復・白兵戦では止まります)')+(o.runMsg?'<br><b style="color:#c8a032">'+T2(o.runMsg)+'</b>':'')+'</div></div>'; }
+    return '<div style="margin-top:8px"><div style="font-size:11px;color:#8899aa;line-height:1.5;margin-top:3px">'+T2('アプリの手番のフェイズを自動で進め、あなたの番の手前で止まります(あなたの臨機射撃のパネル・回復・白兵戦では止まります)')+(o.runMsg?'<br><b style="color:#c8a032">'+T2(o.runMsg)+'</b>':'')+'</div></div>'; }
   window.ASLFULL_SOLO_ACT=function(){ var o=cur(); if(o)actPlan(o); return o&&o.aiAct; };
   var ACT_LBL={rally:'回復を試す',move:'動かす',rout:'潰走させる',adv:'前進させる',cc:'白兵戦タブへ',split:'混乱を分ける'};
   function actHTML(o){
@@ -46839,11 +46864,12 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var bs='height:40px;font-size:12px;white-space:nowrap;padding:0 6px';
     if(!o.battle)return '<div id="aslfullSoloBand" style="margin:4px 0"><button class="b sm" id="aslfullBattleBtn" style="'+bs+';width:100%" onclick="ASLFULL_SOLO(\'battle\')">'+T2('対戦モード')+'</button></div>';
     var me=sideOfHalf(), ph=phaseObj(), t=S.turn||{cur:1,half:0};
-    var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6px;align-items:center">';
+    var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto 1fr auto auto '+((o.ai&&o.play==='app')?'auto ':'')+'auto;gap:6px;align-items:center">';
     h+='<div style="font-family:\'Courier New\',monospace;font-weight:bold;font-size:16px;color:#c8a032">T'+t.cur+(t.ended?' END':(t.half?T2(' 裏'):T2(' 表')))+'</div>';
     h+='<div style="font-size:13px;color:#ccddee"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px">'+T2(o.play==='app'?'アプリだけで遊ぶ':'実物で遊ぶ')+'</span></div>';
     h+='<button class="b sm" id="aslfullPrevPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'prev\')">◀ '+T2('前のフェイズ')+'</button>';
     h+='<button class="b sm" id="aslfullNextPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'next\')"'+(t.ended?' disabled':'')+'>'+T2('次のフェイズ')+' ▶</button>';
+    if(o.ai&&o.play==='app')h+='<button class="b sm'+(RUNNING?' on':'')+'" id="aslfullSoloRun" style="'+bs+'" onclick="ASLFULL_SOLO(\'aiturn\')">'+T2(RUNNING?'実行中…':'アプリの番を進める')+'</button>';
     h+='<button class="b sm on" style="'+bs+'" onclick="ASLFULL_SOLO(\'battle\')">'+T2('一時停止(盤は残す)')+'</button>';
     h+='</div>';
     if(o.aim)h+='<div style="font-size:12px;color:#ff7a3a;line-height:1.4;margin-top:4px">'+T2('撃つ: 目標のヘクスをタップしてください')+'</div>';
@@ -46876,8 +46902,6 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(battle()){ var me=sideOfHalf(), ph=phaseObj(), mine=(s.side===me), tx=GUIDE[ph.id]?GUIDE[ph.id][mine?0:1]:'';
         if(tx)h+='<div style="font-size:12px;color:#c8a032;line-height:1.5;margin-top:6px">'+T2(ph.abbr)+'：'+T2(tx)+'</div>';
         var acts='';
-        if(canFire(s))acts+='<button class="b sm'+(o.fgOn?' on':'')+'" id="aslfullSoloFg0" style="height:40px" onclick="ASLFULL_SOLO(\'fg\')">'+T2(o.fgOn?'FG を解除':'FG に加える(複数スタックで撃つ)')+'</button>'
-          +'<button class="b sm'+(o.aim===s.id?' on':'')+'" id="aslfullSoloFire" style="height:40px" onclick="ASLFULL_SOLO(\'aim\')">'+T2(o.aim===s.id?'目標のヘクスをタップ(もう一度で取り消し)':(o.fgOn&&(o.fg||[]).length>1?'FG で撃つ':'撃つ'))+'</button>';
         if(mine&&ph.id==='mph'&&s.side!==o.ai&&!(s.f&&s.f.fired)&&!(s.f&&s.f.pin)&&!(s.f&&s.f.cx)&&!((s.f&&s.f.mf)>0))acts+='<button class="b sm'+(o.asl?' on':'')+'" id="aslfullSoloAsl" style="height:40px" onclick="ASLFULL_SOLO(\'asl\')">'+T2(o.asl?'警戒移動 入(隣のヘクスをタップ。MF を使い切らない 1 ヘクスだけ)':'警戒移動(Assault Movement)にする')+'</button>';
         if(mine&&ph.id==='mph'&&s.side!==o.ai&&s.f&&!s.f.fired&&!s.f.pin&&!s.f.asl&&!s.f.cx&&!s.f.noDT)acts+='<button class="b sm" id="aslfullSoloDt" style="height:40px" onclick="ASLFULL_SOLO(\'dt\')">'+T2('急速歩移動(Double Time)にする')+' (MF +'+(((s.f.mf||0)>0)?1:2)+T2('・CX になる')+')</button>';
         if(mine&&ph.id==='mph'&&s.f&&s.f.cx&&s.f.dt)acts+='<div style="font-size:12px;color:#ffcc66;line-height:1.4;text-align:center">'+T2('急速歩移動中(CX): MF +')+s.f.dt+T2('。CX は次の自分の MPh の初めに外れる。難地形には前進できない。白兵戦は CX 側 +1 / 相手は -1')+'</div>';
@@ -46891,7 +46915,6 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         var mates=o.stacks.filter(function(z){ return z.id!==s.id&&z.side===s.side&&z.bd===s.bd&&z.col===s.col&&z.row===s.row; }).length;
         var foes=o.stacks.filter(function(z){ return z.side!==s.side&&z.bd===s.bd&&z.col===s.col&&z.row===s.row; }).length;
         var ex=[];
-        if(s.u.reduce(function(p,x){ return p+x.n; },0)>1)ex.push('<button class="b sm'+((o.spl&&o.spl.id===s.id)?' on':'')+'" id="aslfullSoloSplitOpen" style="height:40px" onclick="ASLFULL_SOLO(\'splitopen\')">'+T2('分ける')+'</button>');
         if(mixed)ex.push('<button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'split\')">'+T2('混乱を分ける')+'</button>');
         if(mates)ex.push('<button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'merge\')">'+T2('同じヘクスの味方とまとめる')+'</button>');
         if(foes&&ph.id==='ccph'&&o.play==='app')ex.push('<button class="b sm" style="height:40px" onclick="ASLFULL_SOLO(\'ccauto\')">'+T2('アプリが白兵戦を解決')+'</button>');
