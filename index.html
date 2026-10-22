@@ -5281,6 +5281,8 @@ var I18N_EN={
 "実物で遊ぶ":"Real board & counters",
 "対戦モード":"Battle mode",
 "対戦モード終了":"Exit battle mode",
+"対戦開始":"Start battle",
+"対戦終了":"End battle",
 "次のフェイズ":"Next phase","一時停止":"Pause",
 "遊び方":"How to play",
 "Pin":"Pin",
@@ -8328,7 +8330,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.418"; // v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.419"; // v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -45905,7 +45907,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='auto'){ o.auto=!autoOn(o); }
       else if(k==='autoundo'){ var la=o.lastAuto; if(!la||!la.snap)return; o.dff=null; o.stacks=JSON.parse(la.snap); o.sel=null; o.shot=null; o.aiPlan=null; o.popQ=[]; logAdd(o,T2('取り消し')+': '+la.label); o.lastAuto=null; }
       else if(k==='confirm'){ o.cf=(o.cf===a)?null:a; }
-      else if(k==='quit'){ o.stacks=[]; o.sel=null; o.battle=false; S_LOS.soloMode=false; o.ai=null; o.on=false; o.ctl=null; o.hctl=null; o.shot=null; o.pend=null; o.aiPlan=null; o.aiAct=null; o.aim=null; fgClear(o); o.cf=null; o.popQ=[]; o.lastAuto=null; o.log=[]; o.dff=null; o.det=null; o.resid=null; }
+      else if(k==='quit'){ o.stacks=[]; o.sel=null; o.battle=false; S_LOS.soloMode=false; o.ai=null; o.on=false; o.ctl=null; o.hctl=null; o.shot=null; o.pend=null; o.aiPlan=null; o.aiAct=null; o.aim=null; fgClear(o); o.cf=null; o.popQ=[]; o.lastAuto=null; o.log=[]; o.dff=null; o.det=null; o.resid=null; soloResetRun(o); }
       else if(k==='ai'){ if(o.sc!==id){ o.sc=id; o.stacks=[]; o.sel=null; } o.ai=a; o.on=!!a||o.stacks.length>0; }
       else if((k==='setup'||k==='start'||k==='reset')&&!b){
         var sc9=scObj(); if(!sc9)return; o.sc=id; o.on=true; o.startAfter=(k==='start'); o.resetAfter=(k==='reset'); o.cf=null;
@@ -45932,7 +45934,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
           g.u.filter(function(x){ return kind(x.t)!=='mmc'; }).forEach(function(x){ for(var i=0;i<x.n;i++){ addTo(used[j%used.length],x.t); j++; } });
           used.forEach(function(pt){ o.seq++; o.stacks.push({id:'s'+o.seq,side:g.side,bd:bd,col:pt.h.col,row:pt.h.row,grp:g.hex,u:pt.u,f:g.conc?{conc:true}:{}}); });
         }); o.hctl=null;
-        o.shot=null; o.pend=null; o.aiPlan=null; o.aiAct=null; o.aim=null; fgClear(o); o.popQ=[]; o.lastAuto=null; o.log=[]; o.dff=null; o.det=null; o.resid=null;
+        o.shot=null; o.pend=null; o.aiPlan=null; o.aiAct=null; o.aim=null; fgClear(o); o.popQ=[]; o.lastAuto=null; o.log=[]; o.dff=null; o.det=null; o.resid=null; soloResetRun(o);
         if(o.startAfter||o.resetAfter){ if(!S.turn)S.turn={}; S.turn.cur=1; S.turn.half=0; S.turn.ended=false; S.turn.phase='rph'; try{ if(typeof renderPhaseTracker==='function')renderPhaseTracker(); }catch(e){} }
         if(o.startAfter){ o.battle=true; S_LOS.soloMode=true; S_LOS.panMode=false;S_LOS.smokeMode=false;S_LOS.markMode=false;S_LOS.routeMode=false;S_LOS.enemyHexMode=false;S_LOS.enemyHexAllMode=false;S_LOS.wreckHexMode=false;S_LOS.abMode=false;S_LOS.fireHexMode=false; S.tab='los'; }
         if(o.startAfter||o.resetAfter){ try{ if(window.SNP_resetPos)SNP_resetPos(); if(window.ASLFULL_SNP_SYNC)ASLFULL_SNP_SYNC(); if(window.SNP_autoPlaceApp)SNP_autoPlaceApp(); }catch(e){} } /* v400: App の狙撃兵を開始時に配置 */
@@ -46111,6 +46113,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function moveTo(o,s,bd,col,row){ var p0=[s.bd,s.col,s.row], r0=moveTo0(o,s,bd,col,row); trAdd(s,p0); if(S.turn&&S.turn.phase==='mph'&&(s.bd!==p0[0]||s.col!==p0[1]||s.row!==p0[2]))fl(s).mvd=true; return r0; } /* v414: A4.41 MPh に動いた印 */
   function moveTo0(o,s,bd,col,row){
     var ph=(S.turn&&S.turn.phase)||'rph', mine=battle()&&(s.side===sideOfHalf()), f=fl(s);
+    if(battle()&&(ph==='mph'||ph==='aph'||ph==='rtph')&&adj(s,col,row)&&s.bd===bd&&inMelee(o,s)){ toast('Melee 中なので動けません(A11.15)。出られるのは白兵戦フェイズの撤退(A11.2)だけです'); return true; }
     if(battle()&&mine&&ph==='mph'&&adj(s,col,row)&&s.bd===bd){
       if(f.fired){ toast('このターンに撃ったスタックは動けません'); return true; }
       if(f.asl){ toast('警戒移動を宣言したスタックは、このフェイズはもう動けません(1 ヘクスだけの移動です)'); return true; }
@@ -46129,7 +46132,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(battle()&&mine&&ph==='aph'&&adj(s,col,row)&&s.bd===bd){
       if(f.adv){ toast('このスタックはこの APh にもう前進しました'); return true; }
       if(f.pin){ toast('Pin されたスタックは前進できません(A7.8)'); return true; }
-      pushMvu(o,s); f.adv=true; s.col=col; s.row=row; return true;
+      if(allBroken(s)){ toast('混乱した部隊は前進できません(A4.7)'); return true; }
+      var ca=hexCost(bd,col,row); if(ca.cost==null){ toast(ca.unknown?'このヘクスの MF が分かりません(地図の読み込みを待ってもう一度)':'このヘクスには前進できません'); return true; }
+      if(ca.cost>=Math.min(4,maxMF(s)-(f.dt||0))){ if(f.cx){ toast('CX の部隊は、MF '+ca.cost+' の困難な地形へは前進できません(A4.72)'); return true; } f.cx=true; toast('困難な地形(MF '+ca.cost+')なので CX になります(A4.72)'); }
+      pushMvu(o,s); f.adv=true; f.advT=turnKey(); s.col=col; s.row=row; return true;
     }
     /* v335: 対戦中は移動フェイズ(MPh・RtPh・APh の決まった動き)以外では動かせない。隣のヘクスへの移動と、アプリだけで遊ぶときの移動は止める(実物で遊ぶときの遠くへの置き直しだけは通す) */
     if(battle()&&(adj(s,col,row)&&s.bd===bd||o.play==='app')){
@@ -46147,6 +46153,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   /* v318: 複数スタックの FG は射撃タブの「複数ヘクス FG」(ヘクスごとに 1 グループ)に入れる。射程・指揮官(全ヘクスに必要、A7.531)は射撃タブが数える */
   function shoot(o,fr0,bd,col,row,opt){
     var FRS=Array.isArray(fr0)?fr0:[fr0], fr=FRS[0];
+    if(FRS.some(function(q){ return inMelee(o,q); })){ toast('Melee 中の部隊は射撃できません(A11.15)'); if(opt&&opt.done)opt.done(null); return; }
     var ph=(S.turn&&S.turn.phase)||'rph', sub=FIRE_SUB[ph]; if(!sub){ if(opt&&opt.done)opt.done(null); return; }
     var tg=stackAt(bd,col,row).filter(function(x){ return x.side!==fr.side; });
     S.fireSub=sub; var f=getFireState(); if(!f){ if(opt&&opt.done)opt.done(null); return; }
@@ -46614,7 +46621,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var R=o.rph={key:key,lines:[],manual:[],done:false,snap:snap,info:false,closed:false}; RPHRUN=true; RPHCANCEL=false; o.busy=true; var items;
     function fin(){ S.rally=JSON.parse(keepR); S.rally.mmcSelfRallyUsed=st.used; S.rally.res=null; R.done=true; RPHRUN=false; o.busy=false; if(R.lines.length)o.lastAuto={snap:snap,label:T2('回復')}; if(typeof saveState==='function')saveState(); Draw(); rphDraw(); }
     boardsReady().then(function(){ items=rphRecItems(o).concat(rphItems(o)); var i=0;
-      function go(){ if(i>=items.length&&!R.repDone){ R.repDone=true; items=items.concat(rphRepItems(o)).concat(rphXferItems(o)); } if(i>=items.length)return fin(); var it=items[i++], sp=RPHCANCEL?0:rphSpd();
+      function go(){ if(o.rph!==R)return; if(i>=items.length&&!R.repDone){ R.repDone=true; items=items.concat(rphRepItems(o)).concat(rphXferItems(o)); } if(i>=items.length)return fin(); var it=items[i++], sp=RPHCANCEL?0:rphSpd();
         var s=byId(it.sid); var pend={lab:(s?hexNm(s):'')+' '+(it.xfer?'SW':(it.rec?T2('SW の回収'):it.t+'('+T2(it.rep?'故障':'混乱')+')')),txt:T2(it.xfer?'受け渡しを確認…':(it.rec?'回収を試みる…':(it.rep?'修理を試みる…':'回復を試みる…'))),pending:true}; R.lines.push(pend); rphDraw();
         function doIt(){ var r=null; try{ r=rphOne(o,it,st,R); }catch(e){ r={lab:pend.lab,txt:String(e)}; } R.lines.pop(); if(r)R.lines.push(r); try{ Draw(); }catch(e){} rphDraw(); if(RPHCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(sp===0)doIt(); else setTimeout(doIt,sp); }
@@ -46634,7 +46641,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     PFPRUN=true; PFPCANCEL=false; o.busy=true;
     function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; if(R.n)o.lastAuto={snap:snap,label:T2({dfph:'防御射撃',afph:'前進射撃'}[ph0]||'準備射撃')}; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
     boardsReady().then(function(){ var n=0;
-      function step(){ if(!PFPRUN)return; var e; try{ plan(o); e=((o.aiPlan&&o.aiPlan.items)||[]).filter(function(x){ return x.go; })[0]; }catch(er){ e=null; }
+      function step(){ if(!PFPRUN||o.pfp!==R)return; var e; try{ plan(o); e=((o.aiPlan&&o.aiPlan.items)||[]).filter(function(x){ return x.go; })[0]; }catch(er){ e=null; }
         if(!e||n>=6)return fin(); n++;
         var fr=(e.frs||[e.fr]).map(byId).filter(Boolean), tg=byId(e.tg); if(!fr.length||!tg)return fin();
         var lab=fr.map(hexNm).join('+')+(fr.length>1?' FG':'')+' → '+hexNm(tg);
@@ -46661,7 +46668,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button>';
     h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(CC?'白兵戦フェイズ終了 → 次の半ターンへ':AP?'突撃フェイズ終了 → 白兵戦へ':RT?'潰走フェイズ終了 → 突撃へ':AF?'前進射撃フェイズ終了 → 潰走へ':(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ'))+'</button></div>';
     return h; }
-  function pfpDraw(){ var o=cur(), el=document.getElementById('aslfullSoloPfp'); if(!o||!o.pfp||o.pfp.closed||!(S.turn&&S.turn.phase===o.pfp.ph)){ if(el)el.remove(); return; }
+  function pfpDraw(){ var o=cur(), el=document.getElementById('aslfullSoloPfp'); if(!o||!o.pfp||o.pfp.closed||!(S.turn&&S.turn.phase===o.pfp.ph)||String(o.pfp.key).indexOf(S.turn.cur+'/'+S.turn.half+'/')!==0){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloPfp'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
     el.innerHTML=pfpHTML(o); }
   window.ASLFULL_PFP=function(k,a){ var o=cur(); if(!o||!o.pfp)return;
@@ -46727,7 +46734,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function rtSplitOff(o,s){ if(allBroken(s))return s; var bu=splitBroken(s); if(!bu.length)return s; s.u=s.u.filter(function(z){ return z.n>0; }); o.seq=(o.seq||0)+1;
     var ns={id:'s'+o.seq,side:s.side,bd:s.bd,col:s.col,row:s.row,grp:s.grp,u:bu,f:{dm:true}}; o.stacks.push(ns); return ns; }
   function rtOne(o,s0,R){ var tk=turnKey(); var s=s0;
-    if(o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row; })){ var l0=hexNm(s)+' '+T2('混乱した部隊'); R.manual.push(hexNm(s)+': '+T2('同じヘクスに敵がいる(白兵戦中は潰走できない/できる場合は手で)')); return {lab:l0,txt:T2('同じヘクスに敵: 手で')}; }
+    if(o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row; })){ var l0=hexNm(s)+' '+T2('混乱した部隊'); return {lab:l0,txt:T2('Melee 中は潰走しない。撤退は白兵戦フェイズ(A11.2・A11.16)'),ok:false}; }
     s=rtSplitOff(o,s); var nm=s.u.filter(function(z){ return kind(z.t)!=='sw'; }).map(function(z){ return z.t+'×'+z.n; }).join(' '), lab=T2('潰走')+' '+hexNm(s)+'　'+nm;
     var P=rtPlan(o,s); fl(s).rtd=tk;
     if(P.act==='stay'){ logAdd(o,T2('潰走')+' '+hexNm(s)+': '+T2('動かない')+'('+P.why+')'); return {lab:lab,txt:T2('動かない')+'('+P.why+')',ok:false}; }
@@ -46747,7 +46754,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     o.pfpKey=key; o.autoKey=key; var R=o.pfp={key:key,ph:'rtph',lines:[],manual:[],done:false,closed:false,run:true,n:0,wait:false,atk:mineAtk}; PFPRUN=true; PFPCANCEL=false; o.busy=true; RTLOS={};
     function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
     boardsReady().then(function(){ var ids=o.stacks.filter(function(q){ return q.side===o.ai&&hasBroken(q)&&fl(q).rtd!==turnKey(); }).map(function(q){ return q.id; }), i=0;
-      function go(){ if(!PFPRUN)return; if(i>=ids.length)return fin(); var s=byId(ids[i++]); if(!s||!hasBroken(s))return go();
+      function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=ids.length)return fin(); var s=byId(ids[i++]); if(!s||!hasBroken(s))return go();
         var pend={lab:T2('潰走')+' '+hexNm(s),txt:T2('潰走を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
         function doIt(){ var r=null; try{ r=rtOne(o,s,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
@@ -46767,7 +46774,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(diff){ if(f.cx)return no(T2('困難な地形(MF')+' '+c.cost+T2(')に CX では前進できない(A4.72)')); cxNote='・'+T2('困難な地形(MF')+' '+c.cost+T2(')なので CX になる(A4.72)'); }
     var en=o.stacks.filter(function(t){ return t.side!==s.side&&t.bd===to.bd&&t.col===to.col&&t.row===to.row; });
     if(en.some(function(t){ return t.u.some(function(x){ return x.n>0&&kind(x.t)!=='mmc'&&kind(x.t)!=='smc'&&kind(x.t)!=='sw'; }); })){ R.manual.push(lab+': '+T2('敵に AFV/車両がいる → PAATC(A4.71)を手で')); return no(T2('AFV のいるヘクス: PAATC は手で(A4.71)')); }
-    var from=hexNm(s), p0=[s.bd,s.col,s.row]; f.adv=true; if(diff)f.cx=true; s.bd=to.bd; s.col=to.col; s.row=to.row; trAdd(s,p0);
+    var from=hexNm(s), p0=[s.bd,s.col,s.row]; f.adv=true; f.advT=turnKey(); if(diff)f.cx=true; s.bd=to.bd; s.col=to.col; s.row=to.row; trAdd(s,p0);
     var fight=en.length>0, txt=from+' → '+hexNm(s)+'・'+(it.why||'')+cxNote+(fight?'・'+T2('敵と同じヘクス → 白兵戦(CCPh)'):'');
     logAdd(o,lab+': '+txt); return {lab:lab,txt:txt,ok:true}; }
   function apAuto(o,force){
@@ -46778,11 +46785,16 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       o.stacks.filter(function(q){ return q.side===o.ai&&hasBroken(q)&&goodN(q)>0; }).forEach(function(q){ rtSplitOff(o,q); }); /* 混乱した部隊は前進できないので分ける(A4.7) */
       try{ actPlan(o); }catch(er){ R.lines.push({lab:T2('計画'),txt:String(er)}); return fin(); }
       var items=((o.aiAct&&o.aiAct.items)||[]).filter(function(x){ return x.s&&byId(x.s); }), i=0;
-      function go(){ if(!PFPRUN)return; if(i>=items.length)return fin(); var it=items[i++], s=byId(it.s); if(!s||goodN(s)<=0)return go();
+      function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=items.length)return fin(); var it=items[i++], s=byId(it.s); if(!s||goodN(s)<=0)return go();
         var pend={lab:T2('前進')+' '+hexNm(s),txt:T2('前進を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
         function doIt(){ var r=null; try{ r=apOne(o,s,it,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
       go(); },function(){ fin(); }); }
+  function inMelee(o,s){ return !!(s.f&&s.f.mel)&&o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); }); } /* v419: A11.15 Melee 中は CC と撤退以外できない */
+  function soloResetRun(o){ /* v419: 最初からやり直す/対戦終了のとき、実行中のフェイズ処理・ポップアップ・キーを全部捨てる */
+    PFPRUN=false; PFPCANCEL=false; RPHRUN=false; RPHCANCEL=false; AUTOMV=false; MPHCANCEL=false; RUNNING=false; o.busy=false;
+    o.pfp=null; o.pfpKey=null; o.autoKey=null; o.rphKey=null; o.autoMvKey=null; o.rph=null; o.mph=null;
+    ['aslfullSoloPfp','aslfullSoloMph','aslfullSoloRph'].forEach(function(i){ var e=document.getElementById(i); if(e)e.remove(); }); }
   function residualThen(o,s,cb){
     var ph=(S.turn&&S.turn.phase)||'rph'; if(!o.ai||ph!=='mph'||!o.resid||!byId(s.id)){ cb(); return; }
     var key=s.bd+':'+s.col+':'+s.row, r=o.resid[key]; if(!r||r.side===s.side||((r.hit||{})[s.id]||0)>=r.fp){ cb(); return; }
@@ -47219,7 +47231,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var FS=fside||o.ai, ph=(S.turn&&S.turn.phase)||'rph', mine=(sideOfHalf()===FS), items=[], cache={};
     var avail=o.stacks.filter(function(s){ var f=s.f||{}; if(s.side!==FS)return false;
       if(!s.u.some(function(x){ return kind(x.t)!=='sw'&&x.n-(x.b||0)>0; }))return false;
-      if(f.fired&&(mine||(ph==='mph'&&!(f.ff>=1))))return false; return true; });
+      if(f.fired&&(mine||(ph==='mph'&&!(f.ff>=1))))return false; if(inMelee(o,s))return false; return true; });
     var T=o.stacks.filter(function(t){ return t.side!==FS&&(!onlyTg||t.id===onlyTg); });
     function okPart(s,t){ if(s.bd===t.bd&&s.col===t.col&&s.row===t.row)return null; /* v341: 同じヘクスの敵は白兵戦で。射撃はしない */ var q=partOf(s,t,cache); if(!q)return null; if((s.f||{}).fired&&ph==='dfph'&&q.R>1)return null; return q; }
     var guard=0;
@@ -47282,7 +47294,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var key=(S.turn.cur)+'/'+S.turn.half+'/'+ph; if(!force&&o.autoMvKey===key)return; o.autoMvKey=key;
     AUTOMV=true; MPHCANCEL=false; var n=0, TRY={}, R=o.mph={key:key,lines:[],done:false,snap:JSON.stringify(o.stacks),closed:false,min:false,n:0};
     function end(){ AUTOMV=false; R.done=true; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} mphDraw(); }
-    function alive(){ var cr=cur(); return cr&&cr===o&&((S.turn.cur)+'/'+S.turn.half+'/'+S.turn.phase)===key; }
+    function alive(){ var cr=cur(); return cr&&cr===o&&o.mph===R&&((S.turn.cur)+'/'+S.turn.half+'/'+S.turn.phase)===key; }
     function waitClear(cb,w){ w=w||0; if(!alive())return end(); mphDraw(); if(o.dff||o.busy||(o.popQ&&o.popQ.length)){ if(w>4000)return end(); return setTimeout(function(){ waitClear(cb,w+1); },150); } cb(); }
     boardsReady().then(function(){
       function step(){
@@ -47298,7 +47310,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       step(); },function(){ end(); });
   }
   function autoPhase(o,force){
-    if(!(S.turn&&(S.turn.phase==='pfph'||S.turn.phase==='dfph'||S.turn.phase==='afph'||S.turn.phase==='rtph'||S.turn.phase==='aph'||S.turn.phase==='ccph'))){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
+    { var pe=document.getElementById('aslfullSoloPfp'); if(pe&&(!o||!o.pfp||!S.turn||o.pfp.ph!==S.turn.phase||String(o.pfp.key).indexOf(S.turn.cur+'/'+S.turn.half+'/')!==0))pe.remove(); }
     if(!(S.turn&&S.turn.phase==='mph')){ var pm=document.getElementById('aslfullSoloMph'); if(pm)pm.remove(); }
     if(!o||!battle()||!o.ai||!autoOn(o)||RUNNING||o.busy||o.dff||(o.popQ&&o.popQ.length))return;
     var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if(((ph==='pfph'||ph==='afph')&&sideOfHalf()===o.ai)||(ph==='dfph'&&sideOfHalf()!==o.ai)){ pfpAuto(o,force); return; } if(ph==='rtph'){ rtpAuto(o,force); return; } if(ph==='aph'){ if(sideOfHalf()===o.ai)apAuto(o,force); return; } if(ph==='ccph'){ ccpAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
@@ -47366,6 +47378,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     function drOf(n){ var k=n.bd+':'+n.col+':'+n.row; if(DRM[k]==null)DRM[k]=nearest(n,RG).d; return DRM[k]; }
     o.stacks.filter(function(s){ return s.side===o.ai; }).forEach(function(s){
       var f=s.f||{}, here={bd:s.bd,col:s.col,row:s.row}, ne=nearest(here,F), rs=false;
+      if((ph==='mph'||ph==='aph')&&inMelee(o,s))return; /* A11.15 */
       if(ph==='rph'){
         var L=ldrOf(s);
         s.u.forEach(function(x,i){ if(kind(x.t)==='sw'||!(x.b>0))return; var smc=kind(x.t)==='smc';
@@ -47488,7 +47501,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!sides[1]){ sides=H.ks.slice(); }
     var all=o.stacks.filter(function(q){ return q.bd===H.bd&&q.col===H.col&&q.row===H.row; });
     if(all.some(function(q){ return q.u.some(function(x){ var k=kind(x.t); return x.n>0&&k!=='mmc'&&k!=='smc'&&k!=='sw'; }); })){ R.manual.push(hx+': '+T2('車両/AFV がいる白兵戦(A11.3〜A11.6)は手で')); R.lines.push({lab:T2('白兵戦')+' '+hx,txt:T2('車両がいるので手で(A11.5・A11.6)'),ok:false}); return out; }
-    if(all.some(function(q){ return q.f&&q.f.adv; })&&rtCover({bd:H.bd,col:H.col,row:H.row}))R.manual.push(hx+': '+T2('森/建物への前進による白兵戦: Ambush(A11.4)の判定が要るなら手で(アプリは隠蔽を扱わない)'));
+    if(all.some(function(q){ return q.f&&q.f.advT===turnKey(); })&&rtCover({bd:H.bd,col:H.col,row:H.row}))R.manual.push(hx+': '+T2('森/建物への前進による白兵戦: Ambush(A11.4)の判定が要るなら手で(アプリは隠蔽を扱わない)'));
     /* A11.2/A11.16: アプリの混乱した部隊は撤退(Withdrawal)する。撤退する部隊は攻撃できず、攻撃に -2 DRM と、残る味方 1 ユニットごとに +1 */
     var wd=[], wdMsg=[];
     sides.forEach(function(sd){ if(sd!==o.ai)return; ccSt(o,H,sd).forEach(function(q0){ if(!hasBroken(q0))return; var q=rtSplitOff(o,q0); if(!allBroken(q)||!q.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }))return;
@@ -47538,7 +47551,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     o.pfpKey=key; o.autoKey=key; var R=o.pfp={key:key,ph:'ccph',lines:[],manual:[],done:false,closed:false,run:true,n:0,wait:false,atk:(sideOfHalf()===o.ai)}; PFPRUN=true; PFPCANCEL=false; o.busy=true;
     function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; o.aiAct=null; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
     boardsReady().then(function(){ var L=ccHexList(o), i=0;
-      function go(){ if(!PFPRUN)return; if(i>=L.length)return fin(); var H0=L[i++], H=ccHexList(o).filter(function(h){ return h.bd===H0.bd&&h.col===H0.col&&h.row===H0.row; })[0]; if(!H)return go();
+      function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=L.length)return fin(); var H0=L[i++], H=ccHexList(o).filter(function(h){ return h.bd===H0.bd&&h.col===H0.col&&h.row===H0.row; })[0]; if(!H)return go();
         var pend={lab:T2('白兵戦')+' '+hexNm({bd:H.bd,col:H.col,row:H.row}),txt:T2('解決中…'),pending:true}; R.lines.push(pend); pfpDraw();
         function doIt(){ R.lines.pop(); try{ ccOne(o,H,R); R.n++; }catch(er){ R.lines.push({lab:pend.lab,txt:String(er)}); } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
@@ -47563,13 +47576,13 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       if(o.dff)return runStop(o,'あなたの臨機射撃のパネルに答えてから、もう一度「アプリの番を進める」');
       if(o.busy)return runIdle(o,function(ok){ if(ok)stepRun(); else runStop(o,o.dff?'あなたの臨機射撃のパネルに答えてから、もう一度「アプリの番を進める」':'解決の待ちが長いので止めます'); });
       var ph=S.turn.phase, aiMine=(sideOfHalf()===o.ai), k=key(); if(k!==lastKey){ lastKey=k; RF={}; TRY={}; }
-      if(((ph==='pfph'||ph==='afph')&&aiMine)||(ph==='dfph'&&!aiMine)){
-        plan(o); var e=((o.aiPlan&&o.aiPlan.items)||[]).filter(function(x){ return x.go; })[0]; o.aiPlan=null;
-        if(!e||(e.frs||[e.fr]).some(function(i){ return RF[i]; }))return nextPh();
-        (e.frs||[e.fr]).forEach(function(i){ RF[i]=1; });
-        return autoFire(o,e,function(){ Draw(); setTimeout(stepRun,30); }); }
+      if(((ph==='pfph'||ph==='afph')&&aiMine)||(ph==='dfph'&&!aiMine)){ if(RF.mod)return nextPh(); RF.mod=1; PFPRUN=false; o.pfpKey=null; pfpAuto(o,true); return setTimeout(stepRun,60); }
       if(ph==='dfph')return nextPh();
-      if(ph==='ccph'){ ccAll(o); Draw(); return setTimeout(nextPh,30); }
+      if(ph==='rtph'){ if(RF.mod)return nextPh(); if(!aiMine&&o.runSkip!==k){ o.runSkip=k; return runStop(o,'攻撃側のあなたの潰走を先に済ませて(A10.5)、もう一度押すとアプリの潰走を実施します'); } RF.mod=1; PFPRUN=false; o.pfpKey=null; rtpAuto(o,true); return setTimeout(stepRun,60); }
+      if(ph==='aph'&&aiMine){ if(RF.mod)return nextPh(); RF.mod=1; PFPRUN=false; o.pfpKey=null; apAuto(o,true); return setTimeout(stepRun,60); }
+      if(ph==='ccph'){ if(RF.mod)return nextPh(); PFPRUN=false; o.pfpKey=null; ccpAuto(o,true);
+        if(o.pfp&&o.pfp.wait&&o.pfp.ph==='ccph'){ if(o.runSkip!==k){ o.runSkip=k; return runStop(o,'あなたの混乱した部隊の撤退(A11.2)を先に済ませて、もう一度押すと白兵戦を解決します'); } o.pfp.goCC=true; o.pfp.wait=false; ccpAuto(o,true); }
+        RF.mod=1; return setTimeout(stepRun,60); }
       if(!aiMine&&(ph==='pfph'||ph==='mph'||ph==='afph'||ph==='aph'))return runStop(o,'あなたの番です');
       if(!actPhase(o))return nextPh();
       if(ph==='rph'){ rallyAll(o); return setTimeout(nextPh,30); }
@@ -47724,11 +47737,13 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function band(){
     var o=cur(); if(!o||!o.on||!SOLO_SCN[sid()])return '';
     var bs='height:40px;font-size:12px;white-space:nowrap;padding:0 6px';
-    if(!o.battle)return '<div id="aslfullSoloBand" style="margin:4px 0"><button class="b sm" id="aslfullBattleBtn" style="'+bs+';width:100%" onclick="ASLFULL_SOLO(\'battle\')">'+T2('対戦モード')+'</button></div>';
+    if(!o.battle)return '<div id="aslfullSoloBand" style="margin:4px 0;display:flex;gap:6px">'+'<button class="b sm" id="aslfullStartBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'start\')">'+T2('対戦開始')+'</button>'+'<button class="b sm" id="aslfullQuitBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'quit\')">'+T2('対戦終了')+'</button>'+'<button class="b sm" id="aslfullBattleBtn" style="'+bs+';flex:1" onclick="ASLFULL_SOLO(\'battle\')">'+T2('対戦モード')+'</button></div>';
     var me=sideOfHalf(), ph=phaseObj(), t=S.turn||{cur:1,half:0};
-    var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;gap:6px;align-items:center">';
+    var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;gap:6px;align-items:center;overflow-x:auto">';
     h+='<div style="font-family:\'Courier New\',monospace;font-weight:bold;font-size:16px;color:#c8a032">T'+t.cur+(t.ended?' END':(t.half?T2(' 裏'):T2(' 表')))+'</div>';
     h+='<div style="font-size:13px;color:#ccddee;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px;border:1px solid #8899aa;border-radius:3px;padding:0 5px">'+(o.play==='app'?'App':T2('実物で遊ぶ'))+'</span></div>';
+    h+='<button class="b sm" id="aslfullStartBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'start\')">'+T2('対戦開始')+'</button>';
+    h+='<button class="b sm" id="aslfullQuitBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'quit\')">'+T2('対戦終了')+'</button>';
     h+='<button class="b sm" id="aslfullPrevPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'prev\')">◀️'+T2('フェイズ')+'</button>';
     h+='<button class="b sm" id="aslfullNextPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'next\')"'+(t.ended?' disabled':'')+'>'+T2('フェイズ')+'▶️</button>';
     if(o.ai&&o.play==='app')h+='<button class="b sm'+(RUNNING?' on':'')+'" id="aslfullSoloRun" style="'+bs+'" onclick="ASLFULL_SOLO(\'aiturn\')">'+(RUNNING?T2('実行中…'):'App'+T2('フェイズ')+'▶\uFE0E')+'</button>';
