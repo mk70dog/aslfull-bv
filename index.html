@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.406"; // v406: SW の持ち主(所有・受け渡し・回収)。
+var APP_VERSION="ASLFULL-v0.407"; // v407: 砲の種類のカウンターが枠からはみ出す不具合。
+var APP_VERSION_HIST_ASLFULL_v406="ASLFULL-v0.406"; // v406: SW の持ち主(所有・受け渡し・回収)。
 var APP_VERSION_HIST_ASLFULL_v405="ASLFULL-v0.405"; // v405: 未熟兵の SW は B#/X#−1(A19.32)。
 var APP_VERSION_HIST_ASLFULL_v404="ASLFULL-v0.404"; // v404: SW の故障まわりの未対応分(持ち主なし・Sustained Fire・手動射撃・分割・修理の上限・回収)。
 var APP_VERSION_HIST_ASLFULL_v403="ASLFULL-v0.403"; // v403: SW の故障(A9.7)と修理(A9.72)。
@@ -13851,7 +13852,7 @@ function fireTgtGunPickerHTML(f){
   tgtGunList.forEach(function(gun){
     var chipBcT=(gun.nat&&UNITS[gun.nat.split('/')[0]]&&UNITS[gun.nat.split('/')[0]].col)||'#8899aa';
     var codeBadgeT=gunCategoryChip(gun,chipBcT);
-    h+='<button class="b sm'+(f.tgtGunId===gun.id?" on":"")+'" style="height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="FtgtGunSet(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeT+'</span></button>';
+    h+='<button class="b sm'+(f.tgtGunId===gun.id?" on":"")+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="FtgtGunSet(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeT+'</span></button>';
   });
   h+='</div>';
   var tgun=GUN_DATA.find(function(g){return g.id===f.tgtGunId;});
@@ -14036,7 +14037,7 @@ function DC_ACTIVATE_CARD(){
       h+='<div class="btns unit-picker" style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:0">';
       dcGunPickList.forEach(function(gun){
         var dcChipBc=(gun.nat&&UNITS[gun.nat.split('/')[0]]&&UNITS[gun.nat.split('/')[0]].col)||'#8899aa';
-        h+='<button class="b sm'+(dc.gunRefId===gun.id?" on":"")+'" style="height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="DCactGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+gunCategoryChip(gun,dcChipBc)+'</span></button>';
+        h+='<button class="b sm'+(dc.gunRefId===gun.id?" on":"")+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="DCactGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+gunCategoryChip(gun,dcChipBc)+'</span></button>';
       });
       h+='</div>';
     }
@@ -20980,7 +20981,7 @@ function GUN_PAGE(){
     GUN_DATA.filter(function(gun){return (S.scen.sel||!g.gunNatFilter||gun.nat.split('/').indexOf(g.gunNatFilter)>=0)&&(!scenGunIds||scenGunIds[gun.id]);}).forEach(function(gun){
       var chipBc=(gun.nat&&UNITS[gun.nat.split('/')[0]]&&UNITS[gun.nat.split('/')[0]].col)||'#8899aa';
       var codeBadge=gunCategoryChip(gun,chipBc);
-      h+='<button class="b sm'+(g.gunId===gun.id?" on":"")+'" style="height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="Gset(\'gunId\',\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadge+'</span></button>';
+      h+='<button class="b sm'+(g.gunId===gun.id?" on":"")+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="Gset(\'gunId\',\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadge+'</span></button>';
     });
     h+='</div>';
   }
@@ -21558,7 +21559,7 @@ function GUN_PAGE(){
       tgtGunPickList.forEach(function(gun){
         var chipBcR=(gun.nat&&UNITS[gun.nat.split('/')[0]]&&UNITS[gun.nat.split('/')[0]].col)||'#8899aa';
         var codeBadgeR=gunCategoryChip(gun,chipBcR);
-        h+='<button class="b sm'+(g.drm.tgtGunRefId===gun.id?" on":"")+'" style="height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="GsetTgtGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeR+'</span></button>';
+        h+='<button class="b sm'+(g.drm.tgtGunRefId===gun.id?" on":"")+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="GsetTgtGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeR+'</span></button>';
       });
       h+='</div>';
     }
@@ -23186,7 +23187,7 @@ function latwSizeSelectorHTML(ld){
       latwGunPickList.forEach(function(gun){
         var chipBcQ=(gun.nat&&UNITS[gun.nat.split('/')[0]]&&UNITS[gun.nat.split('/')[0]].col)||'#8899aa';
         var codeBadgeQ=gunCategoryChip(gun,chipBcQ);
-        h+='<button class="b sm'+(ld.drm.tgtGunRefId===gun.id?" on":"")+'" style="height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="LATWsetTgtGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeQ+'</span></button>';
+        h+='<button class="b sm'+(ld.drm.tgtGunRefId===gun.id?" on":"")+'" style="height:auto;min-height:40px;white-space:normal;line-height:1.25;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" onclick="LATWsetTgtGunRef(\''+gun.id+'\')">'+'<span style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center">'+codeBadgeQ+'</span></button>';
       });
       h+='</div>';
     }
