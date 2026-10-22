@@ -5282,6 +5282,8 @@ var I18N_EN={
 "対戦モード":"Battle mode",
 "対戦モード終了":"Exit battle mode",
 "対戦開始":"Start battle",
+"DM を残す(押すと外す)":"Keep DM (tap to remove)",
+"DM を外す(押すと残す)":"Remove DM (tap to keep)",
 "あなたの回復フェイズ":"Your Rally Phase",
 "回収を振る":"Roll recovery",
 "修理を振る":"Roll repair",
@@ -8344,7 +8346,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.427"; // v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.428"; // v428: DM を残す(A10.62)・潰走前の SW 放棄(A10.4)・指揮官の同行潰走(A10.711)。 v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -46055,7 +46057,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='next'){
         if(!S.turn)S.turn={cur:1,half:0,ended:false,phase:'rph'};
         var seq=PHASE_SEQ.map(function(p){ return p.id; }), i=seq.indexOf(S.turn.phase||'rph');
-        o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.dt=0; f.adv=false; f.asl=false; f.ffAt=null; if(S.turn.phase==='mph'){ f.noDT=false; f.tr=null; } if(S.turn.phase==='rph')f.dm=false; });
+        o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.dt=0; f.adv=false; f.asl=false; f.ffAt=null; if(S.turn.phase==='mph'){ f.noDT=false; f.tr=null; } if(S.turn.phase==='rph'){ if(dmKeepOk(o,x))f.dmKept=turnKey(); else f.dm=false; f.dmKeep=false; } /* v428: A10.62 森・建物の外なら DM を残せる */ });
         if(i<0||i<seq.length-1){ S.turn.phase=seq[Math.max(0,i+1)]; }
         else { var before=S.turn.cur+'/'+S.turn.half; S.turn.phase='rph'; if(typeof TurnAdj==='function')TurnAdj(1);
           if((S.turn.cur+'/'+S.turn.half)!==before){ o.stacks.forEach(function(x){ var f=fl(x); f.pin=false; f.fired=false; f.ff=0; f.ffAt=null; f.mvd=false; }); gainConc(o); } }
@@ -46439,6 +46441,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function mcAll(o,rec,tg,mt){
     var L=instOf(tg).sort(function(a,b){ var ka=kind(a.t)==='smc'?0:1, kb=kind(b.t)==='smc'?0:1; if(ka!==kb)return ka-kb; return ldrRank(b.t)-ldrRank(a.t); });
     L.forEach(function(ins){
+      if(mt.skip&&ins.t===mt.skip&&!ins.br)return; /* v428: A10.711 同行の指揮官は Interdiction の NMC を受けない */
       var s=byId(ins.sid); if(!s)return; var x=entryOf(s,ins.t,ins.br); if(!x)return; var k=kind(ins.t), hx=hexNm(s);
       if(mt.ptc&&(ins.br||(s.f&&s.f.pin))){ rec.units.push({h:hx,t:ins.t,txt:T2(ins.br?'混乱中は PTC なし':'すでに Pin')}); return; }
       MC_SetPickNat(s.side); if(k==='smc'){ S.mc.wounded=!!(x.w>0); S.mc._woundForLabel=ins.t; } MC_PickUnit(k,ins.t);
@@ -46701,7 +46704,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(RT&&(R.ask||R.done))h+=surHTML(o,R);
     if(!R.done)return h+(R.ask?'':'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_PFP(\'skip\')">'+T2('残りを一気に進める')+'</button></div>');
     if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('手で行うこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
-    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(CC?'攻撃の分け方(アプリは各陣営の1回の総攻撃にまとめます。A11.12 の分割攻撃は手で)・Ambush(A11.4)・Infiltration(A11.22)・捕虜(A20.22)・車両/AFV との白兵戦(A11.5・A11.6)・SW の除去(A11.13)・人間側の撤退の宣言など。必要なら手で行ってください。':AP?'AFV のいるヘクスへの前進(A4.71 PAATC)・隠蔽された敵への前進と Ambush(A11.4)・FFE/地雷(7.25)・建物の上下階への前進・SW の受け渡し(A4.431)・Wall Advantage・Climb・PP で MF が残らない場合(A4.7)など。必要なら手で行ってください。':RT?'捕虜のいる Location への射撃の効果(A20.54)・捕虜の脱走(A20.55)・Massacre(A20.4)・護衛が足りない分の解放(A20.21)、指揮官と一緒に潰走する Voluntary Rout(A10.711)、隠蔽された敵への対応、SW を IPC に合わせて捨てる処理、FFE/地雷を通る潰走など。必要なら手で行ってください。':AF?'Opportunity Fire(Bounding Fire)の部隊の全 FP 射撃・煙幕・OBA・車両/ガンの射撃など。必要なら手で行ってください。(AFPh の射撃は FP ½、MPh に動いた MMG/HMG は撃てない: A7.24・A4.41)':DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
+    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(CC?'攻撃の分け方(アプリは各陣営の1回の総攻撃にまとめます。A11.12 の分割攻撃は手で)・Ambush(A11.4)・Infiltration(A11.22)・捕虜(A20.22)・車両/AFV との白兵戦(A11.5・A11.6)・SW の除去(A11.13)・人間側の撤退の宣言など。必要なら手で行ってください。':AP?'AFV のいるヘクスへの前進(A4.71 PAATC)・隠蔽された敵への前進と Ambush(A11.4)・FFE/地雷(7.25)・建物の上下階への前進・SW の受け渡し(A4.431)・Wall Advantage・Climb・PP で MF が残らない場合(A4.7)など。必要なら手で行ってください。':RT?'捕虜のいる Location への射撃の効果(A20.54)・捕虜の脱走(A20.55)・Massacre(A20.4)・護衛が足りない分の解放(A20.21)、隠蔽された敵への対応、FFE/地雷を通る潰走など。あなたの部隊の潰走(SW を IPC に合わせて捨てる A10.4・指揮官の同行 A10.711 も)は手で。必要なら手で行ってください。':AF?'Opportunity Fire(Bounding Fire)の部隊の全 FP 射撃・煙幕・OBA・車両/ガンの射撃など。必要なら手で行ってください。(AFPh の射撃は FP ½、MPh に動いた MMG/HMG は撃てない: A7.24・A4.41)':DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
     h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2(CC?'白兵戦の解決が終わりました。':AP?'アプリの突撃(前進)が終わりました。':RT?'アプリの潰走が終わりました。':AF?'アプリの前進射撃が終わりました。':(DF?'アプリの防御射撃が終わりました。':'アプリの準備射撃が終わりました。'))+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(CC?'このプレイヤーターンは終わりです。次へ進むと、次の半ターンまたは次のターンの回復フェイズ(RPh)になります(Pin 等は進行時に外れます)。':AP?'次は白兵戦フェイズ(CCPh)です。前進で敵と同じヘクスに入った部隊は白兵戦になります(A3.8)。':RT?(R.atk?'次はあなたの潰走(防御側)です。あなたの混乱した部隊を、潰走の規則(A10.5)に従って潰走させてください。済んだら突撃フェイズ(APh)へ進みます。':'あなたの潰走もアプリの潰走も済みました。次は突撃フェイズ(APh)です。'):AF?'次は潰走フェイズ(RtPh)です。攻撃側のアプリの潰走から先に行い、そのあとあなたの混乱した部隊を潰走させます(A3.6)。':DF?'次はあなたの前進射撃フェイズ(AFPh)です。移動や準備射撃をしなかった部隊は半分の FP で撃てます(A3.5)。あなたの前進射撃を行ってください。':'この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button>';
     h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(CC?'白兵戦フェイズ終了 → 次の半ターンへ':AP?'突撃フェイズ終了 → 白兵戦へ':RT?'潰走フェイズ終了 → 突撃へ':AF?'前進射撃フェイズ終了 → 潰走へ':(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ'))+'</button></div>';
@@ -46783,13 +46786,15 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var SN=surNeed(o,s,P); if(SN&&!SN.nq)return {lab:lab,txt:T2('降伏')+': '+SN.why,ok:false,ask:{sid:s.id,caps:SN.cap.map(function(t){ return t.id; }),why:SN.why}};
     if(P.act==='stay'){ logAdd(o,T2('潰走')+' '+hexNm(s)+': '+T2('動かない')+'('+P.why+')'); return {lab:lab,txt:T2('動かない')+'('+P.why+')',ok:false}; }
     if(P.act==='fail'){ var gone=instOf([s]); gone.forEach(function(ins){ elimInst(o,s,ins.t,ins.br); }); tidy(o,s); var tx=T2('潰走できない → 除去(Failure to Rout, A10.5)')+'・'+P.why; logAdd(o,lab+': '+tx); return {lab:lab,txt:tx+(SN&&SN.nq?'・'+T2('No Quarter のあとなので降伏しない(A20.3)'):''),ok:false}; }
+    var dropL=rtDropSW(o,s), vrT=rtVolLdr(o,s,P), pre=[]; if(dropL.length)pre.push(T2('IPC を超える SW をここに捨てた(A10.4)')+': '+dropL.join('・')); if(vrT)pre.push(vrT+' '+T2('が一緒に潰走する(Voluntary Rout、A10.711)'));
     var path=P.plan.path, from=hexNm(s), steps=[], used=0, stopped='';
     for(var i=1;i<path.length;i++){ var b=path[i]; var c=hexCost(b.bd,b.col,b.row); used+=(c.cost||0); var p0=[s.bd,s.col,s.row]; s.bd=b.bd; s.col=b.col; s.row=b.row; trAdd(s,p0); steps.push(hexNm(s));
-      if(P.act==='rout'&&rtIntd(rtCtx(o,s),b)){ var rec={units:[],manual:[],notes:[]}; mcAll(o,rec,[s],{type:'NMC'}); (rec.manual||[]).forEach(function(m){ R.manual.push(m); });
+      if(P.act==='rout'&&rtIntd(rtCtx(o,s),b)){ var rec={units:[],manual:[],notes:[]}; var sig0=instOf([s]).filter(function(p){ return !(vrT&&p.t===vrT&&!p.br); }).map(function(p){ return p.t+(p.br?'b':''); }).sort().join(','); mcAll(o,rec,[s],{type:'NMC',skip:vrT||null});
+        if(vrT&&byId(s.id)){ var sig1=instOf([s]).filter(function(p){ return !(p.t===vrT&&!p.br); }).map(function(p){ return p.t+(p.br?'b':''); }).sort().join(','); if(sig1!==sig0){ elimInst(o,s,vrT,false); rec.units.push({h:hexNm(s),t:vrT,txt:T2('一緒に潰走した指揮官も除去(A10.711)')}); vrT=null; } } (rec.manual||[]).forEach(function(m){ R.manual.push(m); });
         steps[steps.length-1]+='【'+T2('妨害 NMC')+': '+rec.units.map(function(u){ return u.t+' '+(u.dr?'DR '+u.dr+' ':'')+u.txt; }).join(' / ')+'】';
         if(!byId(s.id)||!s.u.length){ stopped=T2('除去された'); break; } if(fl(s).pin){ stopped=T2('Pin されて、ここで止まった'); break; } } }
     if(byId(s.id)){ fl(s).mf=P.act==='crawl'?6:used; try{ tidy(o,s); }catch(e){} }
-    var txt=(P.act==='crawl'?'Low Crawl ':'')+from+' → '+steps.join(' → ')+'　(MF '+(P.act==='crawl'?'6/6':used+'/6')+')・'+P.why+(stopped?'・'+stopped:'');
+    var txt=(pre.length?pre.join('・')+'・':'')+(P.act==='crawl'?'Low Crawl ':'')+from+' → '+steps.join(' → ')+'　(MF '+(P.act==='crawl'?'6/6':used+'/6')+')・'+P.why+(stopped?'・'+stopped:'');
     logAdd(o,lab+': '+txt); return {lab:lab,txt:txt,ok:!stopped}; }
   window.__rtPlanDbg=function(sid){ var o=cur(), s=o&&byId(sid); if(!s)return null; RTLOS={}; var P=rtPlan(o,s); return {act:P.act,why:P.why,path:P.plan?P.plan.path.map(hexNm):null,mf:P.plan&&P.plan.mf,ints:P.plan&&P.plan.ints,dest:P.dest?hexNm(P.dest):null}; }; /* 試験用 */
   function rtpAuto(o,force){
@@ -46899,18 +46904,21 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         L.push({sec:2,key:'ral|'+id,sid:q.id,xi:xi,lab:hexNm(q)+' '+x.t+'('+T2('混乱')+' '+x.b+')',det:parts.join('・')+'　'+T2('残り')+' '+Math.max(0,left)+'/'+init,ok:left>0,why:left>0?'':T2('この RPh はもう試した(1 ユニット 1 回)')}); }); });
     rphRepItems(F).forEach(function(it){ var s=byId(it.sid); if(!s)return; var key='rep|'+it.sid+'|'+it.t+'|'+refKey(it.ref); L.push({sec:3,key:key,it:it,lab:hexNm(s)+' '+it.t+'('+T2('故障')+') ['+refName(it.ref)+']',ok:!R.done[key],why:''}); });
     Object.keys(R.res).forEach(function(k){ if(!L.some(function(e){ return e.key===k; })){ var p=k.split('|'); L.push({sec:+({rec:1,ral:2,rep:3})[p[0]]||9,key:k,lab:R.res[k].lab,ok:false,why:'',gone:true}); } });
+    o.stacks.filter(function(q){ return q.side===F.ai&&hasBroken(q)&&(q.f&&q.f.dm)&&!dmCover(q)&&!hidden(q); }).forEach(function(q){ L.push({sec:4,key:'dmk|'+q.id,sid:q.id,lab:hexNm(q)+' '+q.u.filter(function(x){ return kind(x.t)!=='sw'&&x.b>0; }).map(function(x){ return x.t+'×'+x.b; }).join('・'),ok:false,dmk:true,on:!!q.f.dmKeep}); });
     L.sort(function(a,b){ return a.sec-b.sec; }); return L; }
   function hRphHTML(o){ var L=hRphList(o), R=hRyState(o); if(!L.length)return '<div style="margin-top:8px;font-size:13px;color:#8899aa">'+T2('あなたの軍に、回収・回復・修理できるものはありません')+'</div>';
-    var T={1:T2('1. SW の回収(A4.44・dr < 6。回収したユニットは、この RPh はほかに何もできない)'),2:T2('2. 混乱ユニットの回復(A10.6)'),3:T2('3. SW の修理(A9.72・dr ≤ R# で修理、6 で除去)')}, h='<div id="aslfullHRph" style="margin-top:8px"><div style="font-size:14px;font-weight:bold;color:#9fe8bd">'+T2('あなたの回復フェイズ')+'</div>', sec=0;
+    var T={1:T2('1. SW の回収(A4.44・dr < 6。回収したユニットは、この RPh はほかに何もできない)'),2:T2('2. 混乱ユニットの回復(A10.6)'),3:T2('3. SW の修理(A9.72・dr ≤ R# で修理、6 で除去)'),4:T2('4. DM を残す(A10.62・森・建物の外にいる混乱ユニットは、RPh の終わりに DM を外さずに残せる。次の RtPh にまた潰走できるが、次の回復は +4 のまま)')}, h='<div id="aslfullHRph" style="margin-top:8px"><div style="font-size:14px;font-weight:bold;color:#9fe8bd">'+T2('あなたの回復フェイズ')+'</div>', sec=0;
     L.forEach(function(e){ if(e.sec!==sec){ sec=e.sec; h+='<div style="margin-top:6px;font-size:12px;color:#c8a032">'+(T[sec]||'')+'</div>'; }
       var r=R.res[e.key], btn=sec===1?T2('回収を振る'):sec===2?T2('回復を振る'):T2('修理を振る');
       h+='<div style="margin-top:4px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px"><div style="font-size:13px;color:#ccddee" onclick="ASLFULL_HRPH(\'see\',\''+e.key+'\')">'+rEsc(e.lab)+(e.det?'<br><span style="font-size:12px;color:#aabbcc">'+rEsc(e.det)+'</span>':'')+'</div>'
         +(r?'<div style="font-size:12px;color:'+(r.ok?'#9fe86b':'#ffcc66')+';margin-top:2px">'+rEsc(r.txt)+'</div>':'')
+        +(e.dmk?'<button class="b sm'+(e.on?' on':'')+'" style="height:44px;width:100%;margin-top:4px" onclick="ASLFULL_HRPH(\'dmk\',\''+e.key+'\')">'+T2(e.on?'DM を残す(押すと外す)':'DM を外す(押すと残す)')+'</button>':'')
         +(e.ok?'<button class="b sm" style="height:44px;width:100%;margin-top:4px" onclick="ASLFULL_HRPH(\'roll\',\''+e.key+'\')">'+btn+'</button>':(e.why?'<div style="font-size:12px;color:#8899aa;margin-top:2px">'+rEsc(e.why)+'</div>':''))+'</div>'; });
     return h+'</div>'; }
   window.ASLFULL_HRPH=function(k,key){ var o=cur(); if(!o||!battle()||((S.turn&&S.turn.phase)||'')!=='rph')return; if(RPHRUN){ toast('アプリの回復の処理中です'); return; }
     var L=hRphList(o), e=L.filter(function(x){ return x.key===key; })[0], R=hRyState(o); if(!e)return;
     if(k==='see'){ var sid=e.sid||(e.it&&e.it.sid); if(sid&&byId(sid))o.sel=sid; Draw(); rphDraw(); return; }
+    if(k==='dmk'){ var qd=byId(e.sid); if(qd){ fl(qd).dmKeep=!qd.f.dmKeep; logAdd(o,hexNm(qd)+' '+T2(qd.f.dmKeep?'DM を残す(A10.62)':'DM を外す')); } if(typeof saveState==='function')saveState(); Draw(); rphDraw(); return; }
     if(!e.ok)return; var res=null, keepR=JSON.stringify(S.rally);
     try{
       if(e.sec===2){ var q=byId(e.sid), x=q&&q.u[e.xi]; if(q&&x){ var t=hRally(o,q,x); res={lab:e.lab,txt:t,ok:/: 回復(?!しない)/.test(t)}; } }
@@ -46919,6 +46927,33 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(res){ R.res[key]=res; logAdd(o,T2('あなたの回復フェイズ')+': '+res.lab+' '+res.txt); }
     if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e3){} rphDraw(); };
   function hSnpAx(o){ if(!window.ASLFULL_SOLO_ROLE||!S.sniper||!S.sniper.san)return null; var r=null; [true,false].forEach(function(ax){ var ro=ASLFULL_SOLO_ROLE(ax), k=ax?'axis':'allied'; if(ro&&/^Player\(/.test(ro)&&S.sniper.san[k]!=null&&S.sniper.san[k]>=2&&!(S.sniper.pos&&S.sniper.pos[k]))r=ax; }); return r; }
+
+  /* ---------- v428: 潰走の残り(A10.62・A10.4・A10.711) ---------- */
+  function dmCover(s){ var nm=''; try{ nm=hexInfoName(s); }catch(e){} return /Woods|Building|MultipleWooden|MultipleStone/.test(nm); } /* A10.62: woods/building/pillbox/trench(塹壕・トーチカは地図に無い) */
+  function dmKeepOk(o,s){ var f=s.f||{}; if(!f.dm||!hasBroken(s)||dmCover(s))return false; return s.side===o.ai?true:!!f.dmKeep; } /* アプリは森・建物の外の混乱ユニットの DM を残す(次の RtPh にまた潰走できるように) */
+  function ipcOf(s,r){ if(kind(r.t)==='smc'){ var x=s.u.filter(function(z){ return z.t===r.t; })[0]; return (x&&x.w>0)?0:1; } return 3; } /* A4.42・A17.2(負傷 0) */
+  function rtDropSW(o,s){ if(!hasSWe(s))return []; swNorm(s); var items=[], byOw={}, drop=[], lines=[];
+    s.u.forEach(function(x){ if(persT(x))return; for(var k=0;k<x.n;k++){ var d=swData(x.t,s.side)||{}; items.push({x:x,k:k,r:x.own[k],pp:(d.pp!=null?d.pp:1),fp:(swFP(x.t)||{fp:0}).fp}); } });
+    items.forEach(function(it){ var r=it.r; if(!(r&&typeof r==='object')||!refOk(s,r)){ drop.push(it); return; } var kk=refKey(r); (byOw[kk]=byOw[kk]||{r:r,L:[]}).L.push(it); });
+    Object.keys(byOw).forEach(function(kk){ var g=byOw[kk], cap=ipcOf(s,g.r), n=g.L.length, best=null, bp=-1, bf=-1;
+      for(var m=0;m<(1<<n);m++){ var pp=0, fp=0; for(var i=0;i<n;i++)if(m&(1<<i)){ pp+=g.L[i].pp; fp+=g.L[i].fp; } if(pp>cap)continue; if(pp>bp||(pp===bp&&fp>bf)){ bp=pp; bf=fp; best=m; } } /* A10.4: IPC ちょうど、できなければ IPC 未満でいちばん多く */
+      g.L.forEach(function(it,i){ if(!(best&(1<<i)))drop.push(it); }); });
+    if(!drop.length)return [];
+    o.seq=(o.seq||0)+1; var h={id:'s'+o.seq,side:s.side,bd:s.bd,col:s.col,row:s.row,grp:s.grp,u:[],f:{}}; o.stacks.push(h);
+    drop.sort(function(a,b){ return a.x===b.x?b.k-a.k:0; });
+    var byX=[]; drop.forEach(function(it){ var e=byX.filter(function(q){ return q.x===it.x; })[0]; if(!e){ e={x:it.x,ks:[]}; byX.push(e); } e.ks.push(it.k); });
+    byX.forEach(function(e){ e.ks.sort(function(a,b){ return b-a; }).forEach(function(k){ lines.push(e.x.t+(e.x.own&&e.x.own[k]&&typeof e.x.own[k]==='object'?'('+refName(e.x.own[k])+')':'')); swMoveItem(o,s,e.x,k,h,0); }); });
+    if(!h.u.length)o.stacks=o.stacks.filter(function(q){ return q.id!==h.id; });
+    return lines; }
+  function rtVolLdr(o,s,P){ if(P.act!=='rout'&&P.act!=='crawl')return null; var here=o.stacks.filter(function(q){ return q!==s&&q.side===s.side&&q.bd===s.bd&&q.col===s.col&&q.row===s.row; });
+    var goodMMC=here.some(function(q){ return q.u.some(function(x){ return kind(x.t)==='mmc'&&x.n-(x.b||0)>0; }); });
+    var adjEn=o.stacks.some(function(t){ return t.side!==s.side&&goodN(t)>0&&dist(s,t)<=1; });
+    if(goodMMC&&!adjEn)return null; /* 残る味方の MMC がいて、隣に敵がいなければ残る */
+    var best=null; here.forEach(function(q){ if(q.f&&(q.f.pin||q.f.berserk))return; q.u.forEach(function(x,ix){ if(kind(x.t)!=='smc'||x.n-(x.b||0)<=0||ldrRank(x.t)<0)return; if(!best||ldrRank(x.t)>ldrRank(best.x.t))best={q:q,x:x,ix:ix}; }); });
+    if(!best)return null;
+    var mv=best.q.u.map(function(z,i){ return i===best.ix?{m:1,mb:0}:{m:0,mb:0}; }); var nu=splitCore(best.q,mv,true); best.q.u=best.q.u.filter(function(z){ return z.n>0; }); mergeInto(s,{u:nu}); tidy(o,best.q);
+    fl(s).vr=best.x.t; return best.x.t; }
+  window.__v428=function(){ return {rtDropSW:rtDropSW,rtVolLdr:rtVolLdr,dmKeepOk:dmKeepOk,swNorm:swNorm}; }; /* 試験用 */
   function soloResetRun(o){ /* v419: 最初からやり直す/対戦終了のとき、実行中のフェイズ処理・ポップアップ・キーを全部捨てる */
     PFPRUN=false; PFPCANCEL=false; RPHRUN=false; RPHCANCEL=false; AUTOMV=false; MPHCANCEL=false; RUNNING=false; o.busy=false; ASTEP=null; aStepDraw();
     o.pfp=null; o.pfpKey=null; o.autoKey=null; o.rphKey=null; o.autoMvKey=null; o.rph=null; o.mph=null;
