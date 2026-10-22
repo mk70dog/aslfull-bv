@@ -8328,7 +8328,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.415"; // v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.416"; // v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -46646,20 +46646,20 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   }
   function pfpHTML(o){ var R=o.pfp; if(!R)return '';
     var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_PFP(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
-    var DF=(R.ph==='dfph'), AF=(R.ph==='afph'), RT=(R.ph==='rtph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(RT?'潰走フェイズ':(AF?'前進射撃フェイズ':(DF?'防御射撃フェイズ':'準備射撃フェイズ')))+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.wait?'の番を待っています':(R.done?'終了':(RT?'の潰走を実施中':'の射撃を実施中')))+'</div>';
+    var DF=(R.ph==='dfph'), AF=(R.ph==='afph'), RT=(R.ph==='rtph'), AP=(R.ph==='aph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(AP?'突撃フェイズ':RT?'潰走フェイズ':(AF?'前進射撃フェイズ':(DF?'防御射撃フェイズ':'準備射撃フェイズ')))+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.wait?'の番を待っています':(R.done?'終了':(AP?'の前進を実施中':RT?'の潰走を実施中':'の射撃を実施中')))+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:6px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'</div>';
     if(R.wait)return h+'<div style="font-size:14px;color:#ffcc66;line-height:1.7"><b>'+T2('攻撃側が先に潰走します(A10.5)。あなたの混乱した部隊の潰走を先に行ってください。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2('済んだら下のボタンで、アプリ(防御側)の潰走を実施します。')+'</span></div><div style="margin-top:10px"><button class="b sm" style="height:44px;width:100%;border-color:#2fa866" id="aslfullRtGo" onclick="ASLFULL_PFP(\'go\')">'+T2('アプリの潰走を実施')+'</button></div>';
     if(!R.done)h+='<div style="display:flex;gap:4px;align-items:center;font-size:12px;color:#8899aa;margin-bottom:6px">'+T2('速度')+' '+spdBtn+'</div>';
     h+='<div style="font-size:13px;line-height:1.7;color:#ccddee">';
-    if(!R.lines.length&&R.done)h+='<div>'+T2(RT?'アプリに潰走する混乱ユニットはありません':'アプリが撃てる目標はありません(LOS・射程・撃つ価値)')+'</div>';
+    if(!R.lines.length&&R.done)h+='<div>'+T2(AP?'アプリが前進できる部隊はありません':RT?'アプリに潰走する混乱ユニットはありません':'アプリが撃てる目標はありません(LOS・射程・撃つ価値)')+'</div>';
     R.lines.forEach(function(l){ h+='<div style="padding:2px 0;border-top:1px solid #222">'+(l.pending?'▶ ':'')+rEsc(l.lab)+'<br><span style="color:'+(l.ok?'#9fe86b':'#ffcc66')+'">'+rEsc(l.txt)+'</span></div>'; });
     h+='</div>';
     if(!R.done)return h+'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_PFP(\'skip\')">'+T2('残りを一気に進める')+'</button></div>';
     if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('手で行うこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
-    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(RT?'降伏(A20.21)の受け入れ・捕虜、指揮官と一緒に潰走する Voluntary Rout(A10.711)、隠蔽された敵への対応、SW を IPC に合わせて捨てる処理、FFE/地雷を通る潰走など。必要なら手で行ってください。':AF?'Opportunity Fire(Bounding Fire)の部隊の全 FP 射撃・煙幕・OBA・車両/ガンの射撃など。必要なら手で行ってください。(AFPh の射撃は FP ½、MPh に動いた MMG/HMG は撃てない: A7.24・A4.41)':DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
-    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2(RT?'アプリの潰走が終わりました。':AF?'アプリの前進射撃が終わりました。':(DF?'アプリの防御射撃が終わりました。':'アプリの準備射撃が終わりました。'))+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(RT?(R.atk?'次はあなたの潰走(防御側)です。あなたの混乱した部隊を、潰走の規則(A10.5)に従って潰走させてください。済んだら突撃フェイズ(APh)へ進みます。':'あなたの潰走もアプリの潰走も済みました。次は突撃フェイズ(APh)です。'):AF?'次は潰走フェイズ(RtPh)です。攻撃側のアプリの潰走から先に行い、そのあとあなたの混乱した部隊を潰走させます(A3.6)。':DF?'次はあなたの前進射撃フェイズ(AFPh)です。移動や準備射撃をしなかった部隊は半分の FP で撃てます(A3.5)。あなたの前進射撃を行ってください。':'この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
+    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(AP?'AFV のいるヘクスへの前進(A4.71 PAATC)・隠蔽された敵への前進と Ambush(A11.4)・FFE/地雷(7.25)・建物の上下階への前進・SW の受け渡し(A4.431)・Wall Advantage・Climb・PP で MF が残らない場合(A4.7)など。必要なら手で行ってください。':RT?'降伏(A20.21)の受け入れ・捕虜、指揮官と一緒に潰走する Voluntary Rout(A10.711)、隠蔽された敵への対応、SW を IPC に合わせて捨てる処理、FFE/地雷を通る潰走など。必要なら手で行ってください。':AF?'Opportunity Fire(Bounding Fire)の部隊の全 FP 射撃・煙幕・OBA・車両/ガンの射撃など。必要なら手で行ってください。(AFPh の射撃は FP ½、MPh に動いた MMG/HMG は撃てない: A7.24・A4.41)':DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
+    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2(AP?'アプリの突撃(前進)が終わりました。':RT?'アプリの潰走が終わりました。':AF?'アプリの前進射撃が終わりました。':(DF?'アプリの防御射撃が終わりました。':'アプリの準備射撃が終わりました。'))+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(AP?'次は白兵戦フェイズ(CCPh)です。前進で敵と同じヘクスに入った部隊は白兵戦になります(A3.8)。':RT?(R.atk?'次はあなたの潰走(防御側)です。あなたの混乱した部隊を、潰走の規則(A10.5)に従って潰走させてください。済んだら突撃フェイズ(APh)へ進みます。':'あなたの潰走もアプリの潰走も済みました。次は突撃フェイズ(APh)です。'):AF?'次は潰走フェイズ(RtPh)です。攻撃側のアプリの潰走から先に行い、そのあとあなたの混乱した部隊を潰走させます(A3.6)。':DF?'次はあなたの前進射撃フェイズ(AFPh)です。移動や準備射撃をしなかった部隊は半分の FP で撃てます(A3.5)。あなたの前進射撃を行ってください。':'この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button>';
-    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(RT?'潰走フェイズ終了 → 突撃へ':AF?'前進射撃フェイズ終了 → 潰走へ':(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ'))+'</button></div>';
+    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(AP?'突撃フェイズ終了 → 白兵戦へ':RT?'潰走フェイズ終了 → 突撃へ':AF?'前進射撃フェイズ終了 → 潰走へ':(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ'))+'</button></div>';
     return h; }
   function pfpDraw(){ var o=cur(), el=document.getElementById('aslfullSoloPfp'); if(!o||!o.pfp||o.pfp.closed||!(S.turn&&S.turn.phase===o.pfp.ph)){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloPfp'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
@@ -46667,7 +46667,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   window.ASLFULL_PFP=function(k,a){ var o=cur(); if(!o||!o.pfp)return;
     if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(typeof saveState==='function')saveState(); }
     else if(k==='skip'){ PFPCANCEL=true; }
-    else if(k==='tab'){ o.pfp.closed=true; try{ S.tab=(o.pfp.ph==='rtph'?'rout':'fire'); }catch(e){} Draw(); }
+    else if(k==='tab'){ o.pfp.closed=true; try{ S.tab=(o.pfp.ph==='rtph'?'rout':(o.pfp.ph==='aph'?'aphcc':'fire')); }catch(e){} Draw(); }
     else if(k==='go'){ o.pfp.wait=false; rtpAuto(o,true); return; }
     else if(k==='next'){ o.pfp.closed=true; pfpDraw(); window.ASLFULL_SOLO('next'); return; }
     else if(k==='undo'){ if(o.pfp.snap&&o.pfp.done){ o.stacks=JSON.parse(o.pfp.snap); o.sel=null; o.popQ=[]; o.lastAuto=null; logAdd(o,T2('取り消し')+': '+T2('準備射撃')); o.pfp.lines=[]; o.pfp.manual=[]; o.pfp.n=0; o.pfp.snap=null; Draw(); } }
@@ -46750,6 +46750,37 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       function go(){ if(!PFPRUN)return; if(i>=ids.length)return fin(); var s=byId(ids[i++]); if(!s||!hasBroken(s))return go();
         var pend={lab:T2('潰走')+' '+hexNm(s),txt:T2('潰走を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
         function doIt(){ var r=null; try{ r=rtOne(o,s,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
+        if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
+      go(); },function(){ fin(); }); }
+
+  /* ---------- v416: 突撃フェイズ(A4.7〜A4.72) ---------- */
+  function apOne(o,s,it,R){
+    var lab=T2('前進')+' '+hexNm(s)+'　'+s.u.filter(function(z){ return kind(z.t)!=='sw'; }).map(function(z){ return z.t+'×'+(z.n-(z.b||0)); }).join(' '), f=fl(s);
+    function no(why){ logAdd(o,lab+': '+T2('前進しない')+'('+why+')'); return {lab:lab,txt:why,ok:false}; }
+    if(it.type!=='adv')return no(it.why===T2('前進しない')?T2('隣に前進して戦う相手がいない'):it.why);
+    if(f.adv)return no(T2('この APh にもう前進した'));
+    if(f.pin)return no(T2('Pin されている(A4.7)'));
+    if(o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); }))return no(T2('白兵戦(Melee)中で動けない(A11.15)'));
+    var to=it.to, c=hexCost(to.bd,to.col,to.row);
+    if(c.cost==null)return no(T2('そのヘクスには入れない(または地図の読み込み前)'));
+    var thr=Math.min(4,maxMF(s)-(f.dt||0)), diff=c.cost>=thr, cxNote='';
+    if(diff){ if(f.cx)return no(T2('困難な地形(MF')+' '+c.cost+T2(')に CX では前進できない(A4.72)')); cxNote='・'+T2('困難な地形(MF')+' '+c.cost+T2(')なので CX になる(A4.72)'); }
+    var en=o.stacks.filter(function(t){ return t.side!==s.side&&t.bd===to.bd&&t.col===to.col&&t.row===to.row; });
+    if(en.some(function(t){ return t.u.some(function(x){ return x.n>0&&kind(x.t)!=='mmc'&&kind(x.t)!=='smc'&&kind(x.t)!=='sw'; }); })){ R.manual.push(lab+': '+T2('敵に AFV/車両がいる → PAATC(A4.71)を手で')); return no(T2('AFV のいるヘクス: PAATC は手で(A4.71)')); }
+    var from=hexNm(s), p0=[s.bd,s.col,s.row]; f.adv=true; if(diff)f.cx=true; s.bd=to.bd; s.col=to.col; s.row=to.row; trAdd(s,p0);
+    var fight=en.length>0, txt=from+' → '+hexNm(s)+'・'+(it.why||'')+cxNote+(fight?'・'+T2('敵と同じヘクス → 白兵戦(CCPh)'):'');
+    logAdd(o,lab+': '+txt); return {lab:lab,txt:txt,ok:true}; }
+  function apAuto(o,force){
+    var key=S.turn.cur+'/'+S.turn.half+'/aph'; if(PFPRUN||(!force&&o.pfpKey===key))return;
+    o.pfpKey=key; o.autoKey=key; var R=o.pfp={key:key,ph:'aph',lines:[],manual:[],done:false,closed:false,run:true,n:0,wait:false,atk:true}; PFPRUN=true; PFPCANCEL=false; o.busy=true;
+    function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; o.aiAct=null; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
+    boardsReady().then(function(){
+      o.stacks.filter(function(q){ return q.side===o.ai&&hasBroken(q)&&goodN(q)>0; }).forEach(function(q){ rtSplitOff(o,q); }); /* 混乱した部隊は前進できないので分ける(A4.7) */
+      try{ actPlan(o); }catch(er){ R.lines.push({lab:T2('計画'),txt:String(er)}); return fin(); }
+      var items=((o.aiAct&&o.aiAct.items)||[]).filter(function(x){ return x.s&&byId(x.s); }), i=0;
+      function go(){ if(!PFPRUN)return; if(i>=items.length)return fin(); var it=items[i++], s=byId(it.s); if(!s||goodN(s)<=0)return go();
+        var pend={lab:T2('前進')+' '+hexNm(s),txt:T2('前進を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
+        function doIt(){ var r=null; try{ r=apOne(o,s,it,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
       go(); },function(){ fin(); }); }
   function residualThen(o,s,cb){
@@ -47267,10 +47298,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       step(); },function(){ end(); });
   }
   function autoPhase(o,force){
-    if(!(S.turn&&(S.turn.phase==='pfph'||S.turn.phase==='dfph'||S.turn.phase==='afph'||S.turn.phase==='rtph'))){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
+    if(!(S.turn&&(S.turn.phase==='pfph'||S.turn.phase==='dfph'||S.turn.phase==='afph'||S.turn.phase==='rtph'||S.turn.phase==='aph'))){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
     if(!(S.turn&&S.turn.phase==='mph')){ var pm=document.getElementById('aslfullSoloMph'); if(pm)pm.remove(); }
     if(!o||!battle()||!o.ai||!autoOn(o)||RUNNING||o.busy||o.dff||(o.popQ&&o.popQ.length))return;
-    var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if(((ph==='pfph'||ph==='afph')&&sideOfHalf()===o.ai)||(ph==='dfph'&&sideOfHalf()!==o.ai)){ pfpAuto(o,force); return; } if(ph==='rtph'){ rtpAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
+    var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if(((ph==='pfph'||ph==='afph')&&sideOfHalf()===o.ai)||(ph==='dfph'&&sideOfHalf()!==o.ai)){ pfpAuto(o,force); return; } if(ph==='rtph'){ rtpAuto(o,force); return; } if(ph==='aph'){ if(sideOfHalf()===o.ai)apAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
     var key=(S.turn.cur)+'/'+S.turn.half+'/'+ph; if(!force&&o.autoKey===key)return; o.autoKey=key;
     o.busy=true;
     boardsReady().then(function(){ var n=0;
