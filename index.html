@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.410"; // v410: アプリの準備射撃を 1 射撃ずつ段階表示(速度・一気に進める・取り消し・終了ボタン)。
+var APP_VERSION="ASLFULL-v0.411"; // v411: アプリの移動フェイズを 1 手ずつ段階表示(速度・一気に進める・取り消し・終了ボタン。臨機射撃の確認中は待つ)。
+// v410: アプリの準備射撃を 1 射撃ずつ段階表示(速度・一気に進める・取り消し・終了ボタン)。
 // v409: シナリオのキットボタンを 4 つ横一列(BV Original / BV Additional / SL Classic / BATTLE RECORD)、画像はボタンの縦幅いっぱい。
 var APP_VERSION_HIST_ASLFULL_v408="ASLFULL-v0.408"; // v408: BATTLE RECORD ボタンの画像を ASL Rules の表紙絵に差し替え。
 var APP_VERSION_HIST_ASLFULL_v407="ASLFULL-v0.407"; // v407: 砲の種類のカウンターが枠からはみ出す不具合。
@@ -47130,25 +47131,58 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   /* v381: アプリの移動フェイズ(MPh)になったら、案の移動を順に自動で実行する(回復・白兵戦の案は手のまま。済んだらフェイズは進めずに止まる) */
   var AUTOMV=false;
   function autoMvOn(o){ return o.autoMv==null?true:!!o.autoMv; }
+  function mvInfo(e2,s8){ var nm=s8.u.map(function(z){ return z.t+'×'+z.n; }).join(' '), lb={move:'移動',adv:'前進',rout:'潰走',split:'分割'}[e2.type]||e2.type; var tag=(e2.dt?'急速歩移動(CX) ':'')+(e2.asl?'警戒移動 ':'');
+    return {lab:T2(lb)+' '+hexNm(s8)+(e2.to?' → '+hexNm(e2.to):''),txt:tag+nm+(e2.why?'　('+String(e2.why).replace(/<[^>]*>/g,'')+')':'')}; }
+  function mphDraw(){ var o=cur(), el=document.getElementById('aslfullSoloMph'); if(!o||!o.mph||o.mph.closed||!(S.turn&&S.turn.phase==='mph')||o.dff){ if(el)el.remove(); return; }
+    if(!el){ el=document.createElement('div'); el.id='aslfullSoloMph'; el.style.cssText='position:fixed;left:50%;top:6px;transform:translateX(-50%);width:min(94vw,520px);max-height:40vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:10px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
+    el.innerHTML=mphHTML(o); }
+  function mphHTML(o){ var R=o.mph; if(!R)return '';
+    var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_MPH(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
+    var h='<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><div style="flex:1;font-size:15px;font-weight:bold;color:#ff9a4a">'+T2('移動フェイズ')+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.done?'終了':'の移動を実施中')+'</div><button class="b sm" style="height:30px;padding:0 8px" onclick="ASLFULL_MPH(\'min\')">'+T2(R.min?'広げる':'小さくする')+'</button></div>';
+    if(R.min)return h;
+    h+='<div style="font-size:12px;color:#8899aa;margin-bottom:4px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'　'+T2('動くたびに、あなたの臨機射撃(防御射撃)のパネルが出たら答えてください。答えると続きます。')+'</div>';
+    if(!R.done)h+='<div style="display:flex;gap:4px;align-items:center;font-size:12px;color:#8899aa;margin-bottom:6px">'+T2('速度')+' '+spdBtn+'</div>';
+    h+='<div style="font-size:13px;line-height:1.6;color:#ccddee">';
+    if(!R.lines.length&&R.done)h+='<div>'+T2('アプリが動かすスタックはありません(動かない/隣に敵/守りの要所)')+'</div>';
+    R.lines.forEach(function(l){ h+='<div style="padding:2px 0;border-top:1px solid #222">'+(l.pending?'▶ ':'')+rEsc(l.lab)+'<br><span style="color:'+(l.pending?'#ffcc66':'#9fe86b')+'">'+rEsc(l.txt)+'</span></div>'; });
+    h+='</div>';
+    if(!R.done)return h+'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_MPH(\'skip\')">'+T2('残りを一気に進める')+'</button></div>';
+    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2('車両の移動・運搬(乗り降り)・捕虜の連行・煙幕の展開・塹壕/地雷/ワイヤーの作業・MPh の回収など。必要なら手で行ってください。回復と白兵戦の案は手のままです。')+'</div>';
+    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの移動フェイズ操作が終わりました。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2('次はあなたの防御射撃フェイズ(DFPh)です。First Fire 済みの部隊は隣接する敵だけ撃てます(Final Fire)。')+'</span></div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_MPH(\'undo\')">'+T2('アプリの移動を取り消す')+'</button><button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullMphNext" onclick="ASLFULL_MPH(\'next\')">'+T2('移動フェイズ終了 → 防御射撃へ')+'</button></div>';
+    return h; }
+  var MPHCANCEL=false;
+  window.ASLFULL_MPH=function(k,a){ var o=cur(); if(!o||!o.mph)return;
+    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(typeof saveState==='function')saveState(); }
+    else if(k==='skip'){ MPHCANCEL=true; }
+    else if(k==='min'){ o.mph.min=!o.mph.min; }
+    else if(k==='next'){ o.mph.closed=true; mphDraw(); window.ASLFULL_SOLO('next'); return; }
+    else if(k==='undo'){ if(o.mph.snap&&o.mph.done){ o.stacks=JSON.parse(o.mph.snap); o.sel=null; o.dff=null; o.popQ=[]; o.resid=null; o.aiAct=null; o.lastAuto=null; logAdd(o,T2('取り消し')+': '+T2('アプリの移動')); o.mph.lines=[]; o.mph.n=0; o.mph.snap=null; Draw(); } }
+    mphDraw(); };
   function autoMove(o,force){
     if(AUTOMV||!o||!battle()||!o.ai||o.play!=='app'||!autoMvOn(o)||RUNNING||o.busy||o.dff||(o.popQ&&o.popQ.length))return;
     var ph=(S.turn&&S.turn.phase)||'rph'; if(ph!=='mph'||sideOfHalf()!==o.ai)return;
     var key=(S.turn.cur)+'/'+S.turn.half+'/'+ph; if(!force&&o.autoMvKey===key)return; o.autoMvKey=key;
-    AUTOMV=true; var n=0, TRY={};
-    function end(){ AUTOMV=false; if(typeof saveState==='function')saveState(); Draw(); }
+    AUTOMV=true; MPHCANCEL=false; var n=0, TRY={}, R=o.mph={key:key,lines:[],done:false,snap:JSON.stringify(o.stacks),closed:false,min:false,n:0};
+    function end(){ AUTOMV=false; R.done=true; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} mphDraw(); }
+    function alive(){ var cr=cur(); return cr&&cr===o&&((S.turn.cur)+'/'+S.turn.half+'/'+S.turn.phase)===key; }
+    function waitClear(cb,w){ w=w||0; if(!alive())return end(); mphDraw(); if(o.dff||o.busy||(o.popQ&&o.popQ.length)){ if(w>4000)return end(); return setTimeout(function(){ waitClear(cb,w+1); },150); } cb(); }
     boardsReady().then(function(){
       function step(){
-        var cr=cur(); if(!cr||cr!==o||o.dff||++n>80||((S.turn.cur)+'/'+S.turn.half+'/'+S.turn.phase)!==key)return end();
-        if(o.busy||(o.popQ&&o.popQ.length))return setTimeout(step,150);
-        actPlan(o); var items=(o.aiAct&&o.aiAct.items)||[], idx=-1;
-        for(var i=0;i<items.length;i++){ var it=items[i]; if(it.type==='stay'||it.type==='rally'||it.type==='cc')continue; var sg=it.type+it.s+(it.i!=null?it.i:'')+(it.to?hexStr(it.to):''); if((TRY[sg]||0)>=2)continue; idx=i; TRY[sg]=(TRY[sg]||0)+1; break; }
-        if(idx<0){ o.runMsg=null; return end(); }
-        window.ASLFULL_SOLO('aido',idx);
-        setTimeout(function(){ runIdle(o,function(ok){ if(ok)step(); else end(); }); },80); }
+        if(!alive()||++n>80)return end();
+        waitClear(function(){
+          actPlan(o); var items=(o.aiAct&&o.aiAct.items)||[], idx=-1;
+          for(var i=0;i<items.length;i++){ var it=items[i]; if(it.type==='stay'||it.type==='rally'||it.type==='cc')continue; var sg=it.type+it.s+(it.i!=null?it.i:'')+(it.to?hexStr(it.to):''); if((TRY[sg]||0)>=2)continue; idx=i; TRY[sg]=(TRY[sg]||0)+1; break; }
+          if(idx<0){ o.runMsg=null; return end(); }
+          var e2=items[idx], s8=byId(e2.s), info=s8?mvInfo(e2,s8):{lab:'?',txt:''}, pend={lab:info.lab,txt:T2('動く…')+' '+info.txt,pending:true}; R.lines.push(pend); mphDraw();
+          function doIt(){ window.ASLFULL_SOLO('aido',idx);
+            setTimeout(function(){ waitClear(function(){ pend.pending=false; pend.txt=info.txt; R.n++; mphDraw(); var sp=(MPHCANCEL||rphSpd()===0)?0:rphSpd(); if(sp===0)step(); else setTimeout(step,sp); }); },80); }
+          var sp0=(MPHCANCEL||rphSpd()===0)?0:rphSpd(); if(sp0===0)doIt(); else setTimeout(doIt,sp0); }); }
       step(); },function(){ end(); });
   }
   function autoPhase(o,force){
     if(!(S.turn&&S.turn.phase==='pfph')){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
+    if(!(S.turn&&S.turn.phase==='mph')){ var pm=document.getElementById('aslfullSoloMph'); if(pm)pm.remove(); }
     if(!o||!battle()||!o.ai||!autoOn(o)||RUNNING||o.busy||o.dff||(o.popQ&&o.popQ.length))return;
     var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if(ph==='pfph'&&sideOfHalf()===o.ai){ pfpAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
     var key=(S.turn.cur)+'/'+S.turn.half+'/'+ph; if(!force&&o.autoKey===key)return; o.autoKey=key;
