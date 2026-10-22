@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.413"; // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
+var APP_VERSION="ASLFULL-v0.414"; // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
+// v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
 // v411: アプリの移動フェイズを 1 手ずつ段階表示(速度・一気に進める・取り消し・終了ボタン。臨機射撃の確認中は待つ)。
 // v410: アプリの準備射撃を 1 射撃ずつ段階表示(速度・一気に進める・取り消し・終了ボタン)。
@@ -45999,7 +46000,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='splitgo'){ var sq=o.spl, s12=sq&&byId(sq.id); if(!s12)return; var tot=sq.c.reduce(function(p,x){ return p+x; },0), all=s12.u.reduce(function(p,x){ return p+x.n; },0);
         if(tot<=0||tot>=all){ toast(tot<=0?'分ける部隊を + で選んでください':'全部は分けられません(元のスタックに 1 つは残す)'); return; }
         var mv7=s12.u.map(function(z,i){ var m=sq.c[i]||0; if(kind(z.t)==='sw')return {m:m,mb:0}; var gb=z.n-(z.b||0); return {m:m,mb:Math.max(0,m-gb)}; }); var nu=splitCore(s12,mv7,false);
-        s12.u=s12.u.filter(function(z){ return z.n>0; }); o.seq=(o.seq||0)+1; var f0=s12.f||{}, nf={}; ['pin','cx','conc','fired','mf','adv'].forEach(function(q){ if(f0[q])nf[q]=f0[q]; });
+        s12.u=s12.u.filter(function(z){ return z.n>0; }); o.seq=(o.seq||0)+1; var f0=s12.f||{}, nf={}; ['pin','cx','conc','fired','mf','adv','mvd'].forEach(function(q){ if(f0[q])nf[q]=f0[q]; });
         var ns2={id:'s'+o.seq,side:s12.side,bd:s12.bd,col:s12.col,row:s12.row,grp:s12.grp,u:nu,f:nf}; o.stacks.push(ns2); o.sel=ns2.id; o.spl=null;
         var nm=stackAt(s12.bd,s12.col,s12.row).filter(function(z){ return z.side===s12.side; }).length; logAdd(o,T2('スタックを分けた')+': '+hexNm(s12)+' ('+nm+')'); }
       else if(k==='merge'){ var s6=byId(o.sel); if(!s6)return; o.stacks.filter(function(z){ return z.id!==s6.id&&z.side===s6.side&&z.bd===s6.bd&&z.col===s6.col&&z.row===s6.row; }).forEach(function(z){
@@ -46034,7 +46035,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         o.aim=null; fgClear(o); o.aiPlan=null; o.aiAct=null; o.stacks.forEach(function(x){ var f=fl(x); f.mf=0; f.dt=0; f.adv=false; f.asl=false; f.ffAt=null; if(S.turn.phase==='mph'){ f.noDT=false; f.tr=null; } if(S.turn.phase==='rph')f.dm=false; });
         if(i<0||i<seq.length-1){ S.turn.phase=seq[Math.max(0,i+1)]; }
         else { var before=S.turn.cur+'/'+S.turn.half; S.turn.phase='rph'; if(typeof TurnAdj==='function')TurnAdj(1);
-          if((S.turn.cur+'/'+S.turn.half)!==before){ o.stacks.forEach(function(x){ var f=fl(x); f.pin=false; f.fired=false; f.ff=0; f.ffAt=null; }); gainConc(o); } }
+          if((S.turn.cur+'/'+S.turn.half)!==before){ o.stacks.forEach(function(x){ var f=fl(x); f.pin=false; f.fired=false; f.ff=0; f.ffAt=null; f.mvd=false; }); gainConc(o); } }
         if(S.turn.phase!=='mph')o.resid=null;
         else { var me0=sideOfHalf(); o.stacks.forEach(function(x){ if(x.side===me0){ var f=fl(x); if(f.cx){ f.cx=false; f.noDT=true; } } }); } /* A4.51: 次の自分の MPh の初めに CX が外れる(そのフェイズは急速歩移動できない) */
         updCtl(o);
@@ -46106,7 +46107,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function pushMvu(o,s){ if(s.side===o.ai)return; if(!o.mvu)o.mvu=[]; var t=S.turn||{cur:1,half:0}; o.mvu.push({id:s.id,bd:s.bd,col:s.col,row:s.row,f:JSON.stringify(s.f||{}),ph:(S.turn&&S.turn.phase)||'rph',tn:t.cur+'/'+t.half,base:mvuSig(o)}); if(o.mvu.length>40)o.mvu.shift(); }
   function mvuTop(o){ var e=o&&o.mvu&&o.mvu[o.mvu.length-1]; if(!e)return null; var t=S.turn||{cur:1,half:0}; if(e.ph!==((S.turn&&S.turn.phase)||'rph')||e.tn!==(t.cur+'/'+t.half))return null; return e; }
   function trAdd(s,p0){ if(s.bd===p0[0]&&s.col===p0[1]&&s.row===p0[2])return; var f=fl(s); if(!f.tr||!f.tr.length)f.tr=[p0]; f.tr.push([s.bd,s.col,s.row]); } /* v391: 移動の跡 */
-  function moveTo(o,s,bd,col,row){ var p0=[s.bd,s.col,s.row], r0=moveTo0(o,s,bd,col,row); trAdd(s,p0); return r0; }
+  function moveTo(o,s,bd,col,row){ var p0=[s.bd,s.col,s.row], r0=moveTo0(o,s,bd,col,row); trAdd(s,p0); if(S.turn&&S.turn.phase==='mph'&&(s.bd!==p0[0]||s.col!==p0[1]||s.row!==p0[2]))fl(s).mvd=true; return r0; } /* v414: A4.41 MPh に動いた印 */
   function moveTo0(o,s,bd,col,row){
     var ph=(S.turn&&S.turn.phase)||'rph', mine=battle()&&(s.side===sideOfHalf()), f=fl(s);
     if(battle()&&mine&&ph==='mph'&&adj(s,col,row)&&s.bd===bd){
@@ -46230,8 +46231,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         x.own[k]={t:pick.t,i:pick.i}; load[refKey(pick)]=(load[refKey(pick)]||0)+1; } });
   }
   /* 実際に撃てる SW: 故障していない・持ち主が混乱していない・持ち主ごとの上限(A7.351)以内。火力の大きいものを先に数える */
+  function afLim(s,x){ return !!(S.turn&&S.turn.phase==='afph'&&battle()&&s.side===sideOfHalf()&&s.f&&s.f.mvd&&/^(MMG|HMG|MTR|MORT|INF|RCL)/i.test(x.t)); } /* A4.41: MPh に動いた MMG/HMG/迫撃砲/INF・RCL は AFPh に撃てない */
   function swUse(s){ var res=s.u.map(function(){ return []; }); if(!hasSWe(s))return res; swNorm(s); var G={};
-    s.u.forEach(function(x,xi){ if(persT(x))return; var f=swFP(x.t)||{fp:0};
+    s.u.forEach(function(x,xi){ if(persT(x))return; if(afLim(s,x))return; var f=swFP(x.t)||{fp:0};
       for(var k=0;k<x.n;k++){ var r=x.own[k]; if(x.mf[k]||!r||!refOk(s,r)||refBroken(s,r))continue; var kk=refKey(r); (G[kk]=G[kk]||[]).push({xi:xi,k:k,fp:f.fp,cap:capOfT(r.t)}); } });
     Object.keys(G).forEach(function(kk){ var L=G[kk].sort(function(a,b){ return b.fp-a.fp; }); L.slice(0,L[0].cap).forEach(function(q){ res[q.xi].push(q.k); }); });
     res.forEach(function(a){ a.sort(function(p,q){ return p-q; }); }); return res; }
@@ -46479,7 +46481,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       try{
         if(!f){ rec.notes.push(T2('LOS がなく撃てませんでした')); finish(); return; }
         var mover=(ph==='mph')&&t.f&&t.f.mf>0&&!t.f.pin;
-        f.ffnam=!!mover&&!(t.f&&t.f.asl); f.ffmo=!!mover&&e.tem<=0; f.cx=frs.some(function(q){ return q.f&&q.f.cx; }); f.tgtHIP=!!(t.f&&t.f.conc); if(ph==='dfph')f.exFire=frs.some(function(q){ return pre[q.id]>=1; }); /* v413: DFPh は Final Fire(First Fire 済みの再射撃)かどうかが無いと JUDGE できなかった(A8.4) */
+        f.ffnam=!!mover&&!(t.f&&t.f.asl); f.ffmo=!!mover&&e.tem<=0; f.cx=frs.some(function(q){ return q.f&&q.f.cx; }); f.tgtHIP=!!(t.f&&t.f.conc); if(ph==='dfph')f.exFire=frs.some(function(q){ return pre[q.id]>=1; }); if(ph==='afph'){ f.afphMgMoved=false; f.afphPfphFired=false; } /* v414: 撃てる部隊だけを選んでいるので確認は「いいえ」 */ /* v413: DFPh は Final Fire(First Fire 済みの再射撃)かどうかが無いと JUDGE できなかった(A8.4) */
         f.rd=d6(); f.wd=d6();
         window.__soloAutoJudge=true; try{ FJUDGE(); }finally{ window.__soloAutoJudge=false; } var res=f.res;
         if(!res||!res.ift){ rec.notes.push(T2('射撃タブで自動の判定ができませんでした。射撃タブで手で判定してください')); rec.manual.push(T2('射撃タブで JUDGE')); finish(); return; }
@@ -46629,7 +46631,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var ph0=S.turn.phase, key=S.turn.cur+'/'+S.turn.half+'/'+ph0; if(PFPRUN||(!force&&o.pfpKey===key))return; o.pfpKey=key; o.autoKey=key;
     var snap=JSON.stringify(o.stacks), R=o.pfp={key:key,ph:ph0,lines:[],manual:[],done:false,snap:snap,closed:false,run:true,info:false,n:0};
     PFPRUN=true; PFPCANCEL=false; o.busy=true;
-    function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; if(R.n)o.lastAuto={snap:snap,label:T2(ph0==='dfph'?'防御射撃':'準備射撃')}; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
+    function fin(){ R.done=true; R.run=false; PFPRUN=false; o.busy=false; o.aiPlan=null; if(R.n)o.lastAuto={snap:snap,label:T2({dfph:'防御射撃',afph:'前進射撃'}[ph0]||'準備射撃')}; if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} pfpDraw(); }
     boardsReady().then(function(){ var n=0;
       function step(){ if(!PFPRUN)return; var e; try{ plan(o); e=((o.aiPlan&&o.aiPlan.items)||[]).filter(function(x){ return x.go; })[0]; }catch(er){ e=null; }
         if(!e||n>=6)return fin(); n++;
@@ -46643,7 +46645,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   }
   function pfpHTML(o){ var R=o.pfp; if(!R)return '';
     var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_PFP(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
-    var DF=(R.ph==='dfph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(DF?'防御射撃フェイズ':'準備射撃フェイズ')+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.done?'終了':'の射撃を実施中')+'</div>';
+    var DF=(R.ph==='dfph'), AF=(R.ph==='afph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(AF?'前進射撃フェイズ':(DF?'防御射撃フェイズ':'準備射撃フェイズ'))+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.done?'終了':'の射撃を実施中')+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:6px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'</div>';
     if(!R.done)h+='<div style="display:flex;gap:4px;align-items:center;font-size:12px;color:#8899aa;margin-bottom:6px">'+T2('速度')+' '+spdBtn+'</div>';
     h+='<div style="font-size:13px;line-height:1.7;color:#ccddee">';
@@ -46652,10 +46654,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     h+='</div>';
     if(!R.done)return h+'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_PFP(\'skip\')">'+T2('残りを一気に進める')+'</button></div>';
     if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('手で行うこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
-    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
-    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2(DF?'アプリの防御射撃が終わりました。':'アプリの準備射撃が終わりました。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(DF?'次はあなたの前進射撃フェイズ(AFPh)です。移動や準備射撃をしなかった部隊は半分の FP で撃てます(A3.5)。あなたの前進射撃を行ってください。':'この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
+    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2(AF?'Opportunity Fire(Bounding Fire)の部隊の全 FP 射撃・煙幕・OBA・車両/ガンの射撃など。必要なら手で行ってください。(AFPh の射撃は FP ½、MPh に動いた MMG/HMG は撃てない: A7.24・A4.41)':DF?'煙幕の射撃・OBA・車両/ガンの特殊な射撃など。First Fire 済みの部隊は隣接/同ヘクスの敵にだけ Area Fire(Final Fire、A8.4)。必要なら手で行ってください。':'煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
+    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2(AF?'アプリの前進射撃が終わりました。':(DF?'アプリの防御射撃が終わりました。':'アプリの準備射撃が終わりました。'))+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(AF?'次は潰走フェイズ(RtPh)です。攻撃側のアプリの潰走から先に行い、そのあとあなたの混乱した部隊を潰走させます(A3.6)。':DF?'次はあなたの前進射撃フェイズ(AFPh)です。移動や準備射撃をしなかった部隊は半分の FP で撃てます(A3.5)。あなたの前進射撃を行ってください。':'この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button>';
-    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ')+'</button></div>';
+    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2(AF?'前進射撃フェイズ終了 → 潰走へ':(DF?'防御射撃フェイズ終了 → 前進射撃へ':'準備射撃フェイズ終了 → 移動へ'))+'</button></div>';
     return h; }
   function pfpDraw(){ var o=cur(), el=document.getElementById('aslfullSoloPfp'); if(!o||!o.pfp||o.pfp.closed||!(S.turn&&S.turn.phase===o.pfp.ph)){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloPfp'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
@@ -46965,15 +46967,15 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var A=losColRowToGlobalCanon(fr.bd,fr.col,fr.row), B=losColRowToGlobalCanon(tg.bd,tg.col,tg.row);
       var res=losCheckLOSGlobal(A.x,A.y,B.x,B.y,S_LOS.orchardSeason,S_LOS.grainSeason);
       if(res&&!res.error&&!res.blocked){
-        var R=res.range||0, fp=0;
+        var R=res.range||0, fp=0, afh=(fr.side===sideOfHalf()&&S.turn&&S.turn.phase==='afph'), afN=0;
         fr.u.forEach(function(x){ var k=kind(x.t), n=x.n-(k==='sw'?swOff(fr,x):(x.b||0)); if(n<=0)return;
-          if(k==='mmc'){ var q=unitFP(fr.side,x.t); fp+=n*rangeFP(q.fp,q.rng,R)*((fr.f&&fr.f.pin)?0.5:1); } /* A7.8: Pin は固有 FP ½ */
+          if(k==='mmc'){ var q=unitFP(fr.side,x.t); fp+=n*rangeFP(q.fp,q.rng,R)*((fr.f&&fr.f.pin)?0.5:1); if(afh&&R<=q.rng){ var ud=((UNITS[fr.side]||{}).mmc||[]).filter(function(z){ return z.lbl===x.t; })[0]; if(ud&&ud.af&&!ud.hs)afN+=n; } } /* A7.36: 下線の FP の分隊は AFPh に +1 */ /* A7.8: Pin は固有 FP ½ */
           else if(k==='sw'){ var w=swFP(x.t); if(w)fp+=n*rangeFP(w.fp,w.rng,R); } });
         var ph0=(S.turn&&S.turn.phase)||'rph', ff=(fr.f&&fr.f.ff)||0, mine0=(fr.side===sideOfHalf());
         if(!mine0&&ph0==='dfph'){ if(ff===2||(ff===1&&R>1)){ if(cache)cache[key]=null; return null; } if(ff===1)fp*=0.5; } /* A8.4 */
         if(!mine0&&ph0==='mph'&&ff>=1){ var ma=((fr.f.ffAt||{})[tg.id]); var mv=(tg.f&&tg.f.mf)||0; /* A8.3/8.31: 動いた分(MF)が増えていないと撃てない。Final Fire 印のスタックは隣接・同ヘクスだけ(FPF) */
           if(ma!=null&&mv<=ma||(ff===2&&R>1)){ if(cache)cache[key]=null; return null; } fp*=0.5; }
-        var mult=1; if(fp>0){ if(R===0){ fp*=3; mult=3; } else if(R===1){ fp*=2; mult=2; } out={s:fr,R:R,fp:fp,mult:mult,tem:+(res.temB||0),hin:+(res.hindranceDrm||0)}; }
+        var mult=1; if(fp>0){ if(R===0){ fp*=3; mult=3; } else if(R===1){ fp*=2; mult=2; } if(afh)fp=fp*0.5+afN; /* A7.24 AFPh は ½、A7.36 Assault Fire は +1 */ out={s:fr,R:R,fp:fp,mult:mult,tem:+(res.temB||0),hin:+(res.hindranceDrm||0)}; }
       }
     }catch(e){ out=null; }
     if(cache)cache[key]=out; return out;
@@ -47183,10 +47185,10 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       step(); },function(){ end(); });
   }
   function autoPhase(o,force){
-    if(!(S.turn&&(S.turn.phase==='pfph'||S.turn.phase==='dfph'))){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
+    if(!(S.turn&&(S.turn.phase==='pfph'||S.turn.phase==='dfph'||S.turn.phase==='afph'))){ var pe=document.getElementById('aslfullSoloPfp'); if(pe)pe.remove(); }
     if(!(S.turn&&S.turn.phase==='mph')){ var pm=document.getElementById('aslfullSoloMph'); if(pm)pm.remove(); }
     if(!o||!battle()||!o.ai||!autoOn(o)||RUNNING||o.busy||o.dff||(o.popQ&&o.popQ.length))return;
-    var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if((ph==='pfph'&&sideOfHalf()===o.ai)||(ph==='dfph'&&sideOfHalf()!==o.ai)){ pfpAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
+    var ph=(S.turn&&S.turn.phase)||'rph'; if(ph==='rph'){ rphAuto(o); return; } if(((ph==='pfph'||ph==='afph')&&sideOfHalf()===o.ai)||(ph==='dfph'&&sideOfHalf()!==o.ai)){ pfpAuto(o,force); return; } if(!aiFirePhase(o)||ph==='mph')return;
     var key=(S.turn.cur)+'/'+S.turn.half+'/'+ph; if(!force&&o.autoKey===key)return; o.autoKey=key;
     o.busy=true;
     boardsReady().then(function(){ var n=0;
