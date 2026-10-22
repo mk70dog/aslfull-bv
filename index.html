@@ -8337,7 +8337,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.421"; // v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.422"; // v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -45966,7 +45966,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       else if(k==='tsel'){ var sh=o.shot; if(sh&&sh.tg&&sh.tg.length){ var i2=sh.tg.indexOf(o.sel); o.sel=sh.tg[(i2+1)%sh.tg.length]; } }
       else if(k==='tpin'){ var sh2=o.shot; if(sh2)(sh2.tg||[]).forEach(function(id2){ var t2=byId(id2); if(t2)pinStack(t2); }); }
       else if(k==='shotclr'){ o.shot=null; }
-      else if(k==='shotapply'){ var sa=o.shot, ra=shotRes(o); if(!sa||!ra||sa.applied)return; var tga=(sa.tg||[]).map(byId).filter(Boolean); if(!tga.length){ toast('目標のヘクスに敵のスタックがありません'); return; }
+      else if(k==='shotapply'){ var sa=o.shot, ra=shotRes(o); if(!sa||!ra||sa.applied)return; var tga=(sa.tg||[]).map(byId).filter(Boolean); if(!tga.length){ toast('目標のヘクスに敵のスタックがありません'); return; } if(sa.mel)toast('Melee のヘクス: あなたの部隊にも同じ結果(A11.15)');
         var snapa=JSON.stringify(o.stacks), reca={ph:sa.ph,from:sa.frHex,to:sa.bd+(function(){ try{ return losHexNameFromColRow(sa.col,sa.row); }catch(e){ return '?'; } })(),fg:(sa.frs||[]).length>1,fp:+ra.ift.col,col:ra.ift.col,ci:IFT_LBL.indexOf(String(ra.ift.col)),rd:(function(){ var q=(sa.sub==='pfph')?S.fire:S[sa.sub]; return q&&q.rd; })(),wd:(function(){ var q=(sa.sub==='pfph')?S.fire:S[sa.sub]; return q&&q.wd; })(),dr:(ra.raw!=null?ra.raw:ra.mod),drm:(ra.drm!=null?ra.drm:0),mod:ra.mod,res:String(ra.ift.r),units:[],manual:[],notes:[T2('射撃タブの判定結果を目標に反映しました(サイコロはアプリが振りました)')],snap:snapa};
         applyIFT(o,reca,tga,reca.res); tga.forEach(function(q){ if(byId(q.id)&&!q.u.length)tidy(o,q); });
         sa.sum=reca.units.map(function(u){ return u.h+' '+u.t+' '+u.txt; }).join('、'); sa.applied=true; o.lastAuto={snap:snapa,label:reca.from+' → '+reca.to}; if(!o.popQ)o.popQ=[]; o.popQ.push(reca); logAdd(o,T2('射撃の結果を反映')+' '+reca.from+' → '+reca.to+': '+reca.res); }
@@ -46184,7 +46184,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var src=fr; if(FRS.length>1){ var bh=-1; FRS.forEach(function(q){ var pp=partOf(q,tg[0]||{id:'-',bd:bd,col:col,row:row,u:[]},null); if(pp&&pp.hin+pp.tem>bh){ bh=pp.hin+pp.tem; src=q; } }); } /* A7.52: 悪いほうの LOS を射撃タブに */
     var a=losColRowToGlobalCanon(src.bd,src.col,src.row), b=losColRowToGlobalCanon(bd,col,row);
     S_LOS.pxA=a; S_LOS.pxB=b;
-    o.shot={fr:fr.id,frs:FRS.map(function(q){ return q.id; }),frHex:FRS.map(hexNm).join('+'),bd:bd,col:col,row:row,tg:tg.map(function(x){ return x.id; }),ph:ph,sub:sub,miss:miss,at:Date.now()};
+    o.shot={fr:fr.id,frs:FRS.map(function(q){ return q.id; }),frHex:FRS.map(hexNm).join('+'),bd:bd,col:col,row:row,tg:fireTgIds(o,bd,col,row,fr.side),mel:meleeAt(o,bd,col,row),ph:ph,sub:sub,miss:miss,at:Date.now()};
     Promise.all(S_LOS.boards.map(function(q){ return losLoadBoard(q.id); })).then(function(){
       S_LOS.result=losCheckLOSGlobal(a.x,a.y,b.x,b.y,S_LOS.orchardSeason,S_LOS.grainSeason);
       if(S_LOS.result&&S_LOS.result.blocked){ o.shot.blocked=true; if(opt&&opt.done){ opt.done(null); return; } if(typeof saveState==='function')saveState(); Draw(); toast('LOS がありません(射撃しない)'); return; }
@@ -46489,7 +46489,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var ph=(S.turn&&S.turn.phase)||'rph', snap=JSON.stringify(o.stacks), uLen=UNDO_STACK.length;
     var rec={ph:ph,from:frs.map(hexNm).join('+'),to:hexNm(t),fg:frs.length>1,fp:e.fp,col:e.col,units:[],manual:[],notes:[],snap:snap};
     window.__soloFireCtx={t:Date.now(),x:(PH_FIRE[ph]||ph)+' '+rec.from+(rec.fg?' FG':'')+' → '+rec.to}; /* v346: 狙撃兵(A14)の画面に「なぜ発動したか」を出すため */
-    var tgIds=[]; stackAt(t.bd,t.col,t.row).forEach(function(x){ if(x.side!==frs[0].side)tgIds.push(x.id); });
+    var tgIds=fireTgIds(o,t.bd,t.col,t.row,frs[0].side); if(meleeAt(o,t.bd,t.col,t.row))rec.notes.push(T2('Melee のヘクスへの射撃: 敵と味方の Melee の部隊がすべて攻撃を受ける(A11.15)'));
     var pre={}; frs.forEach(function(q){ pre[q.id]=(q.f&&q.f.ff)||0; });
     function finish(){ try{ UNDO_STACK.length=Math.min(UNDO_STACK.length,uLen); }catch(e2){}
       o.lastAuto={snap:snap,label:rec.from+' → '+rec.to}; o.lastRec=rec;
@@ -46676,7 +46676,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_PFP(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
     var DF=(R.ph==='dfph'), AF=(R.ph==='afph'), RT=(R.ph==='rtph'), AP=(R.ph==='aph'), CC=(R.ph==='ccph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(CC?'白兵戦フェイズ':AP?'突撃フェイズ':RT?'潰走フェイズ':(AF?'前進射撃フェイズ':(DF?'防御射撃フェイズ':'準備射撃フェイズ')))+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.wait?'の番を待っています':(R.done?'終了':(CC?'の白兵戦を解決中':AP?'の前進を実施中':RT?'の潰走を実施中':'の射撃を実施中')))+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:6px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'</div>';
-    if(R.wait)return h+'<div style="font-size:14px;color:#ffcc66;line-height:1.7"><b>'+T2(CC?'白兵戦の前に、あなたの混乱した部隊を撤退(Withdrawal, A11.2)させてください。撤退しない混乱ユニットは、白兵戦のあと除去されます(A11.16)。':'攻撃側が先に潰走します(A10.5)。あなたの混乱した部隊の潰走を先に行ってください。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(CC?'済んだら下のボタンで、アプリが両陣営の白兵戦を解決します。':'済んだら下のボタンで、アプリ(防御側)の潰走を実施します。')+'</span></div>'+(RT?surHTML(o,R):'')+'<div style="margin-top:10px"><button class="b sm" style="height:44px;width:100%;border-color:#2fa866" id="aslfullRtGo" onclick="ASLFULL_PFP(\'go\')">'+T2(CC?'白兵戦を解決する':'アプリの潰走を実施')+'</button></div>';
+    if(R.wait)return h+'<div style="font-size:14px;color:#ffcc66;line-height:1.7"><b>'+T2(CC?'白兵戦の前に、あなたの混乱した部隊を撤退(Withdrawal, A11.2)させてください。撤退しない混乱ユニットは、白兵戦のあと除去されます(A11.16。捕虜の護衛は撤退も除去もしない)。':'攻撃側が先に潰走します(A10.5)。あなたの混乱した部隊の潰走を先に行ってください。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(CC?'済んだら下のボタンで、アプリが両陣営の白兵戦を解決します。':'済んだら下のボタンで、アプリ(防御側)の潰走を実施します。')+'</span></div>'+(RT?surHTML(o,R):'')+'<div style="margin-top:10px"><button class="b sm" style="height:44px;width:100%;border-color:#2fa866" id="aslfullRtGo" onclick="ASLFULL_PFP(\'go\')">'+T2(CC?'白兵戦を解決する':'アプリの潰走を実施')+'</button></div>';
     if(!R.done)h+='<div style="display:flex;gap:4px;align-items:center;font-size:12px;color:#8899aa;margin-bottom:6px">'+T2('速度')+' '+spdBtn+'</div>';
     h+='<div style="font-size:13px;line-height:1.7;color:#ccddee">';
     if(!R.lines.length&&R.done)h+='<div>'+T2(CC?'白兵戦になっているヘクスはありません':AP?'アプリが前進できる部隊はありません':RT?'アプリに潰走する混乱ユニットはありません':'アプリが撃てる目標はありません(LOS・射程・撃つ価値)')+'</div>';
@@ -46719,9 +46719,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function rtRng(t){ var m=0; t.u.forEach(function(x){ if(x.n<=0)return; var k=kind(x.t), r=(k==='mmc')?unitFP(t.side,x.t).rng:(k==='sw'?((swFP(x.t)||{}).rng||0):0); if(r>m)m=r; }); return m; }
   function rtCtx(o,s){ var E=o.stacks.filter(function(t){ return t.side!==s.side&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); });
     var KU=E.filter(function(t){ return goodN(t)>0; });
-    var IN=KU.filter(function(t){ var f=t.f||{}; return !f.cx&&!f.pin&&stackFP(t)>0&&!guardOver(t); }); /* A10.532: CX・Pin・SW のない指揮官は妨害できない。A20.52: 捕虜の多い護衛も妨害できない */
-    return {E:E,KU:KU,IN:IN}; }
-  function rtExposed(C,h){ return rtOpen(h)&&C.E.some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t); }); }
+    var IN=KU.filter(function(t){ var f=t.f||{}; return !f.cx&&!f.pin&&stackFP(t)>0&&!guardOver(t)&&!inMelee(o,t); }); /* A11.15: Melee の部隊は妨害できない */ /* A10.532: CX・Pin・SW のない指揮官は妨害できない。A20.52: 捕虜の多い護衛も妨害できない */
+    return {E:E,KU:KU,IN:IN,EX:E.filter(function(t){ return !inMelee(o,t); })}; }
+  function rtExposed(C,h){ return rtOpen(h)&&(C.EX||C.E).some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t); }); }
   function rtIntd(C,h){ return rtOpen(h)&&C.IN.some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t)&&!l.hin; }); }
   function rtPaths(C,h0){ var out=[], nodes=0, seen0={};
     C.E.forEach(function(t,i){ if(rtLos(t,h0))seen0[i]=1; });
@@ -46818,7 +46818,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         function doIt(){ var r=null; try{ r=apOne(o,s,it,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
         if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
       go(); },function(){ fin(); }); }
-  function inMelee(o,s){ return !!(s.f&&s.f.mel)&&o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); }); } /* v419: A11.15 Melee 中は CC と撤退以外できない */
+  function inMelee(o,s){ return !!(s.f&&s.f.mel)&&!(s.f&&s.f.conc)&&o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row&&!(t.f&&t.f.conc)&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); }); } /* A11.15: 隠蔽を保っている部隊は Melee に縛られず、相手も縛らない */
+  function meleeAt(o,bd,col,row){ return o.stacks.some(function(q){ return q.bd===bd&&q.col===col&&q.row===row&&inMelee(o,q); }); }
+  function fireTgIds(o,bd,col,row,side){ var M=meleeAt(o,bd,col,row); return stackAt(bd,col,row).filter(function(x){ return x.side!==side||(M&&x.u.some(function(z){ return kind(z.t)!=='sw'&&z.n>0; })); }).map(function(x){ return x.id; }); } /* A11.15: Melee の Location を撃つと、敵と味方の Melee の部隊が全部攻撃を受ける */ /* v419: A11.15 Melee 中は CC と撤退以外できない */
 
   /* ---------- v421: 降伏(A20.21)と捕虜(A20.5) ---------- */
   function usOf(t){ var k=kind(t); if(k==='smc')return 1; if(/\(HS\)|乗員/.test(t))return 2; return 3; } /* A1.6: SMC 1・HS/乗員 2・分隊 3 */
@@ -46852,6 +46854,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   function hSurList(o){ var hs=humanSide(o); if(!hs)return []; var tk=turnKey(); RTLOS={};
     return o.stacks.filter(function(q){ return q.side===hs&&hasBroken(q)&&!inMelee(o,q)&&fl(q).hsur!==tk&&!o.stacks.some(function(t){ return t.side!==q.side&&t.bd===q.bd&&t.col===q.col&&t.row===q.row&&goodN(t)>0; }); }).map(function(q){
       var P=null; try{ P=rtPlan(o,q); }catch(e){ return null; } var sn=surNeed(o,q,P); if(!sn||sn.nq)return null; return {id:q.id,why:sn.why,cap:sn.cap.map(function(t){ return t.id; })}; }).filter(Boolean); }
+  window.__v422=function(){ return {fireTgIds:fireTgIds,meleeAt:meleeAt,inMelee:inMelee,rtCtx:rtCtx,ccOne:ccOne,ccHexList:ccHexList,plan:plan}; }; /* 試験用 */
   window.__v421=function(){ return {canFire:canFire,instOf:instOf,elimInst:elimInst,kind:kind,goodN:goodN,byId:byId,guardOver:guardOver,hSurList:hSurList,cur:cur}; }; /* 試験用 */
   function surBest(o,ids){ return ids.map(byId).filter(Boolean).sort(function(a,b){ return (5*armedUS(b)-prUS(b))-(5*armedUS(a)-prUS(a)); })[0]; }
   function soloResetRun(o){ /* v419: 最初からやり直す/対戦終了のとき、実行中のフェイズ処理・ポップアップ・キーを全部捨てる */
@@ -47189,6 +47192,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(P.length===1){ if(P[0].R===0)why.push(T2('同じヘクス ×3')); else if(P[0].R===1)why.push(T2('隣接 ×2')); }
     else { why.push('FG '+P.length+T2(' スタック(A7.5)')); if(mult)why.push(T2('隣接・同ヘクスの倍率は各スタックごと')); }
     if(tg.f&&tg.f.conc){ fp/=2; why.push(T2('隠蔽 ½')); }
+    try{ if(meleeAt(cur(),tg.bd,tg.col,tg.row))why.push(T2('Melee のヘクス: 味方の部隊にも効く(A11.15)')); }catch(e){}
     var L=fgLdr(P); if(L==='none'){ L=null; if(P.length>1)why.push(T2('指揮官は全ヘクスにいないので使えない(A7.531)')); }
     var drm=(L||0)+tem+hin;
     if(P.length>1&&(tem>0||hin>0))why.push(T2('悪い TEM・妨害は FG 全体に(A7.52)'));
@@ -47297,7 +47301,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var avail=o.stacks.filter(function(s){ var f=s.f||{}; if(s.side!==FS)return false;
       if(!s.u.some(function(x){ return kind(x.t)!=='sw'&&x.n-(x.b||0)>0; }))return false;
       if(f.fired&&(mine||(ph==='mph'&&!(f.ff>=1))))return false; if(inMelee(o,s))return false; if(guardOver(s))return false; return true; }); /* A20.52 */
-    var T=o.stacks.filter(function(t){ return t.side!==FS&&(!onlyTg||t.id===onlyTg); });
+    var T=o.stacks.filter(function(t){ return t.side!==FS&&(!onlyTg||t.id===onlyTg)&&!(!fside&&meleeAt(o,t.bd,t.col,t.row)); }); /* v422: アプリは味方も攻撃を受ける Melee のヘクスへは撃たない(A11.15) */
     function okPart(s,t){ if(s.bd===t.bd&&s.col===t.col&&s.row===t.row)return null; /* v341: 同じヘクスの敵は白兵戦で。射撃はしない */ var q=partOf(s,t,cache); if(!q)return null; if((s.f||{}).fired&&ph==='dfph'&&q.R>1)return null; return q; }
     var guard=0;
     while(avail.length&&guard++<60){
@@ -47570,6 +47574,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     /* A11.2/A11.16: アプリの混乱した部隊は撤退(Withdrawal)する。撤退する部隊は攻撃できず、攻撃に -2 DRM と、残る味方 1 ユニットごとに +1 */
     var wd=[], wdMsg=[];
     sides.forEach(function(sd){ if(sd!==o.ai)return; ccSt(o,H,sd).forEach(function(q0){ if(!hasBroken(q0))return; var q=rtSplitOff(o,q0); if(!allBroken(q)||!q.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }))return;
+        if(q.pr&&q.pr.length){ wdMsg.push(hexNm(q)+': '+T2('捕虜の護衛なので撤退しない(除去もされない、A11.16)')); return; }
+        if(q.u.filter(function(x){ return kind(x.t)!=='sw'&&x.n>0; }).every(function(x){ return (x.dis||0)>=x.n; })){ wdMsg.push(hexNm(q)+': '+T2('Disrupted なので撤退しない → 除去される(A11.16)')); return; }
         if(q.f&&q.f.pin){ wdMsg.push(hexNm(q)+': '+T2('Pin されていて撤退できない(A11.2)')); return; } var dt=ccWdDest(o,q); if(!dt){ wdMsg.push(hexNm(q)+': '+T2('撤退先がない → 除去される(A11.16)')); return; } wd.push({sid:q.id,dest:dt}); }); });
     var wdIds={}; wd.forEach(function(w){ wdIds[w.sid]=w; });
     var res={}; sides.forEach(function(X,ix){ var Y=sides[1-ix]; if(!Y)return; var xs=ccSt(o,H,X).filter(function(q){ return !wdIds[q.id]; }), ys=ccSt(o,H,Y), af=ccAtkFP(xs), line={X:X,Y:Y};
@@ -47604,9 +47610,11 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var p0=[q.bd,q.col,q.row]; q.bd=w.dest.bd; q.col=w.dest.col; q.row=w.dest.row; trAdd(q,p0); fl(q).dm=true; var tx2=hx+' → '+hexNm(q)+'('+T2('撤退成功。次の RtPh から通常の潰走')+')'; logAdd(o,T2('撤退')+': '+tx2); out.push({lab:T2('撤退'),txt:tx2,ok:true}); });
     wdMsg.forEach(function(m){ out.push({lab:T2('撤退'),txt:m,ok:false}); });
     var rest=ccHexList(o).filter(function(h2){ return h2.bd===H.bd&&h2.col===H.col&&h2.row===H.row; })[0];
-    if(rest){ rest.ks.forEach(function(sd){ rest.sides[sd].forEach(function(q){ if(allBroken(q)&&!wdIds[q.id]){ instOf([q]).forEach(function(ins){ elimInst(o,q,ins.t,ins.br); }); tidy(o,q); out.push({lab:T2('Failure to Rout')+' '+hx,txt:(NATJ[sd]||sd)+' '+T2('の混乱した部隊は撤退できず除去(A11.16)'),ok:false}); } }); });
+    if(rest){ rest.ks.forEach(function(sd){ rest.sides[sd].forEach(function(q){ if(allBroken(q)&&!wdIds[q.id]&&!(q.pr&&q.pr.length)){ instOf([q]).forEach(function(ins){ elimInst(o,q,ins.t,ins.br); }); tidy(o,q); out.push({lab:T2('Failure to Rout')+' '+hx,txt:(NATJ[sd]||sd)+' '+T2('の混乱した部隊は撤退できず除去(A11.16)'),ok:false}); } }); });
       var rest2=ccHexList(o).filter(function(h2){ return h2.bd===H.bd&&h2.col===H.col&&h2.row===H.row; })[0];
-      if(rest2){ rest2.ks.forEach(function(sd){ rest2.sides[sd].forEach(function(q){ fl(q).mel=true; }); }); out.push({lab:hx,txt:T2('双方が残った → Melee(A11.15)。次の CCPh までここから動けない'),ok:true}); } }
+      if(rest2){ var unc=rest2.ks.filter(function(sd){ return rest2.sides[sd].some(function(q){ return !(q.f&&q.f.conc); }); });
+        if(unc.length>=2){ rest2.ks.forEach(function(sd){ rest2.sides[sd].forEach(function(q){ if(!(q.f&&q.f.conc))fl(q).mel=true; }); }); out.push({lab:hx,txt:T2('双方が残った → Melee(A11.15)。次の CCPh までここから動けない')+(rest2.ks.some(function(sd){ return rest2.sides[sd].some(function(q){ return q.f&&q.f.conc; }); })?'・'+T2('隠蔽を保っている部隊は Melee に縛られない'):''),ok:true}); }
+        else out.push({lab:hx,txt:T2('残った一方は隠蔽を保っているので Melee にならない(A11.15)'),ok:true}); } }
     else { o.stacks.filter(function(q){ return q.bd===H.bd&&q.col===H.col&&q.row===H.row; }).forEach(function(q){ if(q.f)q.f.mel=false; }); out.push({lab:hx,txt:T2('白兵戦は決着した(Melee なし)'),ok:true}); }
     out.forEach(function(r){ R.lines.push(r); }); return out; }
   function ccpAuto(o,force){
@@ -47886,6 +47894,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     h+='<div style="font-size:13px;color:#ccddee;line-height:1.6">'+sh.frHex+' → '+th+'　'+(sh.blocked?'<b style="color:#cc3333">'+T2('LOS なし')+'</b>':(r0?T2('結果')+' <b style="color:#ff7a3a;font-size:15px">'+r0.ift.r+'</b>　(DR '+r0.mod+', '+T2('列')+' '+r0.ift.col+')':'<span style="color:#8899aa">'+T2('射撃タブで JUDGE してください')+'</span>'))+'</div>';
     if(sh.miss&&sh.miss.length)h+='<div style="font-size:11px;color:#ffcc66">'+T2('射撃タブに入れられなかった SW')+': '+sh.miss.join('・')+'</div>';
     if(tg.some(function(t){ return t.f&&t.f.conc; }))h+='<div style="font-size:11px;color:#ffcc66">'+T2('目標は隠蔽: 射撃タブで Area Fire(FP ½)にする')+'</div>';
+    if(sh.mel)h+='<div style="font-size:11px;color:#ffcc66">'+T2('Melee のヘクス: 結果はあなたの部隊にも効く(A11.15)')+'</div>';
     if(!tg.length&&!sh.blocked)h+='<div style="font-size:11px;color:#8899aa">'+T2('目標のヘクスに敵のスタックはありません')+'</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px">';
     if(!sh.blocked)h+='<button class="b sm" style="height:40px" onclick="NAVTAB(\'fire\')">'+T2('射撃タブへ')+'</button>';
