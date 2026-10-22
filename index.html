@@ -5282,6 +5282,10 @@ var I18N_EN={
 "対戦モード":"Battle mode",
 "対戦モード終了":"Exit battle mode",
 "対戦開始":"Start battle",
+"あなたの回復フェイズ":"Your Rally Phase",
+"回収を振る":"Roll recovery",
+"修理を振る":"Roll repair",
+"アプリ未対応":"Not handled by the App",
 "回復を振る":"Roll rally",
 "回復タブで振る":"Roll in Rally tab",
 "次へ(App)":"Next (App)",
@@ -8340,7 +8344,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.425"; // v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.426"; // v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -35352,8 +35356,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     h+='<div style="color:#8899aa;font-size:12px">SAN: '+L('枢軸','Axis')+' '+(z.san.axis==null?'—':z.san.axis)+' / '+L('連合','Allied')+' '+(z.san.allied==null?'—':z.san.allied)+'　'+L('未処理','pending')+': '+pending()+'</div>';
     h+='<div style="margin-top:6px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;font-size:12px;color:#8899aa">'+L('App 操作の速度','App speed')+' '+[['slow',L('遅い','Slow')],['normal',L('普通','Normal')],['fast',L('速い','Fast')],['instant',L('即時','Instant')],['step',L('▶️1手','▶ Step')]].map(function(p){return '<button class="b sm'+(((z.spd||'normal')===p[0])?' on':'')+'" style="flex:1;padding:4px 6px" onclick="SNP_spd(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
     if(it&&it.status==='open'&&it.phOk!==false&&!it.autoRun&&!it.manual&&it.atk==null&&isAppSniper(it))setTimeout(function(){ var c=cur(); if(c===it&&!it.autoRun&&!it.manual&&it.atk==null&&snp().open)snpAutoStart(it); },0); /* v424: 発動のときに始まらなかった場合も開いたら始める */
-    if(it&&it.manual&&it.atk==null&&it.status==='open'&&isAppSniper(it))h+='<div style="margin-top:8px">'+btn(L('App に任せる','Let the App operate'),'SNP_autoResume()')+'</div>';
-    if(it&&it.autoMsg)h+='<div id="sniperAuto" style="margin-top:8px;padding:8px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;color:#9fe8bd"><b>'+(it.autoRun?'▶ ':'')+'App</b>: '+esc(String(it.autoMsg).replace(/^App: ?/,''))+(it.autoRun?' '+btn(L('手動にする','Take over'),'SNP_autoStop()'):'')+'</div>';
+    if(it&&it.autoMsg)h+='<div id="sniperAuto" style="margin-top:8px;padding:8px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;color:#9fe8bd"><b>'+(it.autoRun?'▶ ':'')+'App</b>: '+esc(String(it.autoMsg).replace(/^App: ?/,''))+'</div>';
     if(!it){
       h+='<div style="margin-top:10px">'+L('処理待ちの狙撃兵攻撃はありません。','No pending sniper attacks.')+'</div></div>';
       el.innerHTML=h;return;
@@ -46622,12 +46625,11 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     R.lines.forEach(function(l){ h+='<div style="padding:2px 0;border-top:1px solid #222">'+(l.pending?'▶ ':'')+rEsc(l.lab)+'<br><span style="color:'+(l.ok?'#9fe86b':'#ffcc66')+'">'+rEsc(l.txt)+'</span></div>'; });
     h+='</div>';
     if(!R.done)return h+'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_RPH(\'skip\')">'+T2('残りを一気に進める')+'</button></div>';
-    if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('手で行うこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
-    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2('AFV の修理 / 捕虜の扱い / 塹壕・地雷・火災など。必要なら手で行ってください。(SW の修理は撃てる数まで、放棄された SW の回収は同じヘクスに味方がいるときだけ自動)')+'</div>';
-    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの回復フェイズ操作が終わりました。あなたの回復を行ってください。')+'</b></div>';
-    if(R.info)h+='<div style="margin-top:6px;padding:6px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;font-size:12px;color:#cfe;line-height:1.7"><b>'+T2('回復フェイズでできること')+'</b><br>1. '+T2('混乱ユニットの回復(A10.6)— 地図のスタックを長押しして詳細を出し、ユニットの「回復を振る」(アプリがダイスを振る)か「回復タブで振る」')+'<br>2. '+T2('SW・ガンの修理(部隊の「故障」ボタンまたは射撃タブの SW修理/回収)、AFV の修理 — 手で')+'<br>3. '+T2('捕虜の警備・移送・解放の確認 — 手で')+'<br>4. '+T2('塹壕・地雷・火災・風向の確認 — 手で')+'<br>5. '+T2('DM は回復フェイズの終わりに外れます')+'</div>';
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_RPH(\'info\')">'+T2(R.info?'一覧を閉じる':'回復フェイズでできること')+'</button><button class="b sm" style="height:44px" onclick="ASLFULL_RPH(\'tab\')">'+T2('回復タブを開く')+'</button>';
-    h+='<button class="b sm" style="height:44px;border-color:#2fa866;grid-column:1/3" id="aslfullRphNext" onclick="ASLFULL_RPH(\'next\')">'+T2('回復フェイズ終了 → 準備射撃へ')+'</button></div>';
+    if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('アプリの回復で残ったこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
+    h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの回復が終わりました。続けてあなたの回復フェイズです。')+'</b></div>';
+    h+=hRphHTML(o);
+    h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6">'+T2('Pin・CX・隠蔽・撃った などの状態は、地図の下の「部隊」カードの状態ボタンで直せます。')+'<br><b>'+T2('アプリ未対応')+'</b>: '+T2('AFV の修理・塹壕・地雷原・鉄条網(地図に記録がなく、アプリの判断に入りません)')+'<br>'+T2('煙・火災は地図の道具(煙幕・火災)で置けます。LOS の妨害には入りますが、アプリの移動・潰走の判断(煙の +1 MF、Blaze に入れない)にはまだ入りません。')+'</div>';
+    h+='<div style="margin-top:10px"><button class="b sm" style="height:44px;width:100%;border-color:#2fa866" id="aslfullRphNext" onclick="ASLFULL_RPH(\'next\')">'+T2('回復フェイズ終了 → 準備射撃へ')+'</button></div>';
     return h; }
   function rphDraw(){ var o=cur(), el=document.getElementById('aslfullSoloRph'); if(!o||!o.rph||o.rph.closed){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloRph'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
@@ -46886,6 +46888,37 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!r){ R.cnt[id]--; return T2('回復を判定できませんでした。回復タブで振ってください'); }
     if(/自己回復できない|自己回復は 1 個まで/.test(r.txt))R.cnt[id]--; R.used=st.used;
     o.hRyLast={key:R.key,sid:s.id,txt:r.lab+': '+r.txt,man:RR.manual}; if(typeof saveState==='function')saveState(); return r.lab+': '+r.txt; }
+
+  /* ---------- v426: あなたの回復フェイズの一覧(回収 A4.44 → 回復 A10.6 → 修理 A9.72) ---------- */
+  function hAs(o){ var hs=humanSide(o); if(!hs)return null; var f=Object.create(o); f.ai=hs; return f; }
+  function hRphList(o){ var F=hAs(o); if(!F)return []; var R=hRyState(o); R.res=R.res||{}; R.done=R.done||{}; var L=[];
+    rphRecItems(F).forEach(function(it){ var s=byId(it.sid); if(!s)return; var key='rec|'+it.sid+'|'+it.t+'|'+it.mode+'|'+(it.ref?refKey(it.ref):'0');
+      L.push({sec:1,key:key,it:it,lab:hexNm(s)+' '+it.t+'('+T2(it.mode==='smc'?'混乱した部隊の SW: 指揮官だけ回収できる':'持ち主なし')+')',ok:!R.done[key]&&swRecoverers(o,s,it.mode).length>0,why:R.done[key]?'':(swRecoverers(o,s,it.mode).length?'':T2('回収できる人員がいない(同じヘクスの、Pin でない Good Order。敵がいると不可)'))}); });
+    o.stacks.filter(function(q){ return q.side===F.ai&&hasBroken(q)&&!hidden(q); }).forEach(function(q){ q.u.forEach(function(x,xi){ if(kind(x.t)==='sw'||!(x.b>0))return; var id=q.id+'|'+x.t, init=(R.init[id]!=null?R.init[id]:x.b), left=init-(R.cnt[id]||0), Ld=ldrOf(q), nm=''; try{ nm=hexInfoName(q); }catch(e){}
+        var parts=[]; if(Ld!=null)parts.push(T2('指揮官')+' '+(Ld>0?'+':'')+Ld); else parts.push(T2('自己回復')+' +1'); if(dmOf(o,q))parts.push('DM +4'); if(/Building|Woods|Rubble/.test(nm))parts.push(T2('地形')+' −1');
+        L.push({sec:2,key:'ral|'+id,sid:q.id,xi:xi,lab:hexNm(q)+' '+x.t+'('+T2('混乱')+' '+x.b+')',det:parts.join('・')+'　'+T2('残り')+' '+Math.max(0,left)+'/'+init,ok:left>0,why:left>0?'':T2('この RPh はもう試した(1 ユニット 1 回)')}); }); });
+    rphRepItems(F).forEach(function(it){ var s=byId(it.sid); if(!s)return; var key='rep|'+it.sid+'|'+it.t+'|'+refKey(it.ref); L.push({sec:3,key:key,it:it,lab:hexNm(s)+' '+it.t+'('+T2('故障')+') ['+refName(it.ref)+']',ok:!R.done[key],why:''}); });
+    Object.keys(R.res).forEach(function(k){ if(!L.some(function(e){ return e.key===k; })){ var p=k.split('|'); L.push({sec:+({rec:1,ral:2,rep:3})[p[0]]||9,key:k,lab:R.res[k].lab,ok:false,why:'',gone:true}); } });
+    L.sort(function(a,b){ return a.sec-b.sec; }); return L; }
+  function hRphHTML(o){ var L=hRphList(o), R=hRyState(o); if(!L.length)return '<div style="margin-top:8px;font-size:13px;color:#8899aa">'+T2('あなたの軍に、回収・回復・修理できるものはありません')+'</div>';
+    var T={1:T2('1. SW の回収(A4.44・dr < 6。回収したユニットは、この RPh はほかに何もできない)'),2:T2('2. 混乱ユニットの回復(A10.6)'),3:T2('3. SW の修理(A9.72・dr ≤ R# で修理、6 で除去)')}, h='<div id="aslfullHRph" style="margin-top:8px"><div style="font-size:14px;font-weight:bold;color:#9fe8bd">'+T2('あなたの回復フェイズ')+'</div>', sec=0;
+    L.forEach(function(e){ if(e.sec!==sec){ sec=e.sec; h+='<div style="margin-top:6px;font-size:12px;color:#c8a032">'+(T[sec]||'')+'</div>'; }
+      var r=R.res[e.key], btn=sec===1?T2('回収を振る'):sec===2?T2('回復を振る'):T2('修理を振る');
+      h+='<div style="margin-top:4px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px"><div style="font-size:13px;color:#ccddee" onclick="ASLFULL_HRPH(\'see\',\''+e.key+'\')">'+rEsc(e.lab)+(e.det?'<br><span style="font-size:12px;color:#aabbcc">'+rEsc(e.det)+'</span>':'')+'</div>'
+        +(r?'<div style="font-size:12px;color:'+(r.ok?'#9fe86b':'#ffcc66')+';margin-top:2px">'+rEsc(r.txt)+'</div>':'')
+        +(e.ok?'<button class="b sm" style="height:44px;width:100%;margin-top:4px" onclick="ASLFULL_HRPH(\'roll\',\''+e.key+'\')">'+btn+'</button>':(e.why?'<div style="font-size:12px;color:#8899aa;margin-top:2px">'+rEsc(e.why)+'</div>':''))+'</div>'; });
+    return h+'</div>'; }
+  window.ASLFULL_HRPH=function(k,key){ var o=cur(); if(!o||!battle()||((S.turn&&S.turn.phase)||'')!=='rph')return; if(RPHRUN){ toast('アプリの回復の処理中です'); return; }
+    var L=hRphList(o), e=L.filter(function(x){ return x.key===key; })[0], R=hRyState(o); if(!e)return;
+    if(k==='see'){ var sid=e.sid||(e.it&&e.it.sid); if(sid&&byId(sid))o.sel=sid; Draw(); rphDraw(); return; }
+    if(!e.ok)return; var res=null, keepR=JSON.stringify(S.rally);
+    try{
+      if(e.sec===2){ var q=byId(e.sid), x=q&&q.u[e.xi]; if(q&&x){ var t=hRally(o,q,x); res={lab:e.lab,txt:t,ok:/: 回復(?!しない)/.test(t)}; } }
+      else { var RR={manual:[]}; var r=rphOne(o,e.it,{used:R.used},RR); R.done[key]=true; res=r?{lab:e.lab,txt:r.txt,ok:!!r.ok}:{lab:e.lab,txt:T2('できなかった(条件を満たす人員がいない)'),ok:false}; }
+    }finally{ try{ S.rally=JSON.parse(keepR); }catch(e2){} }
+    if(res){ R.res[key]=res; logAdd(o,T2('あなたの回復フェイズ')+': '+res.lab+' '+res.txt); }
+    if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e3){} rphDraw(); };
+  function hSnpAx(o){ if(!window.ASLFULL_SOLO_ROLE||!S.sniper||!S.sniper.san)return null; var r=null; [true,false].forEach(function(ax){ var ro=ASLFULL_SOLO_ROLE(ax), k=ax?'axis':'allied'; if(ro&&/^Player\(/.test(ro)&&S.sniper.san[k]!=null&&S.sniper.san[k]>=2&&!(S.sniper.pos&&S.sniper.pos[k]))r=ax; }); return r; }
   function soloResetRun(o){ /* v419: 最初からやり直す/対戦終了のとき、実行中のフェイズ処理・ポップアップ・キーを全部捨てる */
     PFPRUN=false; PFPCANCEL=false; RPHRUN=false; RPHCANCEL=false; AUTOMV=false; MPHCANCEL=false; RUNNING=false; o.busy=false; ASTEP=null; aStepDraw();
     o.pfp=null; o.pfpKey=null; o.autoKey=null; o.rphKey=null; o.autoMvKey=null; o.rph=null; o.mph=null;
@@ -47855,6 +47888,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     h+='<button class="b sm on" style="'+bs+'" onclick="ASLFULL_SOLO(\'battle\')">'+T2('一時停止')+'</button>';
     h+='</div>';
     if(o.aim)h+='<div style="font-size:12px;color:#ff7a3a;line-height:1.4;margin-top:4px">'+T2('撃つ: 目標のヘクスをタップしてください')+'</div>';
+    var hsx=hSnpAx(o); if(hsx!=null)h+='<div id="aslfullSnpPlace" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;padding:6px;background:#2a2410;border:1px solid #d4a017;border-radius:4px;font-size:13px;color:#ffe08a"><span style="flex:1;min-width:200px">'+T2('あなたの狙撃兵がまだ地図にありません(A14.2: プレイの前に、空きヘクスに置く)')+'</span><button class="b sm" style="'+bs+'" onclick="SNP_pick('+hsx+')">'+T2('地図で選ぶ')+'</button><button class="b sm" style="'+bs+'" onclick="SNP_autoPlace('+hsx+')">'+T2('おまかせ配置')+'</button></div>';
     if(o.play!=='app')h+='<div style="font-size:11px;color:#8899aa;line-height:1.4;margin-top:4px">'+T2('実物のカウンターを動かしたら、地図でも同じに動かします(スタックをタップ → 動かす先をタップ)。')+'</div>';
     return h+'</div>';
   }
