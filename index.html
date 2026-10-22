@@ -8328,7 +8328,8 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.411"; // v411: アプリの移動フェイズを 1 手ずつ段階表示(速度・一気に進める・取り消し・終了ボタン。臨機射撃の確認中は待つ)。
+var APP_VERSION="ASLFULL-v0.412"; // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
+// v411: アプリの移動フェイズを 1 手ずつ段階表示(速度・一気に進める・取り消し・終了ボタン。臨機射撃の確認中は待つ)。
 // v410: アプリの準備射撃を 1 射撃ずつ段階表示(速度・一気に進める・取り消し・終了ボタン)。
 // v409: シナリオのキットボタンを 4 つ横一列(BV Original / BV Additional / SL Classic / BATTLE RECORD)、画像はボタンの縦幅いっぱい。
 var APP_VERSION_HIST_ASLFULL_v408="ASLFULL-v0.408"; // v408: BATTLE RECORD ボタンの画像を ASL Rules の表紙絵に差し替え。
@@ -46590,7 +46591,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの回復フェイズ操作が終わりました。あなたの回復を行ってください。')+'</b></div>';
     if(R.info)h+='<div style="margin-top:6px;padding:6px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;font-size:12px;color:#cfe;line-height:1.7"><b>'+T2('回復フェイズでできること')+'</b><br>1. '+T2('混乱ユニットの回復 MC(A10.6)— 回復タブで判定')+'<br>2. '+T2('SW・ガンの修理(部隊の「故障」ボタンまたは射撃タブの SW修理/回収)、AFV の修理 — 手で')+'<br>3. '+T2('捕虜の警備・移送・解放の確認 — 手で')+'<br>4. '+T2('塹壕・地雷・火災・風向の確認 — 手で')+'<br>5. '+T2('DM は回復フェイズの終わりに外れます')+'</div>';
     h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_RPH(\'info\')">'+T2(R.info?'一覧を閉じる':'回復フェイズでできること')+'</button><button class="b sm" style="height:44px" onclick="ASLFULL_RPH(\'tab\')">'+T2('回復タブを開く')+'</button>';
-    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullRphNext" onclick="ASLFULL_RPH(\'next\')">'+T2('回復フェイズ終了 → 準備射撃へ')+'</button><button class="b sm" style="height:44px" onclick="ASLFULL_RPH(\'undo\')">'+T2('アプリの回復を取り消す')+'</button></div>';
+    h+='<button class="b sm" style="height:44px;border-color:#2fa866;grid-column:1/3" id="aslfullRphNext" onclick="ASLFULL_RPH(\'next\')">'+T2('回復フェイズ終了 → 準備射撃へ')+'</button></div>';
     return h; }
   function rphDraw(){ var o=cur(), el=document.getElementById('aslfullSoloRph'); if(!o||!o.rph||o.rph.closed){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloRph'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
@@ -46652,8 +46653,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(R.manual.length)h+='<div style="margin-top:6px;color:#ffcc66;font-size:12px">'+T2('手で行うこと')+': '+R.manual.map(rEsc).join(' / ')+'</div>';
     h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2('煙幕の射撃・塹壕掘り・Opportunity Fire の指定・OBA・Mop Up など(A3.2)。必要なら手で行ってください。')+'</div>';
     h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの準備射撃が終わりました。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2('この半ターンの攻撃側はアプリなので、あなたの準備射撃はありません。結果を確認して、次は移動フェイズへ進んでください。')+'</span></div>';
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'undo\')">'+T2('アプリの準備射撃を取り消す')+'</button>';
-    h+='<button class="b sm" style="height:44px;border-color:#2fa866;grid-column:1/3" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2('準備射撃フェイズ終了 → 移動へ')+'</button></div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_PFP(\'tab\')">'+T2('射撃タブを開く')+'</button>';
+    h+='<button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullPfpNext" onclick="ASLFULL_PFP(\'next\')">'+T2('準備射撃フェイズ終了 → 移動へ')+'</button></div>';
     return h; }
   function pfpDraw(){ var o=cur(), el=document.getElementById('aslfullSoloPfp'); if(!o||!o.pfp||o.pfp.closed||!(S.turn&&S.turn.phase==='pfph')){ if(el)el.remove(); return; }
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloPfp'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
@@ -47149,7 +47150,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!R.done)return h+'<div style="margin-top:8px"><button class="b sm" style="height:40px;width:100%" onclick="ASLFULL_MPH(\'skip\')">'+T2('残りを一気に進める')+'</button></div>';
     h+='<div style="margin-top:8px;padding:6px;background:#1a2430;border:1px solid #2a3a4a;border-radius:4px;font-size:12px;color:#aabbcc;line-height:1.6"><b>'+T2('アプリがやらないこと')+'</b>: '+T2('車両の移動・運搬(乗り降り)・捕虜の連行・煙幕の展開・塹壕/地雷/ワイヤーの作業・MPh の回収など。必要なら手で行ってください。回復と白兵戦の案は手のままです。')+'</div>';
     h+='<div style="margin-top:8px;font-size:14px;color:#9fe8bd"><b>'+T2('アプリの移動フェイズ操作が終わりました。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2('次はあなたの防御射撃フェイズ(DFPh)です。First Fire 済みの部隊は隣接する敵だけ撃てます(Final Fire)。')+'</span></div>';
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px" onclick="ASLFULL_MPH(\'undo\')">'+T2('アプリの移動を取り消す')+'</button><button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullMphNext" onclick="ASLFULL_MPH(\'next\')">'+T2('移動フェイズ終了 → 防御射撃へ')+'</button></div>';
+    h+='<div style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:10px"><button class="b sm" style="height:44px;border-color:#2fa866" id="aslfullMphNext" onclick="ASLFULL_MPH(\'next\')">'+T2('移動フェイズ終了 → 防御射撃へ')+'</button></div>';
     return h; }
   var MPHCANCEL=false;
   window.ASLFULL_MPH=function(k,a){ var o=cur(); if(!o||!o.mph)return;
