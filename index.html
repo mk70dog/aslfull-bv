@@ -5282,6 +5282,7 @@ var I18N_EN={
 "対戦モード":"Battle mode",
 "対戦モード終了":"Exit battle mode",
 "対戦開始":"Start battle",
+"次へ(App)":"Next (App)",
 "アプリの部隊が降伏します(A20.21)":"An App unit surrenders (A20.21)",
 "受け入れる":"Accept",
 "拒否する(No Quarter)":"Reject (No Quarter)",
@@ -8337,7 +8338,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.423"; // v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.424"; // v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -35347,7 +35348,9 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     h+='<div style="background:#0d1520;border:1px solid #d4a017;border-radius:6px;max-width:560px;width:100%;padding:12px;color:#dde6ee;font-size:14px;line-height:1.5">';
     h+='<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:17px;font-weight:bold;color:#d4a017">'+L('狙撃兵 (A14)','Sniper (A14)')+'</div>'+btn(L('閉じる','Close'),'SNP_close()')+'</div>';
     h+='<div style="color:#8899aa;font-size:12px">SAN: '+L('枢軸','Axis')+' '+(z.san.axis==null?'—':z.san.axis)+' / '+L('連合','Allied')+' '+(z.san.allied==null?'—':z.san.allied)+'　'+L('未処理','pending')+': '+pending()+'</div>';
-    h+='<div style="margin-top:6px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;font-size:12px;color:#8899aa">'+L('App 操作の速度','App speed')+' '+[['slow',L('遅い','Slow')],['normal',L('普通','Normal')],['fast',L('速い','Fast')],['instant',L('即時','Instant')]].map(function(p){return '<button class="b sm'+(((z.spd||'normal')===p[0])?' on':'')+'" style="flex:1;padding:4px 6px" onclick="SNP_spd(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
+    h+='<div style="margin-top:6px;display:flex;gap:4px;align-items:center;flex-wrap:nowrap;font-size:12px;color:#8899aa">'+L('App 操作の速度','App speed')+' '+[['slow',L('遅い','Slow')],['normal',L('普通','Normal')],['fast',L('速い','Fast')],['instant',L('即時','Instant')],['step',L('▶️1手','▶ Step')]].map(function(p){return '<button class="b sm'+(((z.spd||'normal')===p[0])?' on':'')+'" style="flex:1;padding:4px 6px" onclick="SNP_spd(\''+p[0]+'\')">'+p[1]+'</button>';}).join('')+'</div>';
+    if(it&&it.status==='open'&&it.phOk!==false&&!it.autoRun&&!it.manual&&it.atk==null&&isAppSniper(it))setTimeout(function(){ var c=cur(); if(c===it&&!it.autoRun&&!it.manual&&it.atk==null&&snp().open)snpAutoStart(it); },0); /* v424: 発動のときに始まらなかった場合も開いたら始める */
+    if(it&&it.manual&&it.atk==null&&it.status==='open'&&isAppSniper(it))h+='<div style="margin-top:8px">'+btn(L('App に任せる','Let the App operate'),'SNP_autoResume()')+'</div>';
     if(it&&it.autoMsg)h+='<div id="sniperAuto" style="margin-top:8px;padding:8px;background:#102a1c;border:1px solid #2fa866;border-radius:4px;color:#9fe8bd"><b>'+(it.autoRun?'▶ ':'')+'App</b>: '+esc(String(it.autoMsg).replace(/^App: ?/,''))+(it.autoRun?' '+btn(L('手動にする','Take over'),'SNP_autoStop()'):'')+'</div>';
     if(!it){
       h+='<div style="margin-top:10px">'+L('処理待ちの狙撃兵攻撃はありません。','No pending sniper attacks.')+'</div></div>';
@@ -35440,7 +35443,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
     var tok=++autoTok; it.autoRun=true; it.autoMsg=L('App が狙撃兵を操作します','App is operating the Sniper');
     var z=snp(), k=sideKey(ownerOfSniper(it)), G=window.ASLFULL_SOLO_HEX;
     function alive(){ var c=cur(); return tok===autoTok&&c===it&&it.autoRun&&it.status==='open'; }
-    function step(ms,fn){ setTimeout(function(){ if(!alive())return; fn(); },spdMs()===0?0:ms*spdMs()/900); }
+    function step(ms,fn){ if((snp().spd||'normal')==='step'&&window.ASLFULL_AWAIT){ window.ASLFULL_AWAIT(function(){ if(!alive())return; fn(); }); return; } setTimeout(function(){ if(!alive())return; fn(); },spdMs()===0?0:ms*spdMs()/900); }
     function say(m){ it.autoMsg=m; saveState(); render(); }
     function end(m){ it.autoRun=false; it.autoMsg=m; saveState(); render(); try{ Draw(); }catch(e){} }
     if(G&&k&&!z.pos[k]){ var pp0=G.place(G.nat(ownerOfSniper(it))); if(pp0){ z.pos[k]=pp0; it.autoMsg=L('App: 狙撃兵カウンターを ','App: placed the Sniper counter in ')+G.name(pp0)+L(' に配置',''); } }
@@ -35467,7 +35470,7 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   window.ASLFULL_SNP_POS=function(){ return snp().pos; };
   window.SNP_setPos=function(ax,p){ var k=sideKey(ax); if(!k)return; snp().pos[k]=p; saveState(); try{ Draw(); }catch(e){} render(); };
   window.SNP_resetPos=function(){ snp().pos={axis:null,allied:null}; saveState(); };
-  window.SNP_pick=function(ax){ snp().open=false; saveState(); render(); if(window.ASLFULL_SOLO)ASLFULL_SOLO('snppick',ax); };
+  window.SNP_pick=function(ax){ snp().open=false; saveState(); render(); if(window.ASLFULL_SOLO)ASLFULL_SOLO('snppick',ax); try{ if(typeof NAVTAB==='function')NAVTAB('los'); }catch(e){} };
   window.SNP_autoPlace=function(ax){ var G=window.ASLFULL_SOLO_HEX; if(!G)return; var p=G.place(G.nat(ax)); if(!p){ if(typeof toast==='function')toast('置けるヘクスが見つかりません'); return; } window.SNP_setPos(ax,p); };
   window.SNP_autoPlaceApp=function(){ var G=window.ASLFULL_SOLO_HEX; if(!G)return; var z=snp(); [true,false].forEach(function(ax){ var r=window.ASLFULL_SOLO_ROLE&&ASLFULL_SOLO_ROLE(ax), k=sideKey(ax); if(r&&/^App\(/.test(r)&&z.san[k]!=null&&z.san[k]>=2&&!z.pos[k]){ var p=G.place(G.nat(ax)); if(p)z.pos[k]=p; } }); saveState(); };
   /* v401: 目標ヘクス → 有効な目標 → ランダム選択 → 結果の適用 */
@@ -35507,8 +35510,9 @@ document.addEventListener('DOMContentLoaded',function(){loadState();checkIdleCle
   window.SNP_tgApply=function(){ upd(function(it){ tgApply(it); }); try{ Draw(); }catch(e){} };
   window.SNP_moveTo=function(){ upd(function(it){ var ax=ownerOfSniper(it), k=sideKey(ax), z=snp(), G=window.ASLFULL_SOLO_HEX; var p0=it.pos0||z.pos[k]; if(!p0||!G)return; var tg=G.step(p0,it.dir,it.dist); if(!tg||tg.off)return; it.pos0={bd:p0.bd,col:p0.col,row:p0.row}; tgCompute(it); }); try{ Draw(); }catch(e){} };
   window.SNP_autoStart=function(){ var it=cur(); if(it)snpAutoStart(it); };
-  window.SNP_autoStop=function(){ autoTok++; var it=cur(); if(it){ it.autoRun=false; it.autoMsg=null; } saveState(); render(); };
-  window.SNP_spd=function(k){ snp().spd=k; saveState(); render(); };
+  window.SNP_autoResume=function(){ var it=cur(); if(it){ it.manual=false; snpAutoStart(it); } };
+  window.SNP_autoStop=function(){ autoTok++; var it=cur(); if(it){ it.autoRun=false; it.autoMsg=null; it.manual=true; } saveState(); render(); if(window.ASLFULL_STEP)ASLFULL_STEP(); };
+  window.SNP_spd=function(k){ snp().spd=k; saveState(); render(); if(k!=='step'&&window.ASLFULL_STEP)ASLFULL_STEP(); };
   function upd(fn){var it=cur();if(!it)return;fn(it);saveState();render();}
   window.SNP_close=function(){snp().open=false;saveState();render();};
   window.SNP_open=function(){snp().open=true;saveState();render();};
@@ -45896,6 +45900,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     keep(function(){
       var o=st(), id=sid();
       if(k!=='confirm'&&k!=='reset'&&k!=='quit')o.cf=null;
+      if(k==='snppick'){ o.snpPick={ax:a}; toast('地図で、狙撃兵カウンターを置く空きヘクスをタップしてください'); return; } /* v424: 射撃の解決中・ポップアップ中でも受け付ける */
       if(o.busy&&k!=='popclose'&&k!=='autoundo'){ toast('アプリの射撃を解決中です'); return; }
       if(o.dff&&k!=='dffgo'&&k!=='dffskip'&&k!=='popclose'&&k!=='autoundo'&&k!=='dffauto'&&k!=='dffshow'&&k!=='dffback'&&k!=='detclose'){ toast('臨機射撃のパネルで答えてください'); return; }
       if(o.popQ&&o.popQ.length&&k!=='popclose'&&k!=='autoundo'){ toast('臨機射撃のポップアップを閉じてください'); return; }
@@ -46556,6 +46561,11 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
 
   /* ---------- v402: アプリの回復フェイズを 1 部隊ずつ見せて実施し、終了のポップアップを出す ---------- */
   var RPHRUN=false, RPHCANCEL=false; function rEsc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  var ASTEP=null; /* v424: ▶️1手ずつ のときの次の手 */
+  function aWait(fn,cancel,post){ if(cancel){ fn(); return; } var k=(S.sniper&&S.sniper.spd)||'normal'; if(k==='step'){ if(post){ fn(); return; } ASTEP=fn; aStepDraw(); return; } var ms=rphSpd(); if(ms===0)fn(); else setTimeout(fn,ms); }
+  function aStepDraw(){ var el=document.getElementById('aslfullStepBtn'); if(!ASTEP){ if(el)el.remove(); return; } if(!el){ el=document.createElement('button'); el.id='aslfullStepBtn'; el.className='b'; el.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10001;height:56px;min-width:220px;font-size:18px;font-weight:bold;border:2px solid #2fa866;background:#102a1c;color:#9fe8bd;border-radius:8px;box-shadow:0 4px 16px #000c'; el.onclick=function(){ window.ASLFULL_STEP(); }; document.body.appendChild(el); } el.textContent='▶️ '+T2('次へ(App)'); }
+  window.ASLFULL_STEP=function(){ var f=ASTEP; ASTEP=null; aStepDraw(); if(f){ try{ f(); }catch(e){} } };
+  window.ASLFULL_AWAIT=function(fn){ ASTEP=fn; aStepDraw(); };
   function rphSpd(){ var m={slow:1600,normal:900,fast:350,instant:0}; var k=(S.sniper&&S.sniper.spd)||'normal'; return m[k]==null?900:m[k]; }
   function rphItems(o){ var out=[]; o.stacks.filter(function(q){ return q.side===o.ai&&hasBroken(q); }).forEach(function(s0){ var order=[];
       s0.u.forEach(function(x){ if(kind(x.t)!=='sw'&&x.b>0)for(var j=0;j<x.b;j++)order.push({sid:s0.id,t:x.t,k:kind(x.t)}); });
@@ -46599,7 +46609,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     logAdd(o,T2('回復')+' '+lab+' '+txt);
     return {lab:lab,txt:txt,ok:r.st==='ok'}; }
   function rphHTML(o){ var R=o.rph; if(!R)return ''; 
-    var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_RPH(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
+    var spdBtn=['slow','normal','fast','instant','step'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時',step:'▶️1手'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_RPH(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
     var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2('回復フェイズ')+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.done?'終了':'の回復・修理を実施中')+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:6px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'</div>';
     if(!R.done)h+='<div style="display:flex;gap:4px;align-items:center;font-size:12px;color:#8899aa;margin-bottom:6px">'+T2('速度')+' '+spdBtn+'</div>';
@@ -46619,8 +46629,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloRph'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
     el.innerHTML=rphHTML(o); }
   window.ASLFULL_RPH=function(k,a){ var o=cur(); if(!o||!o.rph)return;
-    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(typeof saveState==='function')saveState(); }
-    else if(k==='skip'){ RPHCANCEL=true; }
+    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(a!=='step'&&window.ASLFULL_STEP)ASLFULL_STEP(); if(typeof saveState==='function')saveState(); }
+    else if(k==='skip'){ RPHCANCEL=true; if(window.ASLFULL_STEP)ASLFULL_STEP(); }
     else if(k==='info'){ o.rph.info=!o.rph.info; }
     else if(k==='tab'){ o.rph.closed=true; try{ S.tab='rally'; }catch(e){} Draw(); }
     else if(k==='next'){ o.rph.closed=true; rphDraw(); window.ASLFULL_SOLO('next'); return; }
@@ -46634,8 +46644,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     boardsReady().then(function(){ items=rphRecItems(o).concat(rphItems(o)); var i=0;
       function go(){ if(o.rph!==R)return; if(i>=items.length&&!R.repDone){ R.repDone=true; items=items.concat(rphRepItems(o)).concat(rphXferItems(o)); } if(i>=items.length)return fin(); var it=items[i++], sp=RPHCANCEL?0:rphSpd();
         var s=byId(it.sid); var pend={lab:(s?hexNm(s):'')+' '+(it.xfer?'SW':(it.rec?T2('SW の回収'):it.t+'('+T2(it.rep?'故障':'混乱')+')')),txt:T2(it.xfer?'受け渡しを確認…':(it.rec?'回収を試みる…':(it.rep?'修理を試みる…':'回復を試みる…'))),pending:true}; R.lines.push(pend); rphDraw();
-        function doIt(){ var r=null; try{ r=rphOne(o,it,st,R); }catch(e){ r={lab:pend.lab,txt:String(e)}; } R.lines.pop(); if(r)R.lines.push(r); try{ Draw(); }catch(e){} rphDraw(); if(RPHCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
-        if(sp===0)doIt(); else setTimeout(doIt,sp); }
+        function doIt(){ var r=null; try{ r=rphOne(o,it,st,R); }catch(e){ r={lab:pend.lab,txt:String(e)}; } R.lines.pop(); if(r)R.lines.push(r); try{ Draw(); }catch(e){} rphDraw(); aWait(go,RPHCANCEL,1); }
+        aWait(doIt,RPHCANCEL); }
       go(); },function(){ fin(); }); }
 
   /* ---------- v410: アプリの準備射撃(A3.2 / ASOP 2.22A)を段階表示 ---------- */
@@ -46658,8 +46668,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
         var lab=fr.map(hexNm).join('+')+(fr.length>1?' FG':'')+' → '+hexNm(tg);
         var pend={lab:lab,txt:T2('射撃する…')+' FP '+(Math.round(e.fp*10)/10)+'('+T2('列')+' '+e.col+')',pending:true}; R.lines.push(pend); pfpDraw();
         function doIt(){ try{ autoFire(o,e,function(){ var rec=o.lastRec; R.lines.pop(); if(rec){ var r=pfpRes(rec,lab); R.lines.push(r); R.n++; r.manual.forEach(function(m){ R.manual.push(m); }); }
-              try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)step(); else setTimeout(step,rphSpd()); }); }catch(er){ R.lines.pop(); R.lines.push({lab:lab,txt:String(er)}); fin(); } }
-        if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
+              try{ Draw(); }catch(e1){} pfpDraw(); aWait(step,PFPCANCEL,1); }); }catch(er){ R.lines.pop(); R.lines.push({lab:lab,txt:String(er)}); fin(); } }
+        aWait(doIt,PFPCANCEL); }
       step(); },function(){ fin(); });
   }
   function surHTML(o,R){ var h='';
@@ -46673,7 +46683,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       h+='</div>'; }
     return h; }
   function pfpHTML(o){ var R=o.pfp; if(!R)return '';
-    var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_PFP(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
+    var spdBtn=['slow','normal','fast','instant','step'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時',step:'▶️1手'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_PFP(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
     var DF=(R.ph==='dfph'), AF=(R.ph==='afph'), RT=(R.ph==='rtph'), AP=(R.ph==='aph'), CC=(R.ph==='ccph'); var h='<div style="font-size:15px;font-weight:bold;color:#ff9a4a;margin-bottom:6px">'+T2(CC?'白兵戦フェイズ':AP?'突撃フェイズ':RT?'潰走フェイズ':(AF?'前進射撃フェイズ':(DF?'防御射撃フェイズ':'準備射撃フェイズ')))+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.wait?'の番を待っています':(R.done?'終了':(CC?'の白兵戦を解決中':AP?'の前進を実施中':RT?'の潰走を実施中':'の射撃を実施中')))+'</div>';
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:6px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'</div>';
     if(R.wait)return h+'<div style="font-size:14px;color:#ffcc66;line-height:1.7"><b>'+T2(CC?'白兵戦の前に、あなたの混乱した部隊を撤退(Withdrawal, A11.2)させてください。撤退しない混乱ユニットは、白兵戦のあと除去されます(A11.16。捕虜の護衛は撤退も除去もしない)。':'攻撃側が先に潰走します(A10.5)。あなたの混乱した部隊の潰走を先に行ってください。')+'</b><br><span style="font-size:12px;color:#ccddee">'+T2(CC?'済んだら下のボタンで、アプリが両陣営の白兵戦を解決します。':'済んだら下のボタンで、アプリ(防御側)の潰走を実施します。')+'</span></div>'+(RT?surHTML(o,R):'')+'<div style="margin-top:10px"><button class="b sm" style="height:44px;width:100%;border-color:#2fa866" id="aslfullRtGo" onclick="ASLFULL_PFP(\'go\')">'+T2(CC?'白兵戦を解決する':'アプリの潰走を実施')+'</button></div>';
@@ -46694,11 +46704,11 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloPfp'; el.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,460px);max-height:84vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:12px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
     el.innerHTML=pfpHTML(o); }
   window.ASLFULL_PFP=function(k,a){ var o=cur(); if(!o||!o.pfp)return;
-    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(typeof saveState==='function')saveState(); }
-    else if(k==='skip'){ if(!o.pfp.ask)PFPCANCEL=true; }
+    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(a!=='step'&&window.ASLFULL_STEP)ASLFULL_STEP(); if(typeof saveState==='function')saveState(); }
+    else if(k==='skip'){ if(!o.pfp.ask){ PFPCANCEL=true; if(window.ASLFULL_STEP)ASLFULL_STEP(); } }
     else if(k==='sacc'||k==='snq'){ var R2=o.pfp, A2=R2.ask; if(!A2)return; var s2=byId(A2.sid), g2=(k==='sacc')?byId(A2.caps[+a||0]):null; if(k==='sacc'&&!g2)return;
       var tx2=s2?(g2?doSur(o,s2,g2):doNQ(o,s2)):T2('部隊が見つからない'); R2.lines.push({lab:A2.lab,txt:tx2,ok:false}); R2.n++; R2.ask=null; var cont=R2.cont; R2.cont=null; try{ Draw(); }catch(e){} pfpDraw();
-      if(cont){ if(PFPCANCEL||rphSpd()===0)cont(); else setTimeout(cont,rphSpd()); } else { PFPRUN=false; rtpAuto(o,true); } return; }
+      if(cont){ aWait(cont,PFPCANCEL,1); } else { PFPRUN=false; rtpAuto(o,true); } return; }
     else if(k==='hsur'){ var q3=byId(a); if(!q3)return; var c3=(o.pfp.hsur||[]).filter(function(c){ return c.id===a; })[0], g3=c3&&surBest(o,c3.cap); if(!g3)return; fl(q3).hsur=turnKey(); var tx3=doSur(o,q3,g3)+'・'+T2('アプリは降伏を受け入れる');
       o.pfp.lines.push({lab:T2('あなたの部隊の降伏'),txt:tx3,ok:false}); try{ o.pfp.hsur=hSurList(o); }catch(e){ o.pfp.hsur=[]; } if(typeof saveState==='function')saveState(); try{ Draw(); }catch(e){} }
     else if(k==='tab'){ o.pfp.closed=true; try{ S.tab=(o.pfp.ph==='rtph'?'rout':(o.pfp.ph==='aph'?'aphcc':'fire')); }catch(e){} Draw(); }
@@ -46784,8 +46794,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     boardsReady().then(function(){ var ids=o.stacks.filter(function(q){ return q.side===o.ai&&hasBroken(q)&&fl(q).rtd!==turnKey(); }).map(function(q){ return q.id; }), i=0;
       function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=ids.length)return fin(); var s=byId(ids[i++]); if(!s||!hasBroken(s))return go();
         var pend={lab:T2('潰走')+' '+hexNm(s),txt:T2('潰走を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
-        function doIt(){ var r=null; try{ r=rtOne(o,s,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r&&r.ask){ R.ask=r.ask; R.ask.lab=r.lab; R.cont=go; try{ Draw(); }catch(e2){} pfpDraw(); return; } if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
-        if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
+        function doIt(){ var r=null; try{ r=rtOne(o,s,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r&&r.ask){ R.ask=r.ask; R.ask.lab=r.lab; R.cont=go; try{ Draw(); }catch(e2){} pfpDraw(); return; } if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); aWait(go,PFPCANCEL,1); }
+        aWait(doIt,PFPCANCEL); }
       go(); },function(){ fin(); }); }
 
   /* ---------- v416: 突撃フェイズ(A4.7〜A4.72) ---------- */
@@ -46815,8 +46825,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var items=((o.aiAct&&o.aiAct.items)||[]).filter(function(x){ return x.s&&byId(x.s); }), i=0;
       function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=items.length)return fin(); var it=items[i++], s=byId(it.s); if(!s||goodN(s)<=0)return go();
         var pend={lab:T2('前進')+' '+hexNm(s),txt:T2('前進を考える…'),pending:true}; R.lines.push(pend); pfpDraw();
-        function doIt(){ var r=null; try{ r=apOne(o,s,it,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
-        if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
+        function doIt(){ var r=null; try{ r=apOne(o,s,it,R); }catch(er){ r={lab:pend.lab,txt:String(er)}; } R.lines.pop(); if(r){ R.lines.push(r); R.n++; } try{ Draw(); }catch(e1){} pfpDraw(); aWait(go,PFPCANCEL,1); }
+        aWait(doIt,PFPCANCEL); }
       go(); },function(){ fin(); }); }
   function inMelee(o,s){ return !!(s.f&&s.f.mel)&&!(s.f&&s.f.conc)&&o.stacks.some(function(t){ return t.side!==s.side&&t.bd===s.bd&&t.col===s.col&&t.row===s.row&&!(t.f&&t.f.conc)&&t.u.some(function(x){ return kind(x.t)!=='sw'&&x.n>0; }); }); } /* A11.15: 隠蔽を保っている部隊は Melee に縛られず、相手も縛らない */
   function meleeAt(o,bd,col,row){ return o.stacks.some(function(q){ return q.bd===bd&&q.col===col&&q.row===row&&inMelee(o,q); }); }
@@ -46858,7 +46868,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   window.__v421=function(){ return {canFire:canFire,instOf:instOf,elimInst:elimInst,kind:kind,goodN:goodN,byId:byId,guardOver:guardOver,hSurList:hSurList,cur:cur}; }; /* 試験用 */
   function surBest(o,ids){ return ids.map(byId).filter(Boolean).sort(function(a,b){ return (5*armedUS(b)-prUS(b))-(5*armedUS(a)-prUS(a)); })[0]; }
   function soloResetRun(o){ /* v419: 最初からやり直す/対戦終了のとき、実行中のフェイズ処理・ポップアップ・キーを全部捨てる */
-    PFPRUN=false; PFPCANCEL=false; RPHRUN=false; RPHCANCEL=false; AUTOMV=false; MPHCANCEL=false; RUNNING=false; o.busy=false;
+    PFPRUN=false; PFPCANCEL=false; RPHRUN=false; RPHCANCEL=false; AUTOMV=false; MPHCANCEL=false; RUNNING=false; o.busy=false; ASTEP=null; aStepDraw();
     o.pfp=null; o.pfpKey=null; o.autoKey=null; o.rphKey=null; o.autoMvKey=null; o.rph=null; o.mph=null;
     ['aslfullSoloPfp','aslfullSoloMph','aslfullSoloRph'].forEach(function(i){ var e=document.getElementById(i); if(e)e.remove(); }); }
   function residualThen(o,s,cb){
@@ -47335,7 +47345,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     if(!el){ el=document.createElement('div'); el.id='aslfullSoloMph'; el.style.cssText='position:fixed;left:50%;top:6px;transform:translateX(-50%);width:min(94vw,520px);max-height:40vh;overflow:auto;z-index:9991;background:#10151c;border:2px solid #ff9a4a;border-radius:8px;padding:10px;box-shadow:0 4px 24px #000c'; document.body.appendChild(el); }
     el.innerHTML=mphHTML(o); }
   function mphHTML(o){ var R=o.mph; if(!R)return '';
-    var spdBtn=['slow','normal','fast','instant'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_MPH(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
+    var spdBtn=['slow','normal','fast','instant','step'].map(function(k){ var lb={slow:'遅い',normal:'普通',fast:'速い',instant:'即時',step:'▶️1手'}[k]; return '<button class="b sm'+(((S.sniper&&S.sniper.spd)||'normal')===k?' on':'')+'" style="flex:1;padding:4px 6px" onclick="ASLFULL_MPH(\'spd\',\''+k+'\')">'+T2(lb)+'</button>'; }).join('');
     var h='<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px"><div style="flex:1;font-size:15px;font-weight:bold;color:#ff9a4a">'+T2('移動フェイズ')+' — '+T2('アプリ')+' ('+T2(NATJ[o.ai]||o.ai)+') '+T2(R.done?'終了':'の移動を実施中')+'</div><button class="b sm" style="height:30px;padding:0 8px" onclick="ASLFULL_MPH(\'min\')">'+T2(R.min?'広げる':'小さくする')+'</button></div>';
     if(R.min)return h;
     h+='<div style="font-size:12px;color:#8899aa;margin-bottom:4px">T'+S.turn.cur+' / '+T2(S.turn.half?'後半':'前半')+'　'+T2('動くたびに、あなたの臨機射撃(防御射撃)のパネルが出たら答えてください。答えると続きます。')+'</div>';
@@ -47351,8 +47361,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     return h; }
   var MPHCANCEL=false;
   window.ASLFULL_MPH=function(k,a){ var o=cur(); if(!o||!o.mph)return;
-    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(typeof saveState==='function')saveState(); }
-    else if(k==='skip'){ MPHCANCEL=true; }
+    if(k==='spd'){ if(!S.sniper)return; S.sniper.spd=a; if(a!=='step'&&window.ASLFULL_STEP)ASLFULL_STEP(); if(typeof saveState==='function')saveState(); }
+    else if(k==='skip'){ MPHCANCEL=true; if(window.ASLFULL_STEP)ASLFULL_STEP(); }
     else if(k==='min'){ o.mph.min=!o.mph.min; }
     else if(k==='next'){ o.mph.closed=true; mphDraw(); window.ASLFULL_SOLO('next'); return; }
     else if(k==='undo'){ if(o.mph.snap&&o.mph.done){ o.stacks=JSON.parse(o.mph.snap); o.sel=null; o.dff=null; o.popQ=[]; o.resid=null; o.aiAct=null; o.lastAuto=null; logAdd(o,T2('取り消し')+': '+T2('アプリの移動')); o.mph.lines=[]; o.mph.n=0; o.mph.snap=null; Draw(); } }
@@ -47374,8 +47384,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
           if(idx<0){ o.runMsg=null; return end(); }
           var e2=items[idx], s8=byId(e2.s), info=s8?mvInfo(e2,s8):{lab:'?',txt:''}, pend={lab:info.lab,txt:T2('動く…')+' '+info.txt,pending:true}; R.lines.push(pend); mphDraw();
           function doIt(){ window.ASLFULL_SOLO('aido',idx);
-            setTimeout(function(){ waitClear(function(){ pend.pending=false; pend.txt=info.txt; R.n++; mphDraw(); var sp=(MPHCANCEL||rphSpd()===0)?0:rphSpd(); if(sp===0)step(); else setTimeout(step,sp); }); },80); }
-          var sp0=(MPHCANCEL||rphSpd()===0)?0:rphSpd(); if(sp0===0)doIt(); else setTimeout(doIt,sp0); }); }
+            setTimeout(function(){ waitClear(function(){ pend.pending=false; pend.txt=info.txt; R.n++; mphDraw(); aWait(step,MPHCANCEL,1); }); },80); }
+          aWait(doIt,MPHCANCEL); }); }
       step(); },function(){ end(); });
   }
   function autoPhase(o,force){
@@ -47626,8 +47636,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     boardsReady().then(function(){ var L=ccHexList(o), i=0;
       function go(){ if(!PFPRUN||o.pfp!==R)return; if(i>=L.length)return fin(); var H0=L[i++], H=ccHexList(o).filter(function(h){ return h.bd===H0.bd&&h.col===H0.col&&h.row===H0.row; })[0]; if(!H)return go();
         var pend={lab:T2('白兵戦')+' '+hexNm({bd:H.bd,col:H.col,row:H.row}),txt:T2('解決中…'),pending:true}; R.lines.push(pend); pfpDraw();
-        function doIt(){ R.lines.pop(); try{ ccOne(o,H,R); R.n++; }catch(er){ R.lines.push({lab:pend.lab,txt:String(er)}); } try{ Draw(); }catch(e1){} pfpDraw(); if(PFPCANCEL||rphSpd()===0)go(); else setTimeout(go,rphSpd()); }
-        if(PFPCANCEL||rphSpd()===0)doIt(); else setTimeout(doIt,rphSpd()); }
+        function doIt(){ R.lines.pop(); try{ ccOne(o,H,R); R.n++; }catch(er){ R.lines.push({lab:pend.lab,txt:String(er)}); } try{ Draw(); }catch(e1){} pfpDraw(); aWait(go,PFPCANCEL,1); }
+        aWait(doIt,PFPCANCEL); }
       go(); },function(){ fin(); }); }
   function ccAll(o,onlyHex){ var L=ccHexList(o); if(onlyHex)L=L.filter(function(H){ return H.bd===onlyHex.bd&&H.col===onlyHex.col&&H.row===onlyHex.row; }); var n=0; L.forEach(function(H){ ccOne(o,H,{lines:[],manual:[]}); n++; }); if(n){ o.sel=null; o.shot=null; o.aiAct=null; } return n; }
   function runIdle(o,cb,n){ n=n||0; if(o.dff)return cb(false); if(!o.busy)return cb(true); if(n>200)return cb(false); setTimeout(function(){ runIdle(o,cb,n+1); },150); }
