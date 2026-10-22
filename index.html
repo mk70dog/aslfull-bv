@@ -8337,7 +8337,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.422"; // v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.423"; // v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -47814,7 +47814,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var me=sideOfHalf(), ph=phaseObj(), t=S.turn||{cur:1,half:0};
     var h='<div id="aslfullSoloBand" class="card" style="margin:4px 0;padding:6px 8px"><div style="display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-flow:column;grid-auto-columns:auto;gap:6px;align-items:center;overflow-x:auto">';
     h+='<div style="font-family:\'Courier New\',monospace;font-weight:bold;font-size:16px;color:#c8a032">T'+t.cur+(t.ended?' END':(t.half?T2(' 裏'):T2(' 表')))+'</div>';
-    h+='<div style="font-size:13px;color:#ccddee;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px;border:1px solid #8899aa;border-radius:3px;padding:0 5px">'+(o.play==='app'?'App':T2('実物で遊ぶ'))+'</span></div>';
+    h+='<div style="font-size:13px;color:#ccddee;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><b style="color:'+(SIDE_COL[me]||'#ccddee')+'">'+T2(NATJ[me]||me||'')+(o.ai===me?' (AI)':'')+T2('の番')+'</b>　'+T2(ph.abbr)+' '+T2(ph.lbl)+'　<span style="color:#8899aa;font-size:11px;border:1px solid #8899aa;border-radius:3px;padding:0 5px">'+(o.play==='app'?'App':T2('実物で遊ぶ'))+'</span>'+(o.ai?' <span id="aslfullAppNat" style="font-size:12px;font-weight:bold;color:'+(SIDE_COL[o.ai]||'#ccddee')+'">'+T2('App')+': '+T2(({GER:'ドイツ',SOV:'ソ連',FIN:'フィンランド'})[o.ai]||NATJ[o.ai]||o.ai)+'</span>':'')+'</div>';
     h+='<button class="b sm" id="aslfullStartBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'start\')">'+T2('対戦開始')+'</button>';
     h+='<button class="b sm" id="aslfullQuitBtn" style="'+bs+'" onclick="ASLFULL_SOLO(\'quit\')">'+T2('対戦終了')+'</button>';
     h+='<button class="b sm" id="aslfullPrevPh" style="'+bs+'" onclick="ASLFULL_SOLO(\'prev\')">◀️'+T2('フェイズ')+'</button>';
