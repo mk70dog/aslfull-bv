@@ -18,16 +18,16 @@ window.losTabpSplit=function(){var h=document.documentElement,tb=document.queryS
   ord.forEach(function(k){z.appendChild(arr[k]);});z._orig=arr;z.dataset.st=st;
   w.parentElement.parentElement.insertBefore(z,w.parentElement.nextSibling);}
  else if(z&&(!h.classList.contains("is-tabp")||!tb)){if(tb&&z._orig){var ref=tb.children[+(z.dataset.st||0)]||null;z._orig.forEach(function(e){tb.insertBefore(e,ref);});}z.parentElement&&z.parentElement.removeChild(z);}};
-/* v439: 射撃タブのフェイズの段(#firePhaseBox)を、スクロールで上に隠れたらメインタブの下に固定 */
-window.tabpStick=function(){var h=document.documentElement,el=document.getElementById("firePhaseBox");if(!el)return;var ph=document.getElementById("firePhaseBoxPh");
- var on=h.classList.contains("is-tabp"),nv=document.getElementById("nav"),top=nv?nv.getBoundingClientRect().bottom:0;
- function unfix(){el.classList.remove("tabpFix");el.style.left=el.style.width=el.style.top="";if(ph)ph.style.height="0px";}
- if(!on){unfix();return;}
- if(!ph){ph=document.createElement("div");ph.id="firePhaseBoxPh";el.parentNode.insertBefore(ph,el);}
- var ref=(el.classList.contains("tabpFix")?ph:el).getBoundingClientRect();
- if(ref.top<top&&!el.classList.contains("tabpFix")){var r=el.getBoundingClientRect();ph.style.height=r.height+"px";el.style.left=r.left+"px";el.style.width=r.width+"px";el.style.top=top+"px";el.classList.add("tabpFix");}
- else if(el.classList.contains("tabpFix")){if(ref.top>=top)unfix();else el.style.top=top+"px";}};
-window.addEventListener("scroll",function(){try{tabpStick()}catch(e){}},{passive:true});window.addEventListener("resize",function(){var el=document.getElementById("firePhaseBox");if(el){el.classList.remove("tabpFix");el.style.left=el.style.width=el.style.top="";var ph=document.getElementById("firePhaseBoxPh");if(ph)ph.style.height="0px";}try{tabpStick()}catch(e){}});
+/* v452: 射撃タブのフェイズのボタン(#firePhaseBtns)がメインタブの下に隠れたら、写し(#firePhaseFixed、body 直下)をメインタブの直下に固定。射撃タブ以外・iPad 縦以外では出さない。ラベルは含めない */
+window.tabpStick=function(){var h=document.documentElement,g=document.getElementById("firePhaseBtns"),fx=document.getElementById("firePhaseFixed");
+ var on=h.classList.contains("is-tabp")&&!!g&&(typeof S==="undefined"||S.tab==="fire");
+ if(!on){if(fx)fx.style.display="none";return;}
+ var nv=document.getElementById("nav"),top=nv?nv.getBoundingClientRect().bottom:0,r=g.getBoundingClientRect();
+ if(r.top<top){if(!fx){fx=document.createElement("div");fx.id="firePhaseFixed";document.body.appendChild(fx);}
+  var ht=g.innerHTML;if(fx._h!==ht){fx.innerHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">'+ht+'</div>';fx._h=ht;}
+  fx.style.cssText="position:fixed;z-index:185;box-sizing:border-box;left:"+(r.left-5)+"px;width:"+(r.width+10)+"px;top:"+top+"px;background:#000;padding:5px;border:1px solid #404040;border-top:none;border-radius:0 0 3px 3px;box-shadow:0 4px 10px rgba(0,0,0,.6);display:block";}
+ else if(fx)fx.style.display="none";};
+window.addEventListener("scroll",function(){try{tabpStick()}catch(e){}},{passive:true});window.addEventListener("resize",function(){try{tabpStick()}catch(e){}});
 function ob(){var m=document.getElementById("main");if(!m){setTimeout(ob,300);return;}var busy=false;new MutationObserver(function(){if(busy)return;busy=true;try{losTabpSplit()}catch(e){}try{tabpStick()}catch(e){}busy=false;}).observe(m,{childList:true,subtree:true});}ob();})();</script>
 <style id="aslfullTabpCss">
 /* v438: iPad 縦(is-tabp)。ダルマ指示: LOG・EN・AUTO・HELP とバッジ画像を隠す、メインタブを 6 列(16 個なので 6・6・4)、縦スクロールでもメインタブを上に */
@@ -40,7 +40,6 @@ html.is-tabp #nav .nb{min-width:0}
 /* v439: メインタブ 16 個を 5・5・6 の 3 段、それぞれ横幅いっぱい(30 列の grid) */
 html.is-tabp #nav .nav-row-1 .nb,html.is-tabp #nav .nav-row-2 .nb:nth-child(-n+2){grid-column:span 6}
 html.is-tabp #nav .nav-row-2 .nb:nth-child(n+3){grid-column:span 5}
-html.is-tabp #firePhaseBox.tabpFix{position:fixed !important;z-index:185;box-shadow:0 4px 10px rgba(0,0,0,.6)}
 /* MAP タブ: ツールバーはメインタブの下に固定、90°L〜＋ は画面下端に固定 */
 html.is-tabp .los-tb{position:sticky;top:var(--navh,136px);z-index:190;background:#0a0c14;padding:4px 0;margin-top:-4px;box-shadow:0 4px 10px rgba(0,0,0,.6)}
 html.is-tabp #losZoomTb{position:sticky;bottom:0;z-index:190;background:#0a0c14;padding:4px 0;box-shadow:0 -4px 10px rgba(0,0,0,.6)}
@@ -8401,7 +8400,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.451"; // v451: 狙撃兵を地図で置くときに確認のポップアップ。 v450: App 自動の速さを一段遅く(遅い 2.8 秒・普通 1.6 秒・速い 0.9 秒)。 v449: 英訳のない日本語のトーストを日本語の文で表示。 v448: 部隊の階(地上・レベル 1・レベル 2、B23.2・B23.4・B23.42)。 v447: 狙撃兵の有効な攻撃を見送って置き直す(A14.2)。 v446: シナリオのボタンに APP(アプリと対戦のポップアップ)、対戦開始で MAP へ移って自動スクロール。 v445: ↕ の x1.5・x2.0 は表示枠だけを広げる(拡大率は変えない)。 v444: 「次へ(App)」をポップアップの中に。 v443: Heat of Battle の画面の色を落ち着いた色に。 v442: ↕ ボタンに倍率を足して表示。 v441: マップの ↕ で表示枠の高さ x1.5・x2.0、NORMAL/LARGE を廃止。 v440: iPad 縦のキット 2 列・帯の折り返し、狙撃兵の置き場所の条件(A14.2)と置き直し。 v439: iPad 縦向き(メインタブ 5・5・6、マップ下の段の並び、射撃のフェイズを上に固定)。 v438: iPad 縦向き(ASLAKEX v181 と同じやり方)・MAP とシナリオの縦向きの並び。 v437: iPad 縦向きの判定(幅の上限なし)・メインタブの固定を fixed で。 v436: iPad 縦向き(メインタブ 6 列・上に固定・LOG/EN/AUTO/HELP を隠す)。 v435: 用語のポップアップ(ルールガイドの用語集・タップで表示)。 v434: 一時停止中はカウンターを隠す・Gusts の延焼は現れたターンの Blaze を除く。 v433: 煙のカウンター(種類・置いた側・漂う煙)、風と Gusts、Blaze からの脱出の選択、白兵戦の撤退の選択。 v432: 煙と火災をアプリと対戦の判断・進行に(煙 +1 MF・FFMO なし・消える時期、Blaze に入れない/出る、AFPh の延焼)。 v431: 白兵戦の Infiltration をその場で・Partial Kill の Random Selection・捕獲は守る側が選ぶ・Ambush の撤退を選べる。 v430: 白兵戦の Ambush・SW の破壊・Infiltration・捕獲、狙撃兵の振った側ボタン。 v429: 狙撃兵を地図で選ぶ間はポップアップを出さず案内の帯。 v428: DM を残す(A10.62)・潰走前の SW 放棄(A10.4)・指揮官の同行潰走(A10.711)。 v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.452"; // v452: iPad 縦の射撃フェイズのボタンを射撃タブだけ、メインタブの直下に固定(ラベルは含めない)。 v451: 狙撃兵を地図で置くときに確認のポップアップ。 v450: App 自動の速さを一段遅く(遅い 2.8 秒・普通 1.6 秒・速い 0.9 秒)。 v449: 英訳のない日本語のトーストを日本語の文で表示。 v448: 部隊の階(地上・レベル 1・レベル 2、B23.2・B23.4・B23.42)。 v447: 狙撃兵の有効な攻撃を見送って置き直す(A14.2)。 v446: シナリオのボタンに APP(アプリと対戦のポップアップ)、対戦開始で MAP へ移って自動スクロール。 v445: ↕ の x1.5・x2.0 は表示枠だけを広げる(拡大率は変えない)。 v444: 「次へ(App)」をポップアップの中に。 v443: Heat of Battle の画面の色を落ち着いた色に。 v442: ↕ ボタンに倍率を足して表示。 v441: マップの ↕ で表示枠の高さ x1.5・x2.0、NORMAL/LARGE を廃止。 v440: iPad 縦のキット 2 列・帯の折り返し、狙撃兵の置き場所の条件(A14.2)と置き直し。 v439: iPad 縦向き(メインタブ 5・5・6、マップ下の段の並び、射撃のフェイズを上に固定)。 v438: iPad 縦向き(ASLAKEX v181 と同じやり方)・MAP とシナリオの縦向きの並び。 v437: iPad 縦向きの判定(幅の上限なし)・メインタブの固定を fixed で。 v436: iPad 縦向き(メインタブ 6 列・上に固定・LOG/EN/AUTO/HELP を隠す)。 v435: 用語のポップアップ(ルールガイドの用語集・タップで表示)。 v434: 一時停止中はカウンターを隠す・Gusts の延焼は現れたターンの Blaze を除く。 v433: 煙のカウンター(種類・置いた側・漂う煙)、風と Gusts、Blaze からの脱出の選択、白兵戦の撤退の選択。 v432: 煙と火災をアプリと対戦の判断・進行に(煙 +1 MF・FFMO なし・消える時期、Blaze に入れない/出る、AFPh の延焼)。 v431: 白兵戦の Infiltration をその場で・Partial Kill の Random Selection・捕獲は守る側が選ぶ・Ambush の撤退を選べる。 v430: 白兵戦の Ambush・SW の破壊・Infiltration・捕獲、狙撃兵の振った側ボタン。 v429: 狙撃兵を地図で選ぶ間はポップアップを出さず案内の帯。 v428: DM を残す(A10.62)・潰走前の SW 放棄(A10.4)・指揮官の同行潰走(A10.711)。 v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -12108,7 +12107,7 @@ function FIRE_TAB_PAGE(){
   h+='<div class="card" style="padding-bottom:8px"><div class="sh"><div style="flex:1;min-width:0;height:47px;overflow:hidden;position:relative;background:#000;border:1px solid #404040;border-radius:3px">'+textMarqueeHTML(scenSummaryMarqueeText(),'blu')+'</div><span style="display:inline-flex;gap:4px;background:#000;border:1px solid #404040;border-radius:3px;padding:2px 4px 9px 4px;flex-shrink:0"><button class="judg3d" style="flex-shrink:0;width:80px;height:40px;font-size:12px;color:#1a5599;text-shadow:0 0 6px rgba(26,85,153,0.6),0 0 10px rgba(26,85,153,0.3)" '+(losRangeAvailFireTop?'':'disabled ')+'onclick="NPADApplyLOSRange('+(fstTop.grps[0]?fstTop.grps[0].id:0)+')">LOS GET</button><button class="judg3d grn" style="flex-shrink:0;width:80px;height:40px;font-size:12px" onclick="NAVTAB(\'los\')">GO MAP</button><button class="judg3d red" style="flex-shrink:0;width:80px;height:40px;font-size:12px" onclick="ALLCLR()">RESET</button></span></div>';
   h+='<div id="firePhaseBox" style="background:#000000;border:1px solid #404040;border-radius:3px;padding:5px">';
   h+='<div class="lbl"><span class="pdot'+(S.fireSub?" off":"")+'"></span><span class="plbl'+(S.fireSub?" off":"")+'">'+T('フェイズ')+'</span></div>';
-  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">';
+  h+='<div id="firePhaseBtns" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">';
   h+='<button class="b sm'+(S.fireSub==="pfph"?" on":"")+'" style="font-size:12px" onclick="FIREsub(\'pfph\')">'+T('準備射撃')+'</button>';
   h+='<button class="b sm'+(S.fireSub==="dff"?" on":"")+'" style="font-size:12px" onclick="FIREsub(\'dff\')">'+T('臨機/残留')+'</button>';
   h+='<button class="b sm'+(S.fireSub==="dfph"?" on":"")+'" style="font-size:12px" onclick="FIREsub(\'dfph\')">'+T('防御射撃')+'</button>';
