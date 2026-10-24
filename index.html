@@ -473,6 +473,13 @@ button{font-family:'DotGothic16',monospace,'Courier New',Courier;cursor:pointer;
 .r-bslbl{font-size:6.8px;color:#4499ee;position:relative;top:1.5px}
 
 .rgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;width:282px;margin-bottom:6px;flex-shrink:0;border:1px solid #404040;border-radius:3px;padding:6px}
+.pkPad{display:none}
+html.is-tabp .fgSplit .pkRow>button:first-child{flex:1 1 auto!important}html.is-tabp .fgSplit .pkRow>.pkBadge{flex:0 0 80px!important;width:80px;min-width:80px!important;max-width:80px;height:80px!important;min-height:80px;max-height:80px;padding:0;box-sizing:border-box}html.is-tabp .fgSplit .pkRow>.pkPad{display:block;flex:0 0 80px;height:80px}html.is-tabp .fgSplit .pkRow>button:first-child{height:80px!important}
+/* v487: 射撃タブ(iPad 縦)— レンジのテンキーを 3×4(1 2 3 / 4 5 6 / 7 8 9 / ⌫ 0 CLR)、左のカードを狭く、選択中を広く 1 列 */
+html.is-tabp .fgSplit{grid-template-columns:min-content minmax(0,1fr)!important}html.is-tabp .fgSplitL [id^=fireRangeG] .seg7-wrap,html.is-tabp .fgSplitL .seg7-wrap{flex:none}
+html.is-tabp .fgSplitL [id^=fireRangeG] .rgrid{grid-template-columns:repeat(3,40px);width:max-content}
+html.is-tabp .fgSplitL [id^=fireRangeG] .rgrid [data-d=BS]{order:10}html.is-tabp .fgSplitL [id^=fireRangeG] .rgrid [data-d='0']{order:11}html.is-tabp .fgSplitL [id^=fireRangeG] .rgrid [data-d=C]{order:12}
+html.is-tabp .fgSplit .pkRow{flex-wrap:nowrap!important}html.is-tabp .fgSplit .pkRow>button{min-width:0!important}html.is-tabp .fgSplit .pkRow>button:first-child{min-width:max-content!important}
 .rdbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
 .rdbs .rbtn{width:40px}
 @keyframes diceshake{0%{transform:rotate(0deg) translateY(0)}20%{transform:rotate(-6deg) translateY(-1px)}40%{transform:rotate(5deg) translateY(1px)}60%{transform:rotate(-4deg) translateY(-1px)}80%{transform:rotate(3deg) translateY(0)}100%{transform:rotate(0deg) translateY(0)}}
@@ -1093,6 +1100,10 @@ function seg7fp(n,suffix,color,noPad){
   else{s=String(n);}  // 3.5など小数点ありはそのまま
   return seg7(s,color||'',lbl);
 }
+function fireTabp(){ try{ return document.documentElement.classList.contains('is-tabp'); }catch(e){ return false; } } /* v487 */
+function seg7fpT(n,suffix,color){ if(!fireTabp())return seg7fp(n,suffix,color); var lbl=(suffix===undefined||suffix===null)?'FP':suffix, s=String(n); if(n===Math.floor(n)){ while(s.length<2)s=' '+s; } return seg7(s,color||'',lbl); } /* v487: iPad 縦は 2 桁 */
+(function(){ var last=null; window.addEventListener('resize',function(){ var t=fireTabp(); if(last!==null&&t!==last&&typeof S!=='undefined'&&S.tab==='fire'&&typeof Draw==='function'){ try{ Draw(); }catch(e){} } last=t; }); })();
+function seg7rangeT(n,suffix,color){ if(n==null)return seg7('--',color||'',(suffix===undefined||suffix===null)?'FP':suffix); return seg7fpT(n,suffix,color); }
 // 射距離(未入力=null時は"--"表示)用。0(自ヘクス)と未入力を視覚的に区別するため専用ヘルパーを使う。
 function seg7range(n,suffix,color,noPad){
   if(n==null)return seg7('--',color||'',(suffix===undefined||suffix===null)?'FP':suffix);
@@ -8414,7 +8425,7 @@ var APP_VERSION_HIST_v11243="ASLSK3M-v11.243";
 var APP_VERSION_HIST_v11244="ASLSK3M-v11.244";
 var APP_VERSION_HIST_v11245="ASLSK3M-v11.245";
 var APP_VERSION_HIST_v11246="ASLSK3M-v11.246";
-var APP_VERSION="ASLFULL-v0.486"; // v486: Field Promotion の士気(Morale Level、Fanatic +1)と Fanatic の指揮官(A10.8・A18.2)。 v485: Opportunity Fire(A7.25)・Field Promotion(A18.11)。 v484: 英雄の FP・DRM(A15.24)、アプリの DC 設置(A23.3)。 v483: ダミー(A12.11)。 v482: 隠蔽(A12)の取得・喪失・発見。 v481: Heat of Battle(A15)の自動化と狂乱(A15.4)。 v480: DC(A23)の設置・起爆・投げる。 v479: 射撃タブの過積載・負傷した SMC(A17)・射撃タブの選択中の表示。 v478: 先攻をダイスで決める(シナリオ B)。 v477: FT のある射撃の自動判定(エリート・目標の FT 数)。 v476: LLMC/LLTC(A10.2)を自動で。 v475: 対戦モードの条文チェック(範囲外・A4.14・A10.4・A8.1・士気値・Control・Fanatic・工場)。 v474: 狙撃兵の画面の説明・マップを見る・盤の外の目標(A14.21)・射撃パネル中のお知らせを後回し。 v473: あなたの射撃をマップだけで完結(射撃パネル)。 v472: 過積載の反映もれ(アプリの移動計画・潰走・射撃タブ)。 v471: 過積載の攻撃 +1・防御 −1 DRM(A5.12・A5.131)。 v470: 過積載の Location に入る +MF(A5.11)。 v469: あなたの突撃・白兵戦の条文チェック。 v468: あなたの部隊の潰走に A10.4〜A10.53 を掛けた。 v467: 撃つを押したとき、撃てる敵へ LOS OK の線を出す。 v466: 対戦中の MAP タブでツールバーと帯を常時表示(iPad 縦)。 v465: アプリの部隊をあなたが撃たせられた不具合を修正。 v464: 対戦中の MAP タブではメインタブを固定しない(iPad 縦)。 v463: 合流ボタンを LOS の右に(下のまとめるは外す)。 v462: 対戦中のポップアップを日本語の文に・CLR で選択を全解除・分割をポップアップに。 v461: 狙撃兵の置けるヘクスを地図に表示するボタン。 v460: iPad 縦でポップアップがメインタブ・固定ボタンの下に隠れないように。 v459: 日本語のメッセージに OK ボタン(押すと消える)。 v458: 狙撃兵を置くときの案内をひとつに。 v457: プレイ前に狙撃兵を置くまで回復フェイズを始めない・進めない(A14.2)。 v456: フェイズの 4 ボタンの固定を射撃・砲撃・車両・軽対戦車兵器タブで。 v455: 射撃フェイズの 4 ボタンの固定は射撃タブだけ(タブを変えたら必ず消す)。 v454: iPad 縦の射撃フェイズの 4 ボタンを全タブで常時表示。 v453: アプリの潰走を階ごとに(A10.51)、階段越しの射撃(B23.26)。 v452: iPad 縦の射撃フェイズのボタンを射撃タブだけ、メインタブの直下に固定(ラベルは含めない)。 v451: 狙撃兵を地図で置くときに確認のポップアップ。 v450: App 自動の速さを一段遅く(遅い 2.8 秒・普通 1.6 秒・速い 0.9 秒)。 v449: 英訳のない日本語のトーストを日本語の文で表示。 v448: 部隊の階(地上・レベル 1・レベル 2、B23.2・B23.4・B23.42)。 v447: 狙撃兵の有効な攻撃を見送って置き直す(A14.2)。 v446: シナリオのボタンに APP(アプリと対戦のポップアップ)、対戦開始で MAP へ移って自動スクロール。 v445: ↕ の x1.5・x2.0 は表示枠だけを広げる(拡大率は変えない)。 v444: 「次へ(App)」をポップアップの中に。 v443: Heat of Battle の画面の色を落ち着いた色に。 v442: ↕ ボタンに倍率を足して表示。 v441: マップの ↕ で表示枠の高さ x1.5・x2.0、NORMAL/LARGE を廃止。 v440: iPad 縦のキット 2 列・帯の折り返し、狙撃兵の置き場所の条件(A14.2)と置き直し。 v439: iPad 縦向き(メインタブ 5・5・6、マップ下の段の並び、射撃のフェイズを上に固定)。 v438: iPad 縦向き(ASLAKEX v181 と同じやり方)・MAP とシナリオの縦向きの並び。 v437: iPad 縦向きの判定(幅の上限なし)・メインタブの固定を fixed で。 v436: iPad 縦向き(メインタブ 6 列・上に固定・LOG/EN/AUTO/HELP を隠す)。 v435: 用語のポップアップ(ルールガイドの用語集・タップで表示)。 v434: 一時停止中はカウンターを隠す・Gusts の延焼は現れたターンの Blaze を除く。 v433: 煙のカウンター(種類・置いた側・漂う煙)、風と Gusts、Blaze からの脱出の選択、白兵戦の撤退の選択。 v432: 煙と火災をアプリと対戦の判断・進行に(煙 +1 MF・FFMO なし・消える時期、Blaze に入れない/出る、AFPh の延焼)。 v431: 白兵戦の Infiltration をその場で・Partial Kill の Random Selection・捕獲は守る側が選ぶ・Ambush の撤退を選べる。 v430: 白兵戦の Ambush・SW の破壊・Infiltration・捕獲、狙撃兵の振った側ボタン。 v429: 狙撃兵を地図で選ぶ間はポップアップを出さず案内の帯。 v428: DM を残す(A10.62)・潰走前の SW 放棄(A10.4)・指揮官の同行潰走(A10.711)。 v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
+var APP_VERSION="ASLFULL-v0.487"; // v487: 射撃タブ(iPad 縦)のレンジのテンキー 3×4・選択中を 1 列・FP とレンジの表示を 2 桁。 v486: Field Promotion の士気(Morale Level、Fanatic +1)と Fanatic の指揮官(A10.8・A18.2)。 v485: Opportunity Fire(A7.25)・Field Promotion(A18.11)。 v484: 英雄の FP・DRM(A15.24)、アプリの DC 設置(A23.3)。 v483: ダミー(A12.11)。 v482: 隠蔽(A12)の取得・喪失・発見。 v481: Heat of Battle(A15)の自動化と狂乱(A15.4)。 v480: DC(A23)の設置・起爆・投げる。 v479: 射撃タブの過積載・負傷した SMC(A17)・射撃タブの選択中の表示。 v478: 先攻をダイスで決める(シナリオ B)。 v477: FT のある射撃の自動判定(エリート・目標の FT 数)。 v476: LLMC/LLTC(A10.2)を自動で。 v475: 対戦モードの条文チェック(範囲外・A4.14・A10.4・A8.1・士気値・Control・Fanatic・工場)。 v474: 狙撃兵の画面の説明・マップを見る・盤の外の目標(A14.21)・射撃パネル中のお知らせを後回し。 v473: あなたの射撃をマップだけで完結(射撃パネル)。 v472: 過積載の反映もれ(アプリの移動計画・潰走・射撃タブ)。 v471: 過積載の攻撃 +1・防御 −1 DRM(A5.12・A5.131)。 v470: 過積載の Location に入る +MF(A5.11)。 v469: あなたの突撃・白兵戦の条文チェック。 v468: あなたの部隊の潰走に A10.4〜A10.53 を掛けた。 v467: 撃つを押したとき、撃てる敵へ LOS OK の線を出す。 v466: 対戦中の MAP タブでツールバーと帯を常時表示(iPad 縦)。 v465: アプリの部隊をあなたが撃たせられた不具合を修正。 v464: 対戦中の MAP タブではメインタブを固定しない(iPad 縦)。 v463: 合流ボタンを LOS の右に(下のまとめるは外す)。 v462: 対戦中のポップアップを日本語の文に・CLR で選択を全解除・分割をポップアップに。 v461: 狙撃兵の置けるヘクスを地図に表示するボタン。 v460: iPad 縦でポップアップがメインタブ・固定ボタンの下に隠れないように。 v459: 日本語のメッセージに OK ボタン(押すと消える)。 v458: 狙撃兵を置くときの案内をひとつに。 v457: プレイ前に狙撃兵を置くまで回復フェイズを始めない・進めない(A14.2)。 v456: フェイズの 4 ボタンの固定を射撃・砲撃・車両・軽対戦車兵器タブで。 v455: 射撃フェイズの 4 ボタンの固定は射撃タブだけ(タブを変えたら必ず消す)。 v454: iPad 縦の射撃フェイズの 4 ボタンを全タブで常時表示。 v453: アプリの潰走を階ごとに(A10.51)、階段越しの射撃(B23.26)。 v452: iPad 縦の射撃フェイズのボタンを射撃タブだけ、メインタブの直下に固定(ラベルは含めない)。 v451: 狙撃兵を地図で置くときに確認のポップアップ。 v450: App 自動の速さを一段遅く(遅い 2.8 秒・普通 1.6 秒・速い 0.9 秒)。 v449: 英訳のない日本語のトーストを日本語の文で表示。 v448: 部隊の階(地上・レベル 1・レベル 2、B23.2・B23.4・B23.42)。 v447: 狙撃兵の有効な攻撃を見送って置き直す(A14.2)。 v446: シナリオのボタンに APP(アプリと対戦のポップアップ)、対戦開始で MAP へ移って自動スクロール。 v445: ↕ の x1.5・x2.0 は表示枠だけを広げる(拡大率は変えない)。 v444: 「次へ(App)」をポップアップの中に。 v443: Heat of Battle の画面の色を落ち着いた色に。 v442: ↕ ボタンに倍率を足して表示。 v441: マップの ↕ で表示枠の高さ x1.5・x2.0、NORMAL/LARGE を廃止。 v440: iPad 縦のキット 2 列・帯の折り返し、狙撃兵の置き場所の条件(A14.2)と置き直し。 v439: iPad 縦向き(メインタブ 5・5・6、マップ下の段の並び、射撃のフェイズを上に固定)。 v438: iPad 縦向き(ASLAKEX v181 と同じやり方)・MAP とシナリオの縦向きの並び。 v437: iPad 縦向きの判定(幅の上限なし)・メインタブの固定を fixed で。 v436: iPad 縦向き(メインタブ 6 列・上に固定・LOG/EN/AUTO/HELP を隠す)。 v435: 用語のポップアップ(ルールガイドの用語集・タップで表示)。 v434: 一時停止中はカウンターを隠す・Gusts の延焼は現れたターンの Blaze を除く。 v433: 煙のカウンター(種類・置いた側・漂う煙)、風と Gusts、Blaze からの脱出の選択、白兵戦の撤退の選択。 v432: 煙と火災をアプリと対戦の判断・進行に(煙 +1 MF・FFMO なし・消える時期、Blaze に入れない/出る、AFPh の延焼)。 v431: 白兵戦の Infiltration をその場で・Partial Kill の Random Selection・捕獲は守る側が選ぶ・Ambush の撤退を選べる。 v430: 白兵戦の Ambush・SW の破壊・Infiltration・捕獲、狙撃兵の振った側ボタン。 v429: 狙撃兵を地図で選ぶ間はポップアップを出さず案内の帯。 v428: DM を残す(A10.62)・潰走前の SW 放棄(A10.4)・指揮官の同行潰走(A10.711)。 v427: 回復フェイズの注記の直し。 v426: 回復フェイズにあなたの回収・回復・修理の一覧・狙撃兵の配置の案内・手動にするを外す。 v425: 長押しの詳細からあなたの回復・フェイズが変わったら A/B を消す。 v424: App の自動操作に ▶️1手ずつ(▶️ 次へ)・App の狙撃兵が自動で始まらない不具合・狙撃兵の地図で選ぶ。 v423: 帯の App の右にアプリの国籍。 v422: Melee のヘクスへの射撃は両軍に効く(A11.15)・Melee の部隊は妨害しない・隠蔽した部隊は Melee に縛られない・混乱した護衛/Disrupted の撤退(A11.16)。 v421: 潰走の降伏(A20.21)・捕虜と護衛(A20.5)・No Quarter(A20.3)。 v420: シナリオタブの やり直す/やめる を削除し MAP の帯へ一本化・やり直し後は MAP の先頭へ。 v419: 監査修正(古いポップアップ・リスタート時の掃除)+帯に 対戦開始/対戦終了。 v418: 最上部タイトル画像を差し替え。 v417: アプリの白兵戦フェイズ(A11: CCT・指揮官は一人でないとき・CX/混乱/撤退の DRM・SMC FP1・混乱は撤退か除去・生き残れば Melee)。 v416: アプリの突撃フェイズ(A4.7: 混乱/Pin/Melee は前進不可・困難地形は CX(A4.72)・敵ヘクスへ入ると白兵戦)。 v415: アプリの潰走(A10.5〜A10.53: 6MF・最寄りの森/建物・敵に近づかない/隣に入らない・Interdiction・Low Crawl・潰走できなければ除去)を段階表示。
 // v414: アプリの前進射撃フェイズ(AFPh)を段階表示。AFPh の FP ½(A7.24)、MPh に動いた MMG/HMG は撃てない(A4.41)。
 // v413: アプリの防御射撃フェイズ(DFPh)を 1 射撃ずつ段階表示(準備射撃と同じ型)。
 // v412: 回復・準備射撃・移動フェイズのポップアップから「アプリの…を取り消す」を削除。
@@ -12774,23 +12785,23 @@ function FIRE_PAGE(){
 
     // ── ② FP & Fire Condition：計算表示・射撃条件・内訳をまとめて1ボックス ──
     var pkHasSel=!rofMode&&fst.swMode!=="tenkey"&&((g.pickerItems||[]).length>0||(g.sw||[]).length>0);
-    if(pkHasSel)h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;margin-bottom:8px"><div>';
+    if(pkHasSel)h+='<div class="fgSplit" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;margin-bottom:8px"><div class="fgSplitL">';
     h+='<div style="background:#000000;border:1px solid #404040;border-radius:3px;padding:5px 7px;margin-bottom:5px">';
     if(rofMode){
       h+='<div style="font-size:12px;color:#8899aa;margin-bottom:3px">'+T('ROF射撃')+' SW FP → Modified</div>';
       h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
-      h+=seg7fp(sf,undefined);
+      h+=seg7fpT(sf,undefined);
       h+='<span style="color:#556677;font-size:13px">→</span>';
-      h+=seg7fp(gf,undefined);
+      h+=seg7fpT(gf,undefined);
       h+='</div>';
       h+='<div style="background:#1a1200;border:1px solid #c8a03266;border-radius:3px;padding:4px 7px;color:#c8a032;font-size:12px;margin-bottom:4px">'+T('ROF継続射撃：全FP（×½なし）で再射撃。固有FP不使用。DFF(防御臨機射撃)のROF維持は残留FP不発生（放棄で発生も選択可）')+'</div>';
     } else if(g.ut!=="smc"){
       if(isGFT){
         h+='<div style="font-size:12px;color:#8899aa;margin-bottom:3px">Inherent FP → Modified</div>';
         h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
-        h+=seg7fp(24,undefined);
+        h+=seg7fpT(24,undefined);
         h+='<span style="color:#556677;font-size:13px">→</span>';
-        h+=seg7fp(gf,undefined);
+        h+=seg7fpT(gf,undefined);
         h+='</div>';
         h+='<div style="background:#1a0808;border:1px solid #cc333366;border-radius:3px;padding:4px 7px;color:#cc8888;font-size:12px;margin-bottom:4px">'+T('FT固定：24FP(2ヘクスのみ半減し12FP)。AFPh(前進射撃フェイズ)でも半減されない(全火力)。TEM/指揮官修正すべて無効。PIN状態は射撃不可')+'<br>'+T('X#はエリート/未熟兵の設定に応じ自動調整（エリートX#10、エリート以外X#8、未熟兵は更に−1）')+'</div>';
       } else {
@@ -12800,27 +12811,27 @@ function FIRE_PAGE(){
           // 修正(2026-07、Kato指摘): AFPhでAF選択時はパネルが最大4枚横並びとなり横幅が窮屈なため、2枚×2段に折り返して表示する
           if(showNoAF){
             h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:3px">';
-            h+=seg7fp(g.fp===0?0:g.fp,undefined);
+            h+=seg7fpT(g.fp===0?0:g.fp,undefined);
             h+='<span style="color:#334455;font-size:12px">+</span>';
-            h+=seg7fp(g.fpNoAF||0,undefined);
+            h+=seg7fpT(g.fpNoAF||0,undefined);
             h+='</div>';
             h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
             if(sf>0){
               h+='<span style="color:#334455;font-size:12px">+</span>';
-              h+=seg7fp(sf,undefined);
+              h+=seg7fpT(sf,undefined);
             }
             h+='<span style="color:#556677;font-size:13px">→</span>';
-            h+=(g.range==null?seg7('--','','FP'):seg7fp(gf,undefined));
+            h+=(g.range==null?seg7('--','','FP'):seg7fpT(gf,undefined));
             h+='</div>';
           } else {
             h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
-            h+=seg7fp(g.fp===0?0:g.fp,undefined);
+            h+=seg7fpT(g.fp===0?0:g.fp,undefined);
             if(sf>0){
               h+='<span style="color:#334455;font-size:12px">+</span>';
-              h+=seg7fp(sf,undefined);
+              h+=seg7fpT(sf,undefined);
             }
             h+='<span style="color:#556677;font-size:13px">→</span>';
-            h+=(g.range==null?seg7('--','','FP'):seg7fp(gf,undefined));
+            h+=(g.range==null?seg7('--','','FP'):seg7fpT(gf,undefined));
             h+='</div>';
           }
           if(fst.swMode==="tenkey"){
@@ -12842,17 +12853,17 @@ function FIRE_PAGE(){
           h+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">';
           h+='<span style="font-size:12px;color:#8899aa">'+(hs?'HS+SW':T('分隊+SW×2(固有FP喪失)'))+'</span>';
           h+='<span style="color:#556677;font-size:13px">→</span>';
-          h+=seg7fp(gf,undefined);
+          h+=seg7fpT(gf,undefined);
           h+='</div>';
         }
       }
     } else {
       h+='<div style="font-size:12px;color:#8899aa;margin-bottom:3px">'+T('固有FP')+' → Modified</div>';
       h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
-      h+=seg7fp(0,undefined);
-      if(sf>0){h+='<span style="color:#334455;font-size:12px">+</span>';h+=seg7fp(sf,undefined);}
+      h+=seg7fpT(0,undefined);
+      if(sf>0){h+='<span style="color:#334455;font-size:12px">+</span>';h+=seg7fpT(sf,undefined);}
       h+='<span style="color:#556677;font-size:13px">→</span>';
-      h+=seg7fp(gf,undefined);
+      h+=seg7fpT(gf,undefined);
       h+='</div>';
       h+='<div style="background:#1a1200;border:1px solid #c8a03266;border-radius:3px;padding:4px 7px;color:#c8a032;font-size:12px;margin-bottom:4px">'+(g.smcCount>=2?T('指揮官2名：MG1挺を全FPで射撃可（A9.12）。SW不使用時はFP=0で射撃不可'):T('指揮官単独：SW地域射撃(×½)のみ。SW不使用時はFP=0で射撃不可。FG連結不可（MG所有時を除く）'))+'</div>';
     }
@@ -12873,9 +12884,9 @@ function FIRE_PAGE(){
       h+='<div id="fireRangeG'+g.id+'" style="background:#000000;border:1px solid #404040;border-radius:3px;padding:5px 7px;margin-bottom:5px">';
       h+='<div style="font-size:12px;color:#8899aa;margin-bottom:3px"><span class="pdot'+(g.range!=null?" off":"")+'"></span><span class="plbl'+(g.range!=null?" off":"")+'">'+T('射撃相手とのレンジ (ヘクス数)')+'</span> <span style="color:#556677">→</span> TOTAL FP</div>';
       h+='<div style="display:flex;align-items:center;gap:4px;flex-wrap:nowrap;margin-bottom:4px">';
-      h+=seg7range(g.range,'HEX');
+      h+=seg7rangeT(g.range,'HEX');
       h+='<span style="color:#556677;font-size:13px">→</span>';
-      h+=seg7range(g.range==null?null:rangedFp,undefined,rangeOver?'red':'');
+      h+=seg7rangeT(g.range==null?null:rangedFp,undefined,rangeOver?'red':'');
       h+='</div>';
       h+=rNumpadHTMLGRange(g.id);
       if(rangeOver){
@@ -12929,7 +12940,7 @@ function FIRE_PAGE(){
         // ユニットチップ(ピッカー本体)の直後に関連付け済みSWを配置し、続けてPIN/CX/混乱(全ユニット
         // 共通)/負傷(SMCのみ)の状態バッジを同一行にまとめる。いずれもflex:1でピッカーボタンと
         // 同じ高さ・幅比率に揃える。負傷判定はSMC(指揮官・乗員)のみが対象(3.7項)。
-        h+='<div style="display:flex;align-items:stretch;gap:3px;margin-bottom:2px;flex-wrap:wrap">';
+        h+='<div class="pkRow" style="display:flex;align-items:stretch;gap:3px;margin-bottom:2px;flex-wrap:wrap">';
         h+='<button class="b sm" style="flex:1 0 auto;min-width:max-content;white-space:nowrap" onclick="FgRemovePickItem('+g.id+','+ii+')">'+renderUnitChip(it.label,itD?itD.col:'#4499ee',itD,it.kind==='smc')+numTag+' </button>'; /* v479: 縮めずに折り返す */
         var ownedUids=Object.keys(g.swOwner||{}).filter(function(uid){return g.swOwner[uid]===it.pid;});
         ownedUids.forEach(function(uid){
@@ -12948,8 +12959,9 @@ function FIRE_PAGE(){
         ];
         if(it.kind==='smc')pkBadges.push([T('負傷'),!!it.wounded,'FgPickItemWound('+g.id+','+ii+')']);
         pkBadges.forEach(function(b){
-          h+='<button class="b sm xs'+(b[1]?" on red":"")+'" style="flex:1 0 auto;min-width:46px" onclick="'+b[2]+'">'+b[0]+(b[1]?" ":"")+'</button>';
+          h+='<button class="b sm xs pkBadge'+(b[1]?" on red":"")+'" style="flex:1 0 auto;min-width:46px" onclick="'+b[2]+'">'+b[0]+(b[1]?" ":"")+'</button>';
         });
+        if(it.kind!=='smc')h+='<span class="pkPad"></span>'; /* v487: 負傷の列をそろえる(iPad 縦だけ表示) */
         h+='</div>';
       });
       var shownSwUids={};
