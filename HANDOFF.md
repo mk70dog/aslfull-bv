@@ -33,5 +33,16 @@
 5. マルチ判定ボード
 6. 対戦モード(Beyond Valor のシナリオ)
 
-## 5. 次の作業
-- 順番 1 のサンプル画像(samples/sample-ui1-map.png、ブランチ sample-ui1)を提示済み。「実施」の返事待ち(メインメニュー入りは samples/sample-ui1-menu.png)。サンプルは SK3 の #nmFullTabs(右の縦バー 56px)・#nmFtBot(下のバー 48px)の実測値(背景 rgb(10,12,20)・ボタン角丸3px 縦グラデ・下バーのカード背景 rgb(20,26,34) 枠 rgb(44,54,68) 角丸8px・フォント M PLUS 1 Code)で作成。中身(ボタンの並び・下バーの文言)は仮。
+## 5. 版の記録
+- v537(2026-11-17 ダルマ「実施」): 順番① メインマップ中心の画面。index.html 末尾に <script id="appFonts">(SK3 v1351 から M PLUS 1 Code/Noto を移植、約3.7MB)・<style id="mfCss">・<script id="mfUi"> を追加。
+  - 起動すると MAP(S.tab='los')を全面に表示(html.mf-on)。#stickytop・#ftr・#main のマップ以外は隠す(固定ポップアップ=判定履歴などは出す)。
+  - ツールバー #mfTools・ステータスバー #mfBot・メインメニュー #mfMn・旧タブの一覧 #mfOtPop。値は SK3 の #nmFullTabs/#nmFtBot/#nmFtMn を実測(実装後に getComputedStyle で突き合わせ済み)。アイコンは SK3 のものをそのまま。
+  - 動くもの: ≡・戻す(UndoLast)・A→B(LosActivateABMode)・早見表/シナリオカード(旧タブの ref/scen を開く)・旧タブ・縮小/拡大/横幅/90°回転・ターン送り(TurnAdj)・勝利条件/SSR の小窓・メニューの判定履歴/シナリオ選択/マップクリア/システムログ/アプリ更新・ライト/フル/AI対戦の切替(localStorage aslfull_nmMode。フル・AI対戦の中身は後)。
+  - まだ薄く表示(押すと「順番Nで作ります」): 判定(5)・部隊(2)・やり直す・見える範囲/同期/移動/マップ管理/バックアップ(2)・射撃/照準(3)。
+  - 旧タブ: 右の「旧タブ」→ 一覧(MAP(旧)=旧タブ画面の MAP)。旧タブのタブ行「MAP」は「メインマップ」に名前を変え、押すとマップ中心の画面に戻る(NAVTAB を包んで MF.old を解除)。
+  - A→B の結果は、スポット判定(順番③)ができるまで旧タブの結果カードを左上に出す(仮)。
+  - 関数: mfSync(Draw と NAVTAB の後に毎回)・mfOld(t)・mfMenu・mfOtPop・mfTxtPop・mfTurn・mfLater。
+  - 確認: Playwright 1180x820 で起動・BV130・メニュー・旧タブ往復・A→B・ターン送り・判定履歴、ページエラー0(外部フォントの読み込み失敗1件は以前から)。
+
+## 6. 次の作業
+- 順番②(ヘクスメニュー)。SK3 の nmRMenuItems を読み、フル版に合わない所を確認してからサンプル画像。
