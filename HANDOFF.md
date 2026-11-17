@@ -57,5 +57,15 @@
   - 判定は射撃タブそのもの: S.fireSub=フェイズ、grps[0] に FgAddPickItem・SW は f.swc+FtogSW・担当は対戦モードと同じ割り当て(A7.35)・目標の FT 数・losAutoApplyToAllTabs → FJUDGE。足りない入力は showMissingModal を受けてパネルに出す。結果は res.ift(目標の MC などは盤上で)。
   - 確認: BV130 ソ 5-2-7×2+LMG(3盤Q2)→ 独 4-6-7(R2) PFPh: FP24(PBF)・LV+1 → DR3+2+1 = 4MC。DFF+FFMO: DRM 0(LV は FFMO を消さない E3.1)・DR4+4 畏縮で 20列 2MC。入れ替え・マップを確認・射撃タブで開く(同じ値)、ページエラー0。
 
+- v540(2026-11-17 ダルマ「実施」・向きは「SK3 と同じ(地図から読み取り)」): ③-2 スポット判定(車両の主砲・車載機銃・砲・軽対戦車兵器)。
+  - カウンター配置に 車両(scenarioAfvIdsByVehId)・砲(scenarioGunIds)・軽対戦車兵器(scenarioLatwIds) を追加。S.mfCtr の u に 'afv|afv_pz4d_ge'・'gun|g_50pak38_ge'・'latw|atr'。絵は vSrc(ASLFULL_VASL_CTR/TAB/CNT の map → どの表の imgs でも探す)。
+  - 向き: S.mfCtr[hex].face[afvId]={v:VCA,t:TCA}(ヘクスの頂点 0〜5。spines() で頂点の角度を求める)。#mfFc で地図の見た目どおりの 6 頂点から選ぶ。地図のカウンターは VCA に回して描き、TCA は金の線。
+  - 面は D3.2 どおり自動: LOS が通る辺で前面(±60°)/側面/後面、頂点に沿う時は撃つ側に一番不利な面(前面/側面)、同じヘクスは命中 DR の色付きの目(1-2 後面・3-4 側面・5-6 前面)。砲塔への命中は TCA で(D3.1)。未設定は前面として判定+警告(SK3 と同じ)。
+  - 判定: 主砲・砲=S.gun(Gset('gunId')・GselTgtVeh・tgtVehFacing・vehMoveDrm(Case 24)・boundingFire → GJUDGE_TH → 命中の場所 C3.9 の面を入れて GJUDGE_TK/GJUDGE_HE_HEAT_TK/GJUDGE_IFT)、車載機銃=fireGroupWeapons → GJUDGE_FIRE_GROUP_MG(歩兵が目標のときだけ。車両への MG の TK はタブで)、軽対戦車兵器=S.latw(LATWset・LATWselTgtVeh → LATW_JUDGE_TH → LATW_JUDGE_IFT、PF は LATW_PF_CHECK)。
+  - タブの画面を作る関数(GUN_PAGE/LATW_PAGE)を表示せずに呼んで、タブと同じ状態(目標の大きさ・装甲など)にしてから判定する。その間は S.tab を一時的に変え、window.Draw を止める(withTab。止めないとマップ中心の画面が外れる)。alert・showMissingModal は受け取ってパネルに出す(quiet)。
+  - 確認(Playwright・ページエラー0): BV127 Ⅳ号D→KV-2 AP 砲塔前面 AF11 TK#−1 効果なし・HE 車体・KV-2 の機銃→歩兵 FP8 1MC・ソ ATR→Ⅳ号D 砲塔 TK#4 DR3 撃破、BV128 PaK38→T-26 車体前面 TK#11 DR6 撃破。頂点に沿う LOS(Q2→S2)で 6 方向の面=前前前側後側(D3.2 の不利な方)。
+  - 一度閉じた A/B の組は自動で開かない(ツールバーの射撃で開く)。A→B を消すとその記録も消す。
+
 ## 6. 次の作業
-- ③-2: 砲・車両の主砲(命中・撃破)・車載機銃・軽対戦車兵器。SK3 の nmIjShooters(mode vm/lw/主砲)と、フル版の砲撃・装甲戦闘車両・軽対戦車兵器タブの計算を調べてからサンプル。
+- 順番④: 上段の盤(TACTICAL ELECTRONIC CALCULATOR → SK3 の軽い形: LOG/EN/AUTO/HELP と表示窓)。SK3 の実物を実測してサンプル。
+- 残り: 判定ボード(⑤)、対戦モード(⑥・最後)。車載機銃で車両を撃つ(MG の TK)・目標が砲の判定はタブで(スポット判定には未対応)。
