@@ -67,5 +67,7 @@
   - 一度閉じた A/B の組は自動で開かない(ツールバーの射撃で開く)。A→B を消すとその記録も消す。
 
 ## 6. 次の作業
-- 順番④: 上段の盤(TACTICAL ELECTRONIC CALCULATOR → SK3 の軽い形: LOG/EN/AUTO/HELP と表示窓)。SK3 の実物を実測してサンプル。
+- 順番④のサンプル samples/sample-ui5-hdr*.png(ブランチ sample-ui5)を提示。返事待ち。
+  - 調査: SK3 は html.hdr-noplate で #stickytop(盤の画像)を隠し(既定で隠す。localStorage aslsk_hdrplate='1' で出す、hdrPlateToggle)、#hdrChart の .tb-btns(LOG=ToggleLog・EN=ToggleLang・AUTO=ToggleTurnAuto・HELP=ToggleHelp)を出す。フル版は同じ .tb-btns を持つが #hdrChart .tb-btns{display:none} で隠し、盤の画像に LOG/JA/EN/UPDATE/FULL と OUTPUT を置いている。
+  - 案: SK3 と同じく盤を隠し .tb-btns を出す。盤の UPDATE はメインメニューのアプリ更新、版はツールバーの V540、FULL(全画面・スリープ防止)と OUTPUT のプレイ時間は無くなる → 確認中。
 - 残り: 判定ボード(⑤)、対戦モード(⑥・最後)。車載機銃で車両を撃つ(MG の TK)・目標が砲の判定はタブで(スポット判定には未対応)。
