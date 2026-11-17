@@ -58,4 +58,7 @@
   - 確認: BV130 ソ 5-2-7×2+LMG(3盤Q2)→ 独 4-6-7(R2) PFPh: FP24(PBF)・LV+1 → DR3+2+1 = 4MC。DFF+FFMO: DRM 0(LV は FFMO を消さない E3.1)・DR4+4 畏縮で 20列 2MC。入れ替え・マップを確認・射撃タブで開く(同じ値)、ページエラー0。
 
 ## 6. 次の作業
-- ③-2: 砲・車両の主砲(命中・撃破)・車載機銃・軽対戦車兵器。SK3 の nmIjShooters(mode vm/lw/主砲)と、フル版の砲撃・装甲戦闘車両・軽対戦車兵器タブの計算を調べてからサンプル。
+- ③-2 のサンプル samples/sample-ui4-veh1.png・veh2.png(ブランチ sample-ui4、BV127 独Ⅳ号D→ソKV-2)を提示。返事待ち。
+  - 調査: 砲撃/装甲戦闘車両タブ=S.gun(Gset・GselTgtVeh・GsetDRM・GsetVehSel('tgtVehFacing')・GJUDGE_TH→GJUDGE_TK/GJUDGE_IFT/GJUDGE_MG_ATR_TK、結果 th_result 等)、軽対戦車兵器タブ=S.latw(LATWset・LATWselTgtVeh・LATW_JUDGE_TH→LATW_JUDGE_IFT・PF チェック)。射撃タブと同じく状態を入れて判定関数を呼ぶ形でつなぐ。
+  - カウンター配置に車両(scenarioAfvIds)・砲(scenarioGunIds)・LATW(scenarioLatwIds)を足す。絵は ASLFULL_VASL_TAB/CTR。
+  - 車両の目標は「向き(車体・砲塔の前面/側面/後面)」をステップ1で入れる。命中の場所は C3.9(色付きの dr < 白の dr → 砲塔)。
