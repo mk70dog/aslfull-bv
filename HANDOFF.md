@@ -52,4 +52,7 @@
   - 確認: Playwright で BV130・右クリック/長押し・残骸・煙(手榴弾+2 → S_LOS.smoke に agg)・火災・マーク・A/B の LOS 判定・行軍・敵軍、ページエラー0。
 
 ## 6. 次の作業
-- 順番③(スポット判定)。SK3 の nmIj* を読み、フル版の判定関数につなぐ所を確認してからサンプル画像。カウンター配置もここ。
+- 順番③(スポット判定)のサンプル samples/sample-ui3-spot1.png・spot2.png(ブランチ sample-ui3)を提示。返事待ち。
+  - 調査: SK3 のスポット判定は ①攻撃側・目標のカウンターを選ぶ(nmIj*)→ ②フェイズ・TEM・妨害・ダイス(nmRmMFireItems)で、計算は旧タブの射撃タブ(getFireState().grps[].pickerItems)と同じ。フル版にも getFireState・fireDRM・grps/pickerItems があるので、そこへ入れればフル版のルールのまま判定できる。
+  - フル版の素材: 歩兵の VASL 画像 ASLFULL_VASL_CNT(map 'GER|4-6-7[1]'→画像)、車両・砲 ASLFULL_VASL_CTR/TAB、シナリオの部隊 scenarioMmcListForNat(nat)。
+  - 確認中: 段取り(③-1 歩兵・SW の射撃 → ③-2 砲・車両の主砲 TH/TK・車載機銃・軽対戦車兵器)、ステップ2に出す DRM の範囲(フル版の射撃タブには SK3 より多い)。
