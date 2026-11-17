@@ -51,5 +51,11 @@
   - 見た目は SK3 #btRm .rmBox を実測(実装後に getComputedStyle で突き合わせ済み)。用語リンクで文字が縦に割れるので題名は .rmT で包む。
   - 確認: Playwright で BV130・右クリック/長押し・残骸・煙(手榴弾+2 → S_LOS.smoke に agg)・火災・マーク・A/B の LOS 判定・行軍・敵軍、ページエラー0。
 
+- v539(2026-11-17 ダルマ「実施」・段取り ③-1/③-2・DRM は B=よく使う物+たたむ): ③-1 スポット判定(歩兵・SW の射撃)とカウンター配置。<style id="mfIjCss">・<script id="mfIjUi">。
+  - カウンター配置: ヘクスメニュー「ヘクスにカウンターを配置」→ #mfPk(国籍・MMC・SMC・SW を −/＋)。S.mfCtr={'盤:col:row':{nat,u:{'mmc|5-2-7[1]':2},sw:{lmg26_so:1}}}(S と一緒に保存)。部隊はシナリオの OB(scenarioMmcListForNat・scenarioSmcListForNat・scenarioSWIds)、絵は ASLFULL_VASL_CNT。地図には losWreckHexOverlaySVG を包んで描く。ライト版なので状態(射撃済など)は持たない。
+  - スポット判定: A→B が決まると自動で開く(閉じた A/B の組はもう一度は開かない)。ツールバーの射撃・照準ボタンからも開く。ステップ1 #mfIj(A/B のカウンター・国籍・地形のみ・入れ替え・マップを確認・A→B解除・クリア)→ ステップ2 #mfIj2(フェイズ・TEM・妨害・FP→列 DRM と内訳・赤白の目・🎲・CX・目標は砲/CE・DFF の目標の移動と射撃モード・DFPh の最終射撃・AFPh の確認・その他の修正=射撃タブで開く)。
+  - 判定は射撃タブそのもの: S.fireSub=フェイズ、grps[0] に FgAddPickItem・SW は f.swc+FtogSW・担当は対戦モードと同じ割り当て(A7.35)・目標の FT 数・losAutoApplyToAllTabs → FJUDGE。足りない入力は showMissingModal を受けてパネルに出す。結果は res.ift(目標の MC などは盤上で)。
+  - 確認: BV130 ソ 5-2-7×2+LMG(3盤Q2)→ 独 4-6-7(R2) PFPh: FP24(PBF)・LV+1 → DR3+2+1 = 4MC。DFF+FFMO: DRM 0(LV は FFMO を消さない E3.1)・DR4+4 畏縮で 20列 2MC。入れ替え・マップを確認・射撃タブで開く(同じ値)、ページエラー0。
+
 ## 6. 次の作業
-- 順番③(スポット判定)。SK3 の nmIj* を読み、フル版の判定関数につなぐ所を確認してからサンプル画像。カウンター配置もここ。
+- ③-2: 砲・車両の主砲(命中・撃破)・車載機銃・軽対戦車兵器。SK3 の nmIjShooters(mode vm/lw/主砲)と、フル版の砲撃・装甲戦闘車両・軽対戦車兵器タブの計算を調べてからサンプル。
