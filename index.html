@@ -51243,6 +51243,7 @@ function ryDraw(){var P=document.getElementById('mfRy');if(!RY.open||!document.d
   else if(RY.mode==='cc')P.innerHTML=X+ccDraw();
   else if(RY.mode==='pa')P.innerHTML=X+paHTML();
   else if(RY.mode==='ve')P.innerHTML=X+veHTML();
+  else if(RY.mode==='dc')P.innerHTML=X+dcHTML();
   else if(RY.mode==='repair')P.innerHTML=X+'<div class="ij2Cols"><div>'+rpLeft()+'</div><div>'+rpRight()+'</div></div>';
   else P.innerHTML=X+'<div class="ij2Cols"><div>'+rvLeft()+'</div><div>'+rvRight()+'</div></div>';
   P.style.maxHeight=(window.innerHeight-70)+'px';P.scrollTop=sc;}
@@ -51664,6 +51665,110 @@ function veHTML(){if(!VEG)veInit();var V=VEG,ns=mcNats(),L='',Rh='';
     else{Rh+=okBox(C.ok,C.ok?'入れる':'入れない',C.ok?'原 DR 5 で撃破か Shock にできる弾がある':'原 DR 5 では撃破も Shock もできない');
       Rh+='<div class="rmNote">'+C.rows.map(function(r){return esc(r.am)+'・'+(r.loc==='turret'?'砲塔':'車体')+' AF'+r.af+' → TK# '+r.tk+': '+({KIA:'撃破',SHOCK:'Shock',POSSIBLE_SHOCK:'Shock の可能性(NTC)',IMMOBILIZATION:'走行不能',STUN:'Stun',NO_EFFECT:'効果なし'}[r.ef]||r.ef)+(r.ok?' ✓':'');}).join('<br>')+'</div>';}}
   return '<div class="ij2Cols"><div>'+L+'</div><div>'+Rh+'</div></div>';}
+/* ---------- v550: マルチ判定 爆薬(DC、A23)。SK3 の爆薬パネル(① 置く → ② 爆発 → ③ 結果)と同じ流れに、フル版の追加(投げる DC A23.6・A23.62、鹵獲 DC、目標が隠蔽で 15 FP、
+ * 砲の操作班と防盾、丘、AFV への Position DR の追加 DRM C7.346)を足す。計算は旧タブと同じ(aslDcXv・iftR・rm・DCafvDrm の値・gunTkFinal・judgeAFVEffects・dcGunDestroyRes)。 */
+var DCG=null;
+function dcInit(){var ns=mcNats();DCG={nat:ns[0],u:null,way:'place',tgt:'inf',elite:false,green:false,cap:false,cx:false,pf:false,opp:false,afph:false,
+  temId:'open',tem:0,stem:0,conc:false,gun:null,gunCA:false,paatc:null,ldr:null,surv:null,dr:0,dr2:0,gdr:0,veh:null,face:'front',v:{},pdr:0,tdr:0,cdr:0};}
+window.mfDcOpen=function(){if(!DCG)dcInit();RY.open=true;RY.mode='dc';RY.miss=null;ryDraw();};
+function dcClr(){var D=DCG;D.dr=0;D.dr2=0;D.gdr=0;D.pdr=0;D.tdr=0;D.cdr=0;}
+window.mfDcSet=function(k,v){var D=DCG;D[k]=v;if(k==='nat'){D.u=null;D.ldr=null;D.veh=null;}
+  if(k==='u'){var lb=String(v||'');D.elite=/\[E\]/.test(lb);var u=mgUnitData(D.nat,'mmc',lb);D.green=!!(u&&u.green);}
+  if(k==='way'||k==='tgt'||k==='u'){D.paatc=null;D.surv=null;}dcClr();ryDraw();};
+window.mfDcV=function(k,v){DCG.v[k]=v;dcClr();ryDraw();};
+function dcX(){var D=DCG;return aslDcXv(D.elite,D.green,D.cap);}
+function dcAdd(){var D=DCG;return (D.way==='throw'?2:0)+(D.way==='throw'&&D.afph&&!D.opp?1:0);} /* A23.6 +2・A23.62 AFPh +1(Opportunity Fire は除く) */
+function dcFoeNat(){return ccNat2(DCG.nat);}
+/* ---- ① 置く(MPh)/ 投げる(射撃フェイズ) ---- */
+function dcPaNeed(){var D=DCG;if(D.tgt!=='veh'||D.way!=='place')return false;var u=mgUnitData(D.nat,'mmc',D.u||'');return !!u;} /* SMC は PAATC を受けない(A11.6) */
+window.mfDcPa=function(dr){var D=DCG,u=mgUnitData(D.nat,'mmc',D.u||'');if(!u)return;dr=dr||2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var L=D.ldr?mgUnitData(D.nat,'smc',D.ldr):null,drm=(L?(L.cmd||0):0)+(D.green?1:0);D.paatc={dr:dr,drm:drm,mod:dr+drm,mor:u.mor,ok:dr+drm<=u.mor};
+  try{logResult(function(){return {tabLbl:'PAATC',text:D.u+' DR'+dr+'→'+(dr+drm)+'('+T('士気値')+u.mor+') : '+(D.paatc.ok?T('成功(DC配置可)'):T('失敗(釘付け状態)')),color:D.paatc.ok?'#00aa55':'#cc3333',detail:null};});}catch(e){}ryDraw();};
+function dcPlaced(){var D=DCG;if(D.way==='throw')return true;if(D.pf)return false;if(dcPaNeed()&&!(D.paatc&&D.paatc.ok))return false;return D.surv==='ok';}
+/* ---- ② 爆発 ---- */
+function dcIft(fp,mod){var it=iftR(fp,mod);return {mod:mod,r:it.r,rm:rm(it.r)};}
+window.mfDcDr=function(k,dr){var D=DCG;D[k]=dr||2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);if(k==='dr'){D.dr2=0;D.gdr=0;}ryDraw();};
+function dcRes(){var D=DCG;if(!D.dr)return null;var X=dcX(),fp=D.conc?15:30,cx=D.cx?1:0,tem=(D.temId==='wall'||D.temId==='hedge')&&D.way==='place'?0:D.tem;
+  if(D.dr>=X)return {dud:true,x:X};var o={x:X,fp:fp,tgt:dcIft(fp,D.dr+tem+cx+dcAdd()),tem:tem};
+  if(D.gun){var g=GUN_DATA.filter(function(x){return x.id===D.gun;})[0],sh=!!(g&&(g.gunCategory==='AT'||g.gunCategory==='INF')&&D.gunCA),ct=sh?Math.max(tem,2):tem;o.crew=dcIft(fp,D.dr+ct+cx+dcAdd());o.crew.sh=sh;o.crew.kia=/KIA/.test(o.crew.r||'');}
+  if(D.way==='throw'&&D.dr2){var X2=dcX(),dud2=D.dr2>=X2&&D.dr2!==12&&!(D.cap&&D.dr2>=10);o.self=dud2?{dud:true}:dcIft(fp,D.dr2+D.stem+3+(D.afph&&!D.opp?1:0)+cx);} /* A23.6: 投げた側は +3。2 つ目の DR が 12(鹵獲は 10 以上)でも爆発 */
+  return o;}
+/* ---- 車両(A23.5・C7.346) ---- */
+function dcVdrm(){var D=DCG,V=D.v;return ((V.motion||V.conc)?2:0)+(D.cx?1:0)+(V.ce?1:0)+(D.face==='front'?1:(D.face==='rear'?-1:0))+(V.immob?-2:0)+(V.ot?-2:0)+(V.byp?-2:0)+(V.elev?(V.ot?-2:-1):0)+dcAdd();}
+function dcPos(){var D=DCG;if(!D.pdr)return null;var sp=rySplit(D.pdr),mod=D.pdr+dcVdrm();return {raw:D.pdr,drm:dcVdrm(),mod:mod,out:mod<=8?'af':(mod<=11?'crew':'area'),opt:mod<=5,loc:sp[0]<sp[1]?'turret':'hull'};}
+function dcTk(){var D=DCG,P=dcPos();if(!P||P.out!=='af'||!D.tdr)return null;var veh=afvOf(D.veh),af=veh?aslDcAf(veh,{facing:D.face,res:P}):0,X=dcX(),fin=gunTkFinal(16,false,D.face==='rear',af).final;
+  if(D.tdr>=X)return {dud:true,x:X,fin:fin,af:af};return {dud:false,fin:fin,af:af,ef:judgeAFVEffects(P.loc==='turret'?'TURRET':'HULL','DC',D.tdr,fin)};}
+function dcCrew(){var D=DCG,P=dcPos();if(!P||P.out!=='crew'||!D.cdr)return null;var X=dcX();if(D.cdr>=X)return {dud:true,x:X};if(!D.v.ce)return {bu:true};return dcIft(30,D.cdr+2+(D.cx?1:0));}
+/* ---- 画面 ---- */
+function dcStages(){var D=DCG,st=!dcPlaced()?1:((D.tgt==='veh'?D.pdr:D.dr)?3:2),L=D.way==='throw'?[['① 投げる','射撃フェイズ'],['② 爆発','すぐ(2 か所)'],['③ 結果・士気','']]:[['① 置く','MPh(移動フェイズ)'],['② 爆発','AFPh(前進射撃フェイズ)'],['③ 結果・士気','']];
+  return '<div class="ccSt">'+L.map(function(t,i){var n=i+1;return '<div class="'+(n===st?'on':(n<st?'done':''))+'">'+(n<st?'✓ ':'')+t[0]+'<small>'+t[1]+'</small></div>';}).join('')+'</div>';}
+function dcLeft(){var D=DCG,nat=D.nat,h='';
+  h+=ryHead('💣 爆薬(DC)','マルチ判定に戻る');
+  h+=it('国籍','',mcNats().map(function(n){return bt(nat===n,NATJ[n]||n,"mfDcSet('nat','"+n+"')");}).join(''));
+  var L=scenarioMmcListForNat(nat).concat(scenarioSmcListForNat(nat));
+  h+=hd2('DC を使う兵士','[E] はエリートを自動で選ぶ');h+='<div class="mcG">'+L.map(function(u){var src=uSrc(nat,u.lbl);return '<button class="rmB mcT'+(D.u===u.lbl?' on':'')+'" onclick="event.stopPropagation();mfDcSet(\'u\',\''+u.lbl.replace(/'/g,"\\'")+'\')">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(u.lbl)+'</span>')+'<span class="mcL">'+esc(u.lbl)+'</span></button>';}).join('')+'</div>';
+  h+=it('クラス','不発(X#): エリート 12・それ以外 10(A23.2)',bt(!D.elite,'普通 X#10',"mfDcSet('elite',false)")+bt(!!D.elite,'エリート X#12',"mfDcSet('elite',true)"));
+  h+=it('その他','',bt(!!D.cap,'鹵獲した DC(X# −2)',"mfDcSet('cap',"+!D.cap+")")+bt(!!D.green,'未熟兵(X# −1)',"mfDcSet('green',"+!D.green+")")+bt(!!D.cx,'CX(爆発の DR +1)',"mfDcSet('cx',"+!D.cx+")"));
+  h+=it('<b class="mgNo">①</b> 使い方','',bt(D.way==='place','置く(MPh)',"mfDcSet('way','place')")+bt(D.way==='throw','投げる(射撃フェイズ、A23.6)',"mfDcSet('way','throw')"));
+  if(D.way==='place')h+=it('準備射撃','準備射撃フェイズに撃った兵士は置けない(A23.3)',bt(!D.pf,'撃っていない',"mfDcSet('pf',false)")+bt(!!D.pf,'撃った',"mfDcSet('pf',true)"));
+  else h+=it('フェイズ','前進射撃フェイズは +1(Opportunity Fire は除く、A23.62)',bt(!D.afph,'PFPh・DFPh',"mfDcSet('afph',false)")+bt(!!D.afph,'AFPh +1',"mfDcSet('afph',true)")+(D.afph?bt(!!D.opp,'Opportunity Fire',"mfDcSet('opp',"+!D.opp+")"):''));
+  h+=it('何に?','先に宣言する(A23.5)',bt(D.tgt==='inf','ヘクスの歩兵など(IFT 30 FP)',"mfDcSet('tgt','inf')")+bt(D.tgt==='veh','AFV(Position DR → TK# 16)',"mfDcSet('tgt','veh')"));
+  h+='<div class="rmNote">置く・投げる先は LOS の中の隣の Location だけ。自分の Location には使えない(A23.3・A23.61)。投げる DC は 1 レベル以上高い所へは投げられない(A23.6)。</div>';
+  return h;}
+function dcRight(){var D=DCG,h=dcStages();
+  if(!D.u)return h+'<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">DC を使う兵士を選んでください</span></span></div>';
+  /* ① */
+  if(D.way==='place'){
+    if(D.pf)h+=okBox(false,'置けない','準備射撃フェイズに撃った兵士(A23.3)');
+    else{if(dcPaNeed()){var u=mgUnitData(D.nat,'mmc',D.u),sm=scenarioSmcListForNat(D.nat);h+=hd2('PAATC(A11.6)','AFV の Location に置く前');
+        h+=it('一緒にいる指揮官','指揮修正を DR に',bt(!D.ldr,'なし',"mfDcSet('ldr',null)")+sm.map(function(x){return bt(D.ldr===x.lbl,esc(x.lbl),"mfDcSet('ldr','"+x.lbl.replace(/'/g,"\\'")+"')");}).join(''));
+        if(!D.paatc)h+=it('DR','士気 '+u.mor+' 以下で合格',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcPa("+v+")",'min-width:30px');}).join('')+bt(false,'🎲',"mfDcPa(0)"),'ij2W');
+        else h+=okBox(D.paatc.ok,D.paatc.ok?'PAATC 合格: 置ける':'失敗(PIN): 置けない','DR '+D.paatc.dr+' ('+sg(D.paatc.drm)+') → '+D.paatc.mod+'　士気 '+D.paatc.mor);}
+      if(!dcPaNeed()||(D.paatc&&D.paatc.ok))h+=it('置いた所で守る側の射撃','First Fire・Subsequent First Fire・FPF を受けて',bt(D.surv==='ok','耐えた: 置けた',"mfDcSet('surv','ok')")+bt(D.surv==='ng','混乱・PIN・除去: 置けない',"mfDcSet('surv','ng')"),D.surv?'':'mcNeed');
+      if(D.surv==='ng')h+=okBox(false,'置けない','DC は兵士が持ったまま(除去ならその Location に残る、A23.3)');}
+  }
+  if(!dcPlaced())return h+ryMiss();
+  /* ② 目標 */
+  if(D.tgt==='inf'){
+    h+=hd2('<b class="mgNo">②</b> 目標の Location','壁・生垣などヘクス辺の TEM は置いた DC に効かない(A23.1)');
+    h+='<div class="rmBtns" style="flex-wrap:wrap;justify-content:flex-start;margin:0 12px 6px">'+TEM_LIST.filter(function(t){return D.way==='throw'||(t.id!=='wall'&&t.id!=='hedge');}).map(function(t){return bt(D.temId===t.id,esc(T(t.lbl))+' '+(t.v>0?'+'+t.v:'±0'),"DCG.temId='"+t.id+"';mfDcSet('tem',"+t.v+")");}).join('')+'</div>';
+    h+=it('目標の隠蔽','置いた・投げたときに目標が全部隠蔽なら 15 FP(A23.1)',bt(!D.conc,'見えている 30 FP',"mfDcSet('conc',false)")+bt(!!D.conc,'隠蔽 15 FP',"mfDcSet('conc',true)"));
+    var gl=gunsOf(dcFoeNat());if(gl.length)h+=it('目標の砲(操作班)','防盾は射界側からだけ +2(C11.5)',bt(!D.gun,'なし',"mfDcSet('gun',null)")+gl.map(function(g){return bt(D.gun===g.id,esc(g.lbl),"mfDcSet('gun','"+g.id+"')");}).join('')+(D.gun?bt(!!D.gunCA,'射界の側から',"mfDcSet('gunCA',"+!D.gunCA+")"):''));
+    if(D.way==='throw')h+=it('投げた兵士の Location の TEM','投げた側も +3 で攻撃される(A23.6)',[0,1,2,3].map(function(v){return bt(D.stem===v,(v?'+'+v:'±0'),"mfDcSet('stem',"+v+")");}).join(''));
+    var X=dcX(),drm=(D.cx?1:0)+dcAdd(),tem=(D.temId==='wall'||D.temId==='hedge')&&D.way==='place'?0:D.tem;
+    h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">'+(D.conc?15:30)+' FP　TEM '+sg(tem)+'　DRM '+sg(drm)+'　X# <b style="color:#ffd24a">'+X+'</b>(原 DR '+X+' 以上で不発)</span><span class="rmSub">'+(D.way==='throw'?'投げた DC +2'+(D.afph&&!D.opp?'・AFPh +1':''):'')+(D.cx?'・CX +1':'')+'・指揮修正・LOS 妨害は効かない(A23.1)</span></span></div>';
+    var R=dcRes();
+    if(!D.dr)h+=it('<b class="mgNo">③</b> '+(D.way==='throw'?'目標への DR':'爆発の DR'),'灰=不発',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcDr('dr',"+v+")",'min-width:30px;'+(v>=X?'color:#8899aa':''));}).join('')+bt(false,'🎲',"mfDcDr('dr',0)"),'ij2W');
+    else if(R.dud)h+=okBox(false,'不発','原 DR '+D.dr+' ≥ X# '+R.x+'。効果なし・DC は取り除く(A23.4)');
+    else{h+=okBox(true,'爆発: '+esc(R.tgt.rm.t||R.tgt.r),'DR '+D.dr+' → '+R.tgt.mod+'('+R.fp+' FP の列)');
+      if(R.crew){h+=okBox(!R.crew.kia,'砲の操作班: '+esc(R.crew.rm.t||R.crew.r),'DR '+D.dr+' → '+R.crew.mod+(R.crew.sh?'(防盾 +2)':''));if(R.crew.kia){h+=it('砲の破壊 dr(30 FP の列、C11.6)','操作班が KIA で除去されたときだけ',ryD6(D.gdr||0,"mfDcDr('gdr',",null,null));var gr=dcGunDestroyRes(D.gdr);if(gr)h+=okBox(gr.type==='none',{destroy:'砲を破壊',malf:'砲は故障',none:'砲は影響なし'}[gr.type],'dr '+D.gdr+' → '+gr.r);}}
+      if(D.way==='throw'){if(!D.dr2)h+=it('投げた兵士の Location への DR','+3'+(D.afph&&!D.opp?'・AFPh +1':'')+(D.cx?'・CX +1':'')+'・TEM '+sg(D.stem)+'(別の DR、A23.6)',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcDr('dr2',"+v+")",'min-width:30px');}).join('')+bt(false,'🎲',"mfDcDr('dr2',0)"),'ij2W');
+        else if(R.self){h+=okBox(false,'投げた側: '+esc(R.self.rm.t||R.self.r),'DR '+D.dr2+' → '+R.self.mod);}}
+      h+='<div class="rmNote">建物を瓦礫にする(B24.11)・Flame を起こす(B25.13)ことがある(A23.41)。DC を使った分隊は、DC が爆発するフェイズなら自分の FP でも撃てる(A23.2)。</div>';}
+    if(D.dr)h+=it('','',bt(false,'やり直し',"DCG.dr=0;DCG.dr2=0;DCG.gdr=0;ryDraw()"));
+  }else{
+    var vl=afvsOf(dcFoeNat());h+=hd2('<b class="mgNo">②</b> 目標の AFV','置いた・投げた面は、そのときの面のまま(A23.5)');
+    h+='<div class="mcG">'+vl.map(function(v){var img=vSrc('afv',v.id,dcFoeNat(),v.lbl);return '<button class="rmB mcT'+(D.veh===v.id?' on':'')+'" onclick="event.stopPropagation();mfDcSet(\'veh\',\''+v.id+'\')">'+(img?'<img src="'+img+'" alt="">':'<span class="mcTx">'+esc(v.lbl)+'</span>')+'<span class="mcL">'+esc(v.lbl)+'</span></button>';}).join('')+'</div>';
+    var V=D.v,tb=function(k,t){return bt(!!V[k],t,"mfDcV('"+k+"',"+!V[k]+")");};
+    h+=it('面','同じヘクスからは背面',bt(D.face==='front','正面 +1',"mfDcSet('face','front')")+bt(D.face==='side','側面 ±0',"mfDcSet('face','side')")+bt(D.face==='rear','背面 −1(TK +1)',"mfDcSet('face','rear')"));
+    h+=it('AFV の状態','Position DR の修正(C7.346)',tb('motion','Motion・止まっていない +2')+tb('conc','隠蔽 +2')+tb('ce','CE +1')+tb('immob','走行不能 −2')+tb('ot','OT −2')+tb('byp','Bypass −2')+tb('elev','高い所から −1'));
+    var dm=dcVdrm(),P=dcPos();
+    h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">Position DR の修正 <b>'+sg(dm)+'</b>　X# <b style="color:#ffd24a">'+dcX()+'</b></span><span class="rmSub">5 以下: いちばん弱い AF(Aerial)・6〜8: AF へ TK# 16・9〜11: 弱い PRC だけ・12 以上: 効果なし'+(D.way==='throw'?'・投げた DC +2'+(D.afph&&!D.opp?'・AFPh +1':''):'')+'</span></span></div>';
+    if(!D.veh)h+='<div class="rmNote" style="color:#ffcc66">目標の AFV を選んでください</div>';
+    else if(!P)h+=it('<b class="mgNo">③</b> Position DR','',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcDr('pdr',"+v+")",'min-width:30px');}).join('')+bt(false,'🎲',"mfDcDr('pdr',0)"),'ij2W');
+    else{h+=okBox(P.out!=='area',P.out==='af'?(P.opt?'装甲へ(いちばん弱い AF)':'装甲へ')+'・'+(P.loc==='turret'?'砲塔':'車体'):P.out==='crew'?'乗員へ(CE のときだけ)':'AFV と乗員に効果なし','DR '+P.raw+' ('+sg(P.drm)+') → '+P.mod);
+      if(P.out==='af'){var K=dcTk();if(!D.tdr)h+=it('To Kill DR(HE TK# 16)','原 DR が X# 以上なら不発',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcDr('tdr',"+v+")",'min-width:30px');}).join('')+bt(false,'🎲',"mfDcDr('tdr',0)"),'ij2W');
+        else if(K.dud)h+=okBox(false,'不発','原 DR '+D.tdr+' ≥ X# '+K.x);else h+=okBox(K.ef.result==='KIA',K.ef.burn?'撃破(炎上する残骸)':{KIA:'撃破',SHOCK:'Shock',POSSIBLE_SHOCK:'Shock の可能性(NTC)',IMMOBILIZATION:'走行不能',NO_EFFECT:'効果なし'}[K.ef.result]||K.ef.result,'DR '+D.tdr+'　Final TK# '+K.fin+'(16−AF'+K.af+(D.face==='rear'?'・背面 +1':'')+')');}
+      if(P.out==='crew'){var C=dcCrew();if(!D.cdr)h+=it('乗員への DR(30 FP・CE +2)','',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfDcDr('cdr',"+v+")",'min-width:30px');}).join('')+bt(false,'🎲',"mfDcDr('cdr',0)"),'ij2W');
+        else if(C.dud)h+=okBox(false,'不発','原 DR '+D.cdr);else if(C.bu)h+=okBox(false,'効果なし','乗員が BU');else{h+=okBox(true,'乗員へ: '+esc(C.rm.t||C.r),'DR '+D.cdr+' → '+C.mod);}}
+      h+=it('','',bt(false,'やり直し',"DCG.pdr=0;DCG.tdr=0;DCG.cdr=0;ryDraw()"));}
+  }
+  return h+ryMiss();}
+function dcHTML(){if(!DCG)dcInit();return '<div class="ij2Cols"><div>'+dcLeft()+'</div><div>'+dcRight()+'</div></div>';}
+window.MF_DC={g:function(){return DCG;},res:function(){return dcRes();},pos:function(){return dcPos();},tk:function(){return dcTk();}};
+window.mfRtIntRst=function(){RT.I.res=[];ryDraw();};
+/* インラインの onclick は大域で動くので、マルチ判定の状態とその描き直しを window から見えるようにする(RT は旧タブの関数名と重なるので出さない) */
+(function(){var G={RY:function(){return RY;},RYG:function(){return RYG;},RP:function(){return RP;},RV:function(){return RV;},CCG:function(){return CCG;},PAG:function(){return PAG;},VEG:function(){return VEG;},DCG:function(){return DCG;}};
+  Object.keys(G).forEach(function(k){try{Object.defineProperty(window,k,{get:G[k],configurable:true});}catch(e){}});window.ryDraw=ryDraw;try{Object.defineProperty(window,"MC",{get:function(){return MC;},configurable:true});Object.defineProperty(window,"MCG",{get:function(){return MCG;},configurable:true});}catch(e){}if(typeof mcDraw==="function")window.mcDraw=mcDraw;})();
 /* ---- 阻止のパネル(#mfRy の中) ---- */
 function rtUnits(){var nat=RT.nat,D=UNITS[nat]||{mmc:[],smc:[]},all=[];try{all=scenarioMmcListForNat(nat).concat(scenarioSmcListForNat(nat).map(function(u){return {lbl:u.lbl,mor:u.mor,bm:u.bm,smc:true,cmd:u.cmd};}));}catch(e){}return all;}
 function rtU(lbl){return rtUnits().filter(function(u){return u.lbl===lbl;})[0]||null;}
@@ -51699,7 +51804,7 @@ function rtPanel(){var P=RT.pick,h='',I=RT.I;
     if(r)h+=okBox(r.st==='ok',esc(r.txt),'DR '+r.dr+(r.ld?' '+sg(r.ld)+'→'+r.mod:'')+'　士気 '+r.bm);
     else if(lock)h+='<div class="rmNote">'+(prev&&prev.stop?'前の阻止で止まった(除去)ので不要':'前の阻止を先に')+'</div>';
     else if(bm!=null){var okMax=bm-1-ld;h+=it('DR','緑=合格・黄=PIN',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){var m=v+ld,c=v===12?'color:#ff8a70':m<bm?'color:#5fd08a':m===bm?'color:#ffd24a':'';return bt(false,String(v),"mfRtDr("+k+","+v+")",'min-width:34px;'+c);}).join('')+bt(false,'🎲',"mfRtDr("+k+",0)",'min-width:34px'),'ij2W');}});
-  if(I.res.length)h+=it('','',bt(false,'やり直し',"RT.I.res=[];ryDraw()"));
+  if(I.res.length)h+=it('','',bt(false,'やり直し',"mfRtIntRst()"));
   return '<div class="ij2Cols">'+left+'<div>'+h+'</div></div>';}
 
 /* ---------- v541: スポット判定 歩兵・SW の射撃(旧射撃タブの設定を全部入れる。画面はスポット判定用に新しく作る) ----------
@@ -52216,7 +52321,7 @@ var SECS=[
   ['車両 AFV','車両 AFV',"mfHqGo('spot')",''],
   ['軽対戦車兵器','軽対戦車兵器',"mfHqGo('spot')",''],
   ['残留火力','残留火力',"mfHqGo('resid')",''],
-  ['爆薬(配置・起動)','爆薬',"mfHqGo('dc')",'old'],
+  ['爆薬(置く・投げる・爆発)','爆薬',"mfHqGo('dc')",''],
   ['盤外砲兵支援 OBA','砲撃',"mfHqGo('oba')",'new']]],
  ['移動・士気・近接','',4,[
   ['ボグ判定','ボグ判定',"mfHqGo('move')",'old'],
@@ -52250,6 +52355,7 @@ window.mfHqGo=function(k){mfHqClose();
   if(k==='cc'){mfCcOpen();return;}
   if(k==='pa'){mfCcOpen('pa');return;}
   if(k==='ve'){mfVeOpen();return;}
+  if(k==='dc'){mfDcOpen();return;}
   mfOld(k);};
 })();
 </script>
