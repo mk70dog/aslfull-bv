@@ -4,7 +4,7 @@
 
 ## 0. いまの作業
 - 2026-11-17: SK3 アプリ(mk70dog/aslsk_3-exp1)の今の仕様にフル版を移す作業を開始。まだコードは変えていない。
-- 現在の版: APP_VERSION "ASLFULL-v0.543"。スポット判定の作り込み(SPOT_JUDGE_ITEMS.md)の 1〜3 章が済み。次は 4 章(軽対戦車兵器)。
+- 現在の版: APP_VERSION "ASLFULL-v0.544"。スポット判定の作り込み(SPOT_JUDGE_ITEMS.md)の 1〜4 章がすべて済み。
 
 ## 1. ダルマの決定(2026-11-17)
 - 移す範囲: マップ中心の画面・上段の盤・対戦モードまで全部(指示書 3-1 の D)。
@@ -93,7 +93,14 @@
   - Shock 回復(RPh)は射撃ではないのでスポット判定には入れない(旧タブの回復フェイズ)。
   - 確認(Playwright・ページエラー0): BV127 IV号D→KV-2 で旧タブの設定関数と DRM・TH が一致(素/集中+BU+CA1+捕捉−1/石造+煙+高さ/恒久+1+未熟+国籍ソ)。IV号D→T-26 で Possible Shock → NTC・付随攻撃の表示、Motion Status Attempt dr3≦4。BV128 PaK38→5-2-7 DFF の FFMO+FFNAM・HE で 1KIA。歩兵の一致テストもそのまま。
 
+- v544(2026-11-18 ダルマ サンプル sample-ui9 に「実施」): スポット判定 4 章(軽対戦車兵器)。3 章と同じやり方。
+  - lAvail(): 旧タブの LATW_PAGE を表示せずに作り(terrainDrmOpen・thSettingsOpen・hazNoteOpen を開く)、設定関数を数えて IJ.gAv に。値は S.latw に旧タブの設定関数で(mfIjG。gTab() は latw)。地形・妨害・高さは IJ.gx → lPrep の最後に applyLx()。
+  - 目標の種類 IJ.ltt(歩兵/砲/車両。既定は B に車両→車両、砲→砲、ほかは歩兵。砲は B の砲を LATWsetTgtGunRef)。新しい A→B・武器の変更で S.latw を INIT に(IJ.gReset)。
+  - 左: 目標(種類・車両・Case 24 か FFMO/FFNAM/危険移動)/PF チェック(撃つ部隊・CX・すでに PIN・独軍の分隊数と OB から)。右: TH# の見出し・結果・付随攻撃と NTC(gAfterTK を latw にも。HEAT の HE 相当 FP・ATR 1FP)。
+  - その他の修正: 地形・LOS(タイル)/撃つ側(部隊のクラス・撃つ部隊・建物の中・バックブラスト・PIAT の特例・鹵獲/CX/PIN・指揮官)/目標(隠蔽/HIP・砲 HIP・どの砲・防盾の条件・FT・当たる面)。
+  - 旧タブの不具合を直した: losAutoApplyToAllTabs が LATW の高さを S.latw.drm.elev に入れていたが、計算(latwElevDiff・latwHeightAdvActive・effTemV)は S.latw.elev を使うので地図の高さが入っていなかった。ld.elev にも入れる(2 か所)。
+  - 確認(Playwright・ページエラー0): BV127 ソ ATR → IV号D で旧タブの設定関数と TH の DRM・結果が一致(素/CX+PIN+指揮官−1/林+麦畑+高さ目標+Case24 +3)。砲・車両・歩兵の一致テストもそのまま。
+
 ## 6. 次の作業
-- 4 章(軽対戦車兵器)。車載機銃で車両を撃つ(MG の TK)もここで。
 - ④ 上段の盤はダルマ「旧タブは基本使わない・いずれ非表示」により取りやめ。
 - 残り: 判定ボード(⑤)、対戦モード(⑥・最後)。旧タブの非表示はダルマの指示のあとで。
