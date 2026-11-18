@@ -1,0 +1,15 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1180,height:820}});const E=[];p.on('pageerror',x=>E.push('PAGE '+String(x).slice(0,300)));
+await p.goto('file:///home/claude/aslfull-bv/index.html',{timeout:240000});await p.waitForTimeout(6000);
+await p.evaluate(()=>{SSEL('BV130');});await p.waitForTimeout(1500);await p.evaluate(()=>LosFitWidth());await p.waitForTimeout(1000);
+await p.evaluate(()=>{S.mfCtr={'3:16:1':{nat:'GER',u:{'mmc|4-6-7[1]':2,'smc|8-1':1},sw:{mmg512_ge:1}},'3:17:2':{nat:'SOV',u:{'mmc|5-2-7[1]':1},sw:{}}};Draw();});
+await p.click('#mfTools button[title="タップしたヘクスを起点(A)にする"]');await p.waitForTimeout(400);
+await p.mouse.click(560,470);await p.waitForTimeout(600);await p.mouse.click(610,500);await p.waitForTimeout(2500);
+await p.evaluate(()=>mfIjStep2());await p.waitForTimeout(500);
+const sh=async(n,top)=>{await p.evaluate(t=>{document.getElementById('mfIj2').scrollTop=t;},top);await p.waitForTimeout(300);await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui7-'+n+'.png'});};
+await p.evaluate(()=>{mfIjPh('dff');mfIjFx('ffmo',true);mfIjFx('tem',{id:'woods',v:1});mfIjLos('smk',1);mfIjLosOwn('smk');mfIjLos('orch',1);mfIjDie('rd',3);mfIjDie('wd',4);});await sh('1-top',0);
+await p.evaluate(()=>{mfIjMore();});await p.waitForTimeout(300);await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui7-2a-opened.png'});
+const t=await p.evaluate(()=>{var e=document.getElementById('mfIj2'),d=document.getElementById('ij2MoreBody');return d.getBoundingClientRect().top-e.getBoundingClientRect().top+e.scrollTop;});
+await sh('2-terrain-los',t-10);await sh('3-firer-target',t+560);
+console.log(await p.evaluate(()=>{var F=getFireState();return JSON.stringify({tem:[F.temId,F.tem],los:F.los,hin:fireHindTotal(F),drm:fireDRM(F)});}));
+console.log('ERR',E.length,E.join('\n'));await b.close();})();

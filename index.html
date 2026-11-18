@@ -50308,6 +50308,31 @@ document.addEventListener('click',function(e){if(Date.now()<LP.sup+300&&inMap(e)
 #mfIj2 .rmB.on,#mfPk .rmB.on,#mfRm .rmB.on{border:1px solid rgb(255,210,74);color:rgb(255,233,163);box-shadow:none}
 #mfIj2 .mfSum{margin:6px 6px 0}
 #mfIjRet{position:fixed;left:50%;transform:translateX(-50%);bottom:58px;z-index:9300;height:40px;padding:0 18px;background-image:linear-gradient(rgb(95,180,216),rgb(58,134,168));border:0;border-radius:8px;box-shadow:rgb(31,86,110) 0 4px 0 0;color:#fff;font:15px AppFont,AppJP,monospace;cursor:pointer}
+#mfIj2 .ij2Box{margin:8px 6px;padding:8px 10px 10px;border:1px solid #39414f;border-radius:10px;background:rgba(0,0,0,.25)}
+#mfIj2 .ij2BoxH{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+#mfIj2 .ij2BoxH>b{color:#e0b850;font-size:14px}
+#mfIj2 .ij2BoxH>span{flex:1;color:#8899aa;font-size:12px}
+#mfIj2 .ij2BoxH em{font-style:normal;color:#ffe9a3;font-size:14px}
+#mfIj2 .ij2Tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+#mfIj2 .ij2TgL{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+#mfIj2 .ij2St2{grid-column:span 2}
+#mfIj2 .ij2MoreS{border:1px solid #4a5566}
+#mfIj2 .ij2MoreS.on{border-color:rgb(255,210,74)}
+#mfIj2 .ij2MoreH{display:flex;align-items:baseline;gap:12px;margin:10px 6px 0;padding:8px 10px;border-top:2px solid rgb(255,210,74);color:#ffe9a3;font-size:15px;cursor:pointer}
+#mfIj2 .ij2MoreH span{color:#8899aa;font-size:12px}
+#mfIj2 .ij2TgE{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+#mfIj2 .ij2Lb{color:#8899aa;font-size:12px;margin-right:4px}
+#mfIj2 .rmB.ij2Tl{width:auto;height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 6px;white-space:normal;line-height:1.15;font-size:12px}
+#mfIj2 .rmB.ij2Tl b{font-size:15px;color:#ffe9a3;font-weight:700}
+#mfIj2 .rmB.ij2Tl.auto{background:#1d2a33}
+#mfIj2 .ij2St{display:flex;align-items:center;justify-content:space-between;gap:6px;height:40px;padding:0 6px 0 10px;border-radius:8px;background:rgb(20,23,29);border:1px solid transparent;font-size:12px}
+#mfIj2 .ij2St.on{border-color:rgb(255,210,74);background:rgba(255,210,74,.08)}
+#mfIj2 .ij2St>span{color:#ccddee;line-height:1.15}
+#mfIj2 .ij2St i{font-style:normal;color:#8899aa}
+#mfIj2 .ij2St>div{display:flex;align-items:center;gap:4px}
+#mfIj2 .ij2St>div>b{min-width:24px;text-align:center;color:#ffe9a3;font-size:15px}
+#mfIj2 .ij2St .rmB{width:28px;padding:4px 0;text-align:center}
+#mfIj2 details.ij2More{margin:4px 0 8px}
 #mfIj2 .ij2Hd{display:flex;align-items:baseline;gap:10px;margin:12px 10px 2px;padding-bottom:3px;border-bottom:1px solid #39414f;color:#e0b850;font-size:13px;font-weight:700}
 #mfIj2 .ij2Hd b{font-weight:700}
 #mfIj2 .ij2Hd small{color:#8899aa;font-size:11px;font-weight:400}
@@ -50437,7 +50462,7 @@ function step2HTML(){var a=hexOfPx(S_LOS.pxA),b=hexOfPx(S_LOS.pxB),sa=a&&stackAt
   if(csh&&csh.k!=='inf'){var rr=ordHTML(csh,sa,sb,L);return hd+'<div class="ij2Cols"><div>'+rr[0]+'</div><div>'+rr[1]+'</div></div>';}
   var sk=JSON.stringify([sa,ph]);if(IJ.fxStk!==sk){var X0=fx();X0.us={};X0.own={};X0.swLong={};X0.lane={};IJ.fxStk=sk;IJ.dirty=true;}
   if(!IJ.prepKey||IJ.dirty){IJ.dirty=false;IJ.prepping=true;try{if(prep())applyFx(f(),sa,sb);}finally{IJ.prepping=false;}}
-  var rr=infHTML(L,sa,sb,ph);return hd+'<div class="ij2Cols"><div>'+rr[0]+'</div><div>'+rr[1]+'</div></div>';}
+  var rr=infHTML(L,sa,sb,ph);return hd+'<div class="ij2Cols"><div>'+rr[0]+'</div><div>'+rr[1]+'</div></div>'+(rr[2]||'');}
 
 /* ---------- v541: スポット判定 歩兵・SW の射撃(旧射撃タブの設定を全部入れる。画面はスポット判定用に新しく作る) ----------
  * 選んだ値は IJ.fx に持つ(絶対値)。A→B・カウンター・フェイズが変わるたびに prep() で射撃の状態を作り直し、applyFx() で IJ.fx を入れる。
@@ -50573,8 +50598,8 @@ function infHTML(L,sa,sb,ph){var X=fx(),F=f(),g0=F.grps[0],R='',mode=F.fireMode;
   if(ch)R+=chainHTML(F,ch);
   else{R+=dieRow('<span style="color:#ff6a5a">赤</span>',F.rd,"mfIjDie('rd',");R+=dieRow('白',F.wd,"mfIjDie('wd',");
     R+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfIjRoll()"><span class="rmTx" style="align-items:center"><span class="rmT">🎲 ダイスを振って判定</span><span class="rmSub">出目を選んだ時はその目で判定</span></span></div>';}
-  R+=infMoreHTML(F,g0,ph,sa,sb);
-  return [L,R];}
+  var M=infMoreHTML(F,g0,ph,sa,sb);R+=IJ.moreSum;
+  return [L,R,M];}
 /* 結果のあと: ROF・故障・残留 FP・目標が砲のとき */
 function resDetail(F,res){var h='',sw=res.swr||[];
   sw.forEach(function(s){var t=[];
@@ -50622,25 +50647,40 @@ function residHTML(L){var rs=S.resid||(S.resid=deepCopy(INIT_RESID)),R='';
   R+=dieRow('<span style="color:#ff6a5a">赤</span>',rs.rd,"mfIjRs('rd',");R+=dieRow('白',rs.wd,"mfIjRs('wd',");
   R+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfIjRsRoll()"><span class="rmTx" style="align-items:center"><span class="rmT">🎲 ダイスを振って判定</span></span></div>';
   return [L,R];}
+
+/* v542 サンプル: 目標の地形と LOS の妨害を 1 か所でまとめて操作(タイル) */
+window.mfIjMore=function(){IJ.moreOpen=!IJ.moreOpen;draw();if(IJ.moreOpen)setTimeout(function(){var b=document.getElementById('ij2MoreBody'),p=document.getElementById('mfIj2');if(b&&p)p.scrollTop=b.offsetTop-8;},30);};
+function tile(on,top,val,fn,cls){return '<button class="rmB ij2Tl'+(on?' on':'')+(cls?' '+cls:'')+'" onclick="event.stopPropagation();'+fn+'"><span>'+top+'</span><b>'+val+'</b></button>';}
+function terrLosHTML(F,X){var h='',los=F.los||{},sm=/smk|wp/,auto=!X.tem;
+  var tAuto=TEM_LIST.filter(function(t){return t.id===F.temId;})[0];
+  h+='<div class="ij2Box"><div class="ij2BoxH"><b>目標の地形</b><span>'+(auto?'地図から':'手で選んだ')+': <em>'+esc(F.temId==='pillbox'?'トーチカ等':(tAuto?tAuto.lbl:'?'))+' '+sg(F.tem||0)+'</em></span></div><div class="ij2Tg">';
+  h+=tile(auto,'自動(地図)',auto?sg(F.tem||0):'↺',"mfIjFx('tem',null)",'auto');
+  TEM_LIST.forEach(function(t){h+=tile(X.tem&&X.tem.id===t.id,esc(t.lbl),sg(t.v),"mfIjFx('tem',{id:'"+t.id+"',v:"+t.v+"})");});
+  var pb=X.tem&&X.tem.id==='pillbox'?X.tem.v:0;
+  h+='<div class="ij2St ij2St2'+(pb?' on':'')+'"><span>トーチカ等 <i>カウンターの値</i></span><div>'+bt(false,'−',pb>1?"mfIjFx('tem',{id:'pillbox',v:"+(pb-1)+"})":"mfIjFx('tem',null)")+'<b>'+(pb?'+'+pb:'−')+'</b>'+bt(false,'＋',"mfIjFx('tem',{id:'pillbox',v:"+Math.min(7,pb+1)+"})")+'</div></div>';
+  h+='</div></div>';
+  var tot=0;try{tot=fireHindTotal(F);}catch(e){}
+  var lauto=!X.los&&X.hin==null;
+  h+='<div class="ij2Box"><div class="ij2BoxH"><b>LOS の妨害</b><span>合計 <em>+'+tot+'</em>　'+(lauto?'地図の LOS から':'手で変えた')+'</span>'+(lauto?'':bt(false,'↺ 自動に戻す',"mfIjFx('los',null);mfIjFx('hin',null)"))+'</div><div class="ij2Tg ij2TgL">';
+  LOS_OBS.forEach(function(o){var n=los[o.id]||0,ow=!!(los.own&&los.own[o.id]);
+    h+='<div class="ij2St'+(n||ow?' on':'')+'"><span>'+esc(o.lbl)+' <i>+'+o.d+'</i></span><div>'+bt(false,'−',"mfIjLos('"+o.id+"',-1)")+'<b>'+n+'</b>'+bt(false,'＋',"mfIjLos('"+o.id+"',1)")+(sm.test(o.id)?bt(ow,'自',"mfIjLosOwn('"+o.id+"')"):'')+'</div></div>';});
+  var hv=F.hinder||0;
+  h+='<div class="ij2St'+(hv?' on':'')+'"><span>そのほか(LV など) <i>'+(X.hin==null?'自動':'手')+'</i></span><div>'+bt(false,'−',"mfIjFx('hin',"+Math.max(0,hv-1)+")")+'<b>+'+hv+'</b>'+bt(false,'＋',"mfIjFx('hin',"+Math.min(8,hv+1)+")")+'</div></div>';
+  h+='</div><div class="ij2Tg ij2TgE"><span class="ij2Lb">高さ</span>'+[[null,'自動'],['same','同じ'],['firer','射手が高い'],['target','目標が高い']].map(function(x){return bt(x[0]?X.elev===x[0]:!X.elev,x[1]+(x[0]===null&&!X.elev?'('+({same:'同じ',firer:'射手',target:'目標'}[F.elev]||'-')+')':''),"mfIjFx('elev',"+(x[0]?"'"+x[0]+"'":'null')+")");}).join('');
+  if(F.elev==='target')h+='<span class="ij2Lb" style="margin-left:12px">稜線越え(B10.31)</span>'+bt(!X.ridge,'既にいた',"mfIjFx('ridge',false)")+bt(!!X.ridge,'今越えた',"mfIjFx('ridge',true)");
+  h+='</div></div>';
+  return h;}
 /* 「その他の修正」(たたむ): 旧タブでできた設定を全部ここに */
 function infMoreHTML(F,g0,ph,sa,sb){var X=fx(),h='',on=[];
   if(X.tem&&['open','woods','wood_bld','stone_bld'].indexOf(X.tem.id)<0)on.push('地形');if(X.los||X.hin!=null)on.push('妨害');if(X.elev)on.push('高さ');if(X.ldr!=null)on.push('指揮官');if(X.own&&Object.keys(X.own).length)on.push('SW担当');
   ['swLong','cap','lane'].forEach(function(k){if(X[k]&&Object.keys(X[k]).some(function(z){return X[k][z];}))on.push({swLong:'遠距離',cap:'鹵獲',lane:'Fire Lane'}[k]);});
   if(F.aslSnap)on.push('Snap');if(F.aslSpray)on.push('Spraying');if(F.aslMount||F.aslMountTgt)on.push('乗車');if(F.ovrAtkAdd||F.ovrTgt)on.push('積み重ね');if(F.aslBore)on.push('Bore');if(X.mh&&X.mh.on)on.push('複数ヘクス');
   if(F.tgtHIP)on.push('HIP');if(F.tgtIsGun)on.push('目標は砲');if(F.tgtCrewCE)on.push('CE乗員');if(X.ft!=null)on.push('FT');if(g0.binocular)on.push('½なし');
-  h+='<details class="ij2More"'+(IJ.moreOpen?' open':'')+' ontoggle="MF_IJ.moreOpen=this.open"><summary class="mfSum">▸ その他の修正'+(on.length?' <span style="color:#ffd24a">● '+esc(on.join('・'))+'</span>':'')+'</summary><div style="padding:4px 0">';
-  /* 地形・LOS */
-  h+=hd2('地形・LOS','自動=地図の LOS から。手で選ぶとその値');
-  var temB=function(t){return bt(X.tem&&X.tem.id===t.id,t.lbl+' '+sg(t.v),"mfIjFx('tem',{id:'"+t.id+"',v:"+t.v+"})");};
-  h+=it('目標の地形','B章 Terrain Chart',bt(!X.tem,'自動('+sg(F.tem||0)+')',"mfIjFx('tem',null)")+TEM_LIST.map(temB).join(''),'ij2W');
-  h+=it('トーチカ等','カウンターの値',[1,2,3,4,5,6,7].map(function(v){return bt(X.tem&&X.tem.id==='pillbox'&&X.tem.v===v,'+'+v,"mfIjFx('tem',{id:'pillbox',v:"+v+"})");}).join(''));
-  var los=F.los||{},sm=/smk|wp/;
-  h+=it('LOS の妨害','途中のヘクスの数。自=自分のヘクスの煙から撃つ(+1)',bt(!X.los,'自動',"mfIjFx('los',null)"));
-  LOS_OBS.forEach(function(o){var n=los[o.id]||0;h+=it(esc(o.lbl)+' +'+o.d,'',bt(false,'−',"mfIjLos('"+o.id+"',-1)",'min-width:38px')+'<span class="ij2N">'+n+'</span>'+bt(false,'＋',"mfIjLos('"+o.id+"',1)",'min-width:38px')+(sm.test(o.id)?bt(!!(los.own&&los.own[o.id]),'自',"mfIjLosOwn('"+o.id+"')"):''),'ij2Lo');});
-  h+=it('そのほかの妨害','手で足す分(LV など自動の分とは別)',bt(X.hin==null,'自動(+'+(F.hinder||0)+')',"mfIjFx('hin',null)")+[0,1,2,3,4,5,6,7,8].map(function(v){return bt(X.hin===v,'+'+v,"mfIjFx('hin',"+v+")");}).join(''),'ij2W');
-  h+='<div class="rmNote">妨害の合計 +'+(function(){try{return fireHindTotal(F);}catch(e){return 0;}})()+'</div>';
-  h+=it('高さ','',bt(!X.elev,'自動',"mfIjFx('elev',null)")+[['same','同じ'],['firer','射手が高い'],['target','目標が高い']].map(function(x){return bt(X.elev===x[0],x[1],"mfIjFx('elev','"+x[0]+"')");}).join(''));
-  if(F.elev==='target')h+=it('稜線越えの例外','B10.31 移動/潰走中に、この LOS の稜線をちょうど今越えて丘に上がった',bt(!X.ridge,'既にこの丘にいた',"mfIjFx('ridge',false)")+bt(!!X.ridge,'今越えた直後',"mfIjFx('ridge',true)"));
+  IJ.moreSum='<div class="rmIt ij2MoreS'+(IJ.moreOpen?' on':'')+'" onclick="event.stopPropagation();mfIjMore()"><span class="rmTx"><span class="rmT">'+(IJ.moreOpen?'▾':'▸')+' その他の修正'+(on.length?' <span style="color:#ffd24a">● '+esc(on.join('・'))+'</span>':'')+'</span><span class="rmSub">'+(IJ.moreOpen?'下に開いています(タップでたたむ)':'地形・LOS・撃つ側・目標の細かい設定')+'</span></span></div>';
+  if(!IJ.moreOpen)return '';
+  h+='<div id="ij2MoreBody" class="ij2More"><div class="ij2MoreH" onclick="event.stopPropagation();mfIjMore()">▾ その他の修正<span>タップでたたむ</span></div><div style="padding:4px 0">';
+  h+=terrLosHTML(F,X);
+  h+='<div class="ij2Cols"><div>';
   /* 撃つ側 */
   h+=hd2('撃つ側','');
   var lv=null;try{lv=F.ldrPresent?F.ldr:null;}catch(e){}
@@ -50672,6 +50712,7 @@ function infMoreHTML(F,g0,ph,sa,sb){var X=fx(),h='',on=[];
     h+=it('ヘクス '+(i+1),'',bt(!x.present,'指揮官なし',"mfIjMh('set',"+i+",'present',false)")+[-3,-2,-1,0,1].map(function(v){return bt(x.present&&x.ldr===v,sg(v)||'0',"mfIjMh('set',"+i+",'ldr',"+v+");mfIjMh('set',"+i+",'present',true)");}).join('')+(mh.hexes.length>2?bt(false,'削除',"mfIjMh('del',"+i+")"):''));});
   if(mh.on)h+=it('','',bt(false,'＋ ヘクスを足す',"mfIjMh('add')"));
   /* 目標 */
+  h+='</div><div>';
   h+=hd2('目標','');
   h+=it('隠蔽(?)・HIP','A12.14・A12.3 地域射撃で FP ½',bt(!F.tgtHIP,'いいえ',"mfIjFx('hip',false)")+bt(F.tgtHIP,'隠蔽/HIP ×½',"mfIjFx('hip',true)"));
   if((g0.range||0)>=17&&(g0.sw||[]).some(function(u){return /^(lmg|mmg|hmg)/i.test(u);}))h+=it('目標は混乱・狂乱・過剰スタック','A9.4 射程17以上の MG を指揮官が指揮して撃つとき、½ にしない'+(F.ldrPresent?'':'(指揮官がいないと撃てない)'),bt(!g0.binocular,'いいえ',"mfIjFx('binoc',false)")+bt(g0.binocular,'はい(½なし)',"mfIjFx('binoc',true)",F.ldrPresent?'':'opacity:.45'));
@@ -50690,7 +50731,7 @@ function infMoreHTML(F,g0,ph,sa,sb){var X=fx(),h='',on=[];
   if(!F.tgtCrewCE&&!F.tgtIsGun)h+=it('目標の FT','1 個につき −1(A22.5)。自動=B のカウンター',bt(X.ft==null,'自動('+(F.ftTargetCarrier||0)+')',"mfIjFx('ft',null)")+[0,1,2].map(function(v){return bt(X.ft===v,v+' 個',"mfIjFx('ft',"+v+")");}).join(''));
   h+=it('目標が乗っている','D6',bt(!F.aslMountTgt,'乗っていない',"mfIjFx('mountTgt',null)")+bt(F.aslMountTgt==='rider','Rider',"mfIjFx('mountTgt','rider')")+bt(F.aslMountTgt==='truck','トラックの Passenger',"mfIjFx('mountTgt','truck')")+bt(F.aslMountTgt==='ht','装甲 HT の Passenger',"mfIjFx('mountTgt','ht')"),'ij2W');
   if(F.aslMountTgt)h+='<div class="rmNote">'+({rider:'常に Vulnerable(BU・CE の利益なし)。Collateral Attack を受ける。Pin・混乱したら Bail Out(D6.23)',truck:'常に Vulnerable。車両を IFT の H Vehicle 行で撃ち、同じ DR で Passenger・乗員に Collateral Attack(D6.7・D.8B)',ht:'BU なら別には攻撃できない(ハーフトラックを撃つ)。CE なら +2 DRM(D6.61・6.62)'})[F.aslMountTgt]+'</div>';
-  h+='</div></details>';
+  h+='</div></div></div></div>';
   return h;}
 
 function draw(){if(IJ.prepping)return;var on=IJ.open&&!IJ.hidden&&document.documentElement.classList.contains('mf-on');
