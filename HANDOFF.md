@@ -4,7 +4,7 @@
 
 ## 0. いまの作業
 - 2026-11-17: SK3 アプリ(mk70dog/aslsk_3-exp1)の今の仕様にフル版を移す作業を開始。まだコードは変えていない。
-- 現在の版: APP_VERSION "ASLFULL-v0.542"。スポット判定の作り込み(SPOT_JUDGE_ITEMS.md)の 1・2 章が済み。次は 3 章(砲・車両の主砲)、4 章(軽対戦車兵器)。
+- 現在の版: APP_VERSION "ASLFULL-v0.543"。スポット判定の作り込み(SPOT_JUDGE_ITEMS.md)の 1〜3 章が済み。次は 4 章(軽対戦車兵器)。
 
 ## 1. ダルマの決定(2026-11-17)
 - 移す範囲: マップ中心の画面・上段の盤・対戦モードまで全部(指示書 3-1 の D)。
@@ -83,8 +83,17 @@
   - LOS の妨害: 枠に 3 列のタイル .ij2St(LOS_OBS ごとに −/数/＋・煙は「自」・そのほか(LV など)も −/＋)。数が入ると金の枠。見出しに合計(fireHindTotal)。手で変えると「↺ 自動に戻す」。高さ・稜線越えも同じ枠。関数 terrLosHTML。
   - 撃つ側・目標は左右 2 列。計算は v541 と同じ(Playwright の旧タブとの一致テストは同じ結果)。
 
+- v543(2026-11-18 ダルマ サンプル sample-ui8 に「わかりやすく 使いやすく 実施」): スポット判定 3 章(砲・車両の主砲・車載機銃)。
+  - 使える項目の決め方 gAvail(): 旧タブの画面関数 GUN_PAGE を表示せずに作り(折りたたみは全部開く)、onclick の中の設定関数名・最初の引数を数えて IJ.gAv に。av('GsetDRM:intensive') のように聞く。旧タブで出る物だけ出す(条件を写し間違えない)。
+  - 値は S.gun にそのまま(設定は旧タブの設定関数を mfIjG(関数名, 引数…) で呼ぶ。withTab+quiet)。捕捉は旧タブのボタンと同じ処理を GACQ_SET に。地形・妨害・高さは losAutoApplyToAllTabs が毎回上書きするので IJ.gx に持ち、gPrep の最後に applyGx() で入れ直す。
+  - 新しい A→B・撃つ武器を変えたら IJ.gReset で S.gun を INIT に戻す(前の射撃の設定を持ち越さない)。目標の移動(歩兵)は FFMO・FFNAM を重ねられる(GsetTgtMove)。当たる面は地図から自動、手でも(IJ.faceMan)。
+  - 左の列: 弾と目標(弾種と欠乏No.・欠乏/未供給は薄く・IFE・目標の種類・ATT の目標)/射手(停止/Bounding Fire・Stopped・遅延 MP・AFPh に動いた・Motion)/目標の移動(Case 24 か FFMO/FFNAM/危険移動)/狙い(CA の変更・TCA/VCA・林建物 2 倍・捕捉・Bore Sight)。
+  - 右の列: TH・TK/IFT の結果のあとに Possible Shock の NTC(乗員の士気・DR)・CE の乗員への付随攻撃(gunVttCollatFp・afvCeDrmFor・iftR)・ROF(続ける/放棄/終える)。
+  - その他の修正(全幅): 地形(TEM_LIST+据付・トーチカ)・LOS の妨害(タイル)・空中炸裂・高さ・稜線/撃つ側(集中射撃・ハッチ・恒久+1・Elite・未熟な乗員・鹵獲・非正規・未熟兵 MMC・PIN/CX・指揮官・国籍・SSR・米軍砲・丸囲み B#・迫撃砲の発射部隊/建物の中・Limbered Fire・弾の記録)/目標(HIP・隠蔽・目標は砲と砲の選択・CE 乗員・装甲の帯/OT・FT・当たる面)/特別な判定(始動判定 D2.51 と失速の遅延 MP・煙幕の展張 D13・Motion Status Attempt と D14)。
+  - Shock 回復(RPh)は射撃ではないのでスポット判定には入れない(旧タブの回復フェイズ)。
+  - 確認(Playwright・ページエラー0): BV127 IV号D→KV-2 で旧タブの設定関数と DRM・TH が一致(素/集中+BU+CA1+捕捉−1/石造+煙+高さ/恒久+1+未熟+国籍ソ)。IV号D→T-26 で Possible Shock → NTC・付随攻撃の表示、Motion Status Attempt dr3≦4。BV128 PaK38→5-2-7 DFF の FFMO+FFNAM・HE で 1KIA。歩兵の一致テストもそのまま。
+
 ## 6. 次の作業
-- スポット判定の作り込み 3 章(砲・車両の主砲): ordHTML の「その他の修正」(今はタブへのリンク)を、SPOT_JUDGE_ITEMS.md 3 章の設定で新しく作る。同じやり方(IJ.fx 相当 → gPrep の後に入れる、旧タブの設定関数と一致を Playwright で確認)。
 - 4 章(軽対戦車兵器)。車載機銃で車両を撃つ(MG の TK)もここで。
 - ④ 上段の盤はダルマ「旧タブは基本使わない・いずれ非表示」により取りやめ。
 - 残り: 判定ボード(⑤)、対戦モード(⑥・最後)。旧タブの非表示はダルマの指示のあとで。
