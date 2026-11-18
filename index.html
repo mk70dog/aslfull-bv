@@ -50348,6 +50348,20 @@ document.addEventListener('click',function(e){if(Date.now()<LP.sup+300&&inMap(e)
 html.mf-ij #main>.mfLosRes{display:none!important}
 
 #mfMc{position:fixed;z-index:9420;box-sizing:border-box;padding:6px 0 0;background-color:rgb(28,31,39);background-image:radial-gradient(circle,rgba(0,0,0,.667) 1px,rgba(0,0,0,0) 1.35px),radial-gradient(circle at 50% 70%,rgba(255,255,255,.08) 1px,rgba(0,0,0,0) 1.4px);background-size:4px 4px,4px 4px;border:1px solid rgb(74,85,102);border-radius:10px;box-shadow:rgba(0,0,0,.8) 0 12px 40px 0;color:rgb(204,221,238);font-family:AppFont,AppJP,monospace;font-size:16px;overflow-y:auto;overscroll-behavior:contain}
+#mfMc .mgG{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px;padding:4px 10px 8px}
+#mfMc .mgP{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:8px;background:rgb(20,23,29);box-shadow:rgb(14,14,12) 0 3px 0 0,rgb(42,47,58) 0 0 0 .5px}
+#mfMc .mgP.on{outline:2px solid #ffd24a;outline-offset:-2px}
+#mfMc .mgP img{width:44px;height:44px;border-radius:4px}
+#mfMc .mgP .mcL{font-size:11px;color:#ccddee}
+#mfMc .mgC{display:flex;align-items:center;gap:6px}
+#mfMc .mgC b{min-width:18px;text-align:center;color:#ffe9a3}
+#mfMc .mgC .rmB{width:30px!important;padding:3px 0}
+#mfMc .mgU{gap:10px}
+#mfMc .mgU img{width:40px;height:40px;border-radius:4px;flex:0 0 auto}
+#mfMc .mgU.on{outline:1.5px solid #ffd24a;outline-offset:-2px;border-radius:8px}
+#mfMc .mgU small{color:#8899aa;font-size:12px}
+#mfMc .mgU i{font-style:normal;font-size:12px;margin-left:6px}
+#mfMc .mgNo{color:#ffd060;font-weight:900}
 #mfMc .mcG{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;padding:4px 10px 8px}
 #mfMc .rmB.mcT{width:auto;height:auto;min-height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 4px;white-space:normal;line-height:1.15}
 #mfMc .rmB.mcT img{width:44px;height:44px;border-radius:4px}
@@ -50741,7 +50755,8 @@ function mcAvail(){var html='',m=S.mc,keep=m.detailOpen;m.detailOpen=true;quiet(
   var A={},re=/onclick="([^"]*)"/g,x,r2=/([A-Za-z_]+)\((\s*'([^']*)')?/g,y;while((x=re.exec(html))){r2.lastIndex=0;while((y=r2.exec(x[1]))){A[y[1]]=1;if(y[3]!=null)A[y[1]+':'+y[3]]=1;}}MC.av=A;return A;}
 function mav(k){return !!(MC.av&&MC.av[k]);}
 window.mfMcDo=function(){var a=[].slice.call(arguments),fn=a.shift();var m=quiet(function(){withTab('mc',function(){if(typeof window[fn]==='function')window[fn].apply(null,a);});});MC.miss=m.length?m:null;try{saveState();}catch(e){}mcDraw();};
-window.mfMcOpen=function(pre){MC.open=true;MC.step=1;MC.miss=null;
+window.mfMcOpen=function(pre){MC.open=true;MC.step=1;MC.miss=null;MC.single=false;MC.moreOpen=false;
+  mgInit(pre&&pre.nat);if(pre&&pre.hex){var st=stackAt(pre.hex);if(st){Object.keys(st.u||{}).forEach(function(k){if(/^(mmc|smc)\|/.test(k))MCG.pick[k]=st.u[k];});}if(Object.keys(MCG.pick).length){mfMgGo();if(pre.type)mfMgSet('type',pre.type);}}
   if(pre){withTab('mc',function(){MCmode(pre.ptc?'ptc':'mc');if(!pre.ptc&&pre.type)MS('type',pre.type);if(pre.nat&&S.mc.mcPickNat!==pre.nat)MC_SetPickNat(pre.nat);});}
   if(!S.mc.mcPickNat){var ns=mcNats();if(ns.length)withTab('mc',function(){MC_SetPickNat(ns[0]);});}
   mcDraw();};
@@ -50768,7 +50783,8 @@ function mcUnitsHTML(){var m=S.mc,nat=m.mcPickNat,h='';if(!nat)return '<div clas
   return h;}
 function mcLeft(){var m=S.mc,h='';
   h+='<div class="rmIt" onclick="event.stopPropagation();mfMcClose(1)"><span class="rmIc">'+((window.MF_RM_IC||{}).back||'←')+'</span><span class="rmTx"><span class="rmT">マルチ判定に戻る</span></span></div>';
-  h+=it('判定','',[['mc','MC'],['ptc','PTC'],['ef','クラス低下'],['casual','損耗']].map(function(x){return bt(m.mode===x[0],x[1],"mfMcDo('MCmode','"+x[0]+"')");}).join(''));
+  h+=it('判定','1 ユニットずつ(旧タブと同じ形)',[['mc','MC'],['ptc','PTC'],['ef','クラス低下'],['casual','損耗']].map(function(x){return bt(m.mode===x[0],x[1],"mfMcDo('MCmode','"+x[0]+"')");}).join(''));
+  h+=it('','',bt(false,'← 部隊でまとめて判定',"MC.single=false;mfMcDo('MCmode','mc')"));
   if(m.mode==='ef'||m.mode==='casual')return h+mcManualLeft();
   h+=it('国籍','',mcNats().map(function(n){return bt(m.mcPickNat===n,NATJ[n]||n,"mfMcDo('MC_SetPickNat','"+n+"')");}).join(''));
   h+=hd2('対象のユニット','');h+=mcUnitsHTML();
@@ -50838,9 +50854,122 @@ function mcDraw(){var P=document.getElementById('mfMc');if(!MC.open||!document.d
   mcAvail();
   if(!P){P=document.createElement('div');P.id='mfMc';P.onclick=function(e){e.stopPropagation();};document.body.appendChild(P);}
   var sc=P.scrollTop,m=S.mc;
-  P.innerHTML='<div class="rmXW"><button class="rmX" title="閉じる" onclick="event.stopPropagation();mfMcClose()"><span>✕</span></button></div><div class="rmGrip"><span></span></div><div class="ij2Cols"><div>'+mcLeft()+'</div><div>'+mcRight()+'</div></div>'+((m.mode==='mc'||m.mode==='ptc')&&MC.moreOpen?mcMore():'');
+  var X='<div class="rmXW"><button class="rmX" title="閉じる" onclick="event.stopPropagation();mfMcClose()"><span>✕</span></button></div><div class="rmGrip"><span></span></div>';
+  if(!MC.single&&(m.mode==='mc'||m.mode==='ptc')){if(!MCG)mgInit();P.innerHTML=X+(MCG.step===1?mgSelHTML():'<div class="ij2Cols"><div>'+mgLeft()+'</div><div>'+mgRight()+'</div></div>');}
+  else P.innerHTML=X+'<div class="ij2Cols"><div>'+mcLeft()+'</div><div>'+mcRight()+'</div></div>'+((m.mode==='mc'||m.mode==='ptc')&&MC.moreOpen?mcMore():'');
   P.style.maxHeight=(window.innerHeight-70)+'px';P.scrollTop=sc;}
 window.mfMcDraw=mcDraw;
+
+/* ---------- v546: MC・PTC を部隊でまとめて判定(SK3 と同じ流れ。ルールは ASL フル版 A10) ----------
+ * ① ユニットを数で選ぶ(シナリオの OB)→ ② チェックの種類 → ③ ユニットごとに DR(指揮官が先・士気の高い順)。
+ * 1 ユニットの判定は旧タブの MJUDGE_COMMON(士気・ELR・原DR12・混乱中)をそのまま使う。
+ * 指揮修正(A10.21・10.22): 合格して PIN でない混乱していない指揮官のうち いちばん良い 1 人。指揮官には士気が高い指揮官のものだけ。
+ * LLMC/LLTC(A10.2): 指揮官が除去=LLMC(士気が低い全員・逆転した指揮修正)、統制の指揮官が混乱=LLTC(士気が低い統制で PIN でないユニット)。 */
+var MCG=null;
+function mgUnitData(nat,kind,lbl){var D=UNITS[nat]||{};var arr=kind==='smc'?(D.smc||[]):(D.mmc||[]);var u=arr.filter(function(x){return x.lbl===lbl;})[0];if(!u){var L=kind==='smc'?scenarioSmcListForNat(nat):scenarioMmcListForNat(nat);u=(L||[]).filter(function(x){return x.lbl===lbl;})[0];}return u||null;}
+function mgMor(x){if(x.kind==='crew')return x.crewMor;var u=mgUnitData(x.nat,x.kind,x.lbl);if(!u)return null;return mcPickedMoraleValue({alreadyBroken:x.brk,mcPickNat:x.nat,mcPickLabel:x.lbl,wounded:x.wnd,ssrCommissar:MCG&&MCG.comm},u,x.kind);}
+function mgCmd(x){var u=mgUnitData(x.nat,'smc',x.lbl);return u&&u.cmd!=null?u.cmd:0;}
+function mgOrder(){return MCG.units.map(function(x,i){return i;}).sort(function(a,b){var A=MCG.units[a],B=MCG.units[b],ka=A.kind==='smc'?0:1,kb=B.kind==='smc'?0:1;if(ka!==kb)return ka-kb;if(ka===0)return (mgMor(B)||0)-(mgMor(A)||0);return a-b;});}
+/* この unit に使える指揮修正(A10.21/10.22) */
+function mgLdrFor(x){var best=null,bx=null,mx=mgMor(x);MCG.units.forEach(function(L){if(L===x||L.kind!=='smc'||L.gone||L.brk||L.pin||!L.done)return;if(x.kind==='smc'&&!((mgMor(L)||0)>(mx||0)))return;var c=mgCmd(L)+(L.wnd?1:0);if(best==null||c<best){best=c;bx=L;}});return {cmd:best,by:bx};}
+function mgCheck(x){var P=MCG.ptc,ty=MCG.type,mor=mgMor(x),ld=x.kind==='crew'?{cmd:null}:mgLdrFor(x);
+  var m={ptc:P,type:ty,mor:mor,elr:MCG.elr,ldrImm:!!MCG.ldrImm,ldr:ld.cmd!=null?ld.cmd:0,ldrPresent:ld.cmd!=null,ldrWounded:false,llReverse:false,firerStunPlus1:!!x.stun,alreadyBroken:x.brk,utype:x.kind==='crew'?'crew':x.kind};
+  return {m:m,ld:ld};}
+function mgNeed(m){var d=(m.ptc?0:({NMC:0,'1MC':1,'2MC':2,'3MC':3,'4MC':4}[m.type]||0))+mcEffLdr(m)+(m.firerStunPlus1?1:0),b=m.mor-d;
+  if(m.ptc)return {d:d,t:'DR '+Math.min(b,12)+' 以下で合格・それより上は PIN'};
+  if(m.alreadyBroken)return {d:d,t:'DR '+Math.min(b,11)+' 以下で合格・それより上は損耗・原 DR12 は除去'};
+  return {d:d,t:(b-1>=2?'DR '+Math.min(b-1,11)+' 以下で合格・':'')+(b>=2&&b<=11?b+' で PIN・':'')+(b+1<=12?(b+1)+' 以上で混乱':'')+'・原 DR12 は損耗'};}
+/* 結果をユニットに入れる(盤上の扱いは A10.3・10.31・7.302・19.13) */
+function mgApply(x,R,m){x.morPre=m.mor;var nat=x.nat,before=x.lbl,lg=[],cm=CASUAL_MAP[nat]||{},em=ELR_MAP[nat]||{},wasBrk=x.brk;
+  if(R.ef&&x.kind==='mmc'&&em[x.lbl]){lg.push('ELR: '+x.lbl+' → '+em[x.lbl]);x.lbl=em[x.lbl];}
+  var cas=function(){if(x.kind==='smc'){x.needWound=true;lg.push('損耗(負傷判定)');return;}if(x.kind==='crew'){x.gone=true;lg.push('除去');return;}var to=cm[x.lbl];if(to){lg.push('損耗: '+x.lbl+' → '+to);x.lbl=to;}else{lg.push('除去');x.gone=true;}};
+  if(R.st==='ok'){}else if(R.st==='pin'||R.st==='ptcPin'){if(!(R.st==='ptcPin'&&x.brk))x.pin=true;}
+  else if(R.st==='brk'){x.brk=true;x.pin=false;}
+  else if(R.st==='auto'){x.brk=true;x.pin=false;cas();}
+  else if(R.st==='casOnly')cas();
+  else if(R.st==='autoElim'){x.gone=true;lg.push('除去');}
+  x.log=lg;
+  x.brokeNow=!wasBrk&&x.brk;
+  if(x.kind==='smc'){if(x.gone)mgLL('LLMC',x);else if(x.brokeNow&&!x.needWound)mgLL('LLTC',x);}}
+function mgLL(k,L){var rev=Math.max(0,-(mgCmd(L)+(L.wnd?1:0))),lm=L.morPre!=null?L.morPre:mgMor(L); /* A10.2: 指揮官がその判定をしたときの士気より低いユニット */
+  MCG.ll.push({k:k,rev:rev,mor:lm,lbl:L.lbl,from:L,done:{}});}
+function mgLLTargets(e){return MCG.units.filter(function(x){if(x===e.from||x.gone)return false;var mm=mgMor(x);if(mm==null||mm>=e.mor)return false;if(e.k==='LLTC'&&(x.brk||x.pin))return false;return true;});}
+function mgSplit(dr){var r=Math.min(6,dr-1);return [r,dr-r];}
+window.mfMgPick=function(key,d){var G=MCG.pick,c=Math.max(0,(G[key]||0)+d);if(c)G[key]=c;else delete G[key];mcDraw();};
+window.mfMgNat=function(n){MCG.nat=n;MCG.pick={};MCG.elr=scenarioElrForNat(n);mcDraw();};
+window.mfMgGo=function(){var U=[],id=0;Object.keys(MCG.pick).forEach(function(k){var p=k.split('|');for(var i=0;i<MCG.pick[k];i++){var x={pid:++id,kind:p[0],lbl:p.slice(1).join('|'),nat:MCG.nat,brk:false,pin:false,wnd:false};if(x.kind==='crew'){x.crewMor=resolveCrewMorale({nat:MCG.nat});x.lbl='乗員';}U.push(x);}});
+  if(!U.length){toast('ユニットを選んでください');return;}MCG.units=U;MCG.ll=[];MCG.sel=null;MCG.step=2;MCG.type=MCG.type||null;mcDraw();};
+window.mfMgSet=function(k,v){MCG[k]=v;if(k==='type'){MCG.ptc=(v==='PTC');MCG.units.forEach(function(x){x.res=null;});}mcDraw();};
+window.mfMgSel=function(pid){MCG.sel=pid;mcDraw();};
+window.mfMgTog=function(pid,k){var x=MCG.units.filter(function(u){return u.pid===pid;})[0];if(!x||x.res)return;x[k]=!x[k];if(k==='brk'&&x.brk)x.pin=false;mcDraw();};
+window.mfMgDr=function(pid,dr){var x=MCG.units.filter(function(u){return u.pid===pid;})[0];if(!x||x.res||x.gone||!MCG.type)return;
+  if(x.kind!=='smc'&&MCG.units.some(function(L){return L.kind==='smc'&&!L.gone&&!L.res&&!L.brk;})){toast('指揮官を先に判定します(A10.2)');return;}
+  var C=mgCheck(x),sp=mgSplit(dr);C.m.rd=sp[0];C.m.wd=sp[1];var R=MJUDGE_COMMON(C.m);if(!R)return;
+  x.res={dr:dr,mod:R.mod,st:R.st,ef:R.ef,ld:C.ld.cmd,ldBy:C.ld.by?C.ld.by.lbl:null,mor:C.m.mor,lbl0:x.lbl};x.done=true;mgApply(x,R,C.m);
+  try{logResult(function(){return {tabLbl:'MC・PTC',text:x.res.lbl0+' '+(MCG.ptc?'PTC':MCG.type)+' DR'+dr+'→'+R.mod+' 士気'+C.m.mor+' : '+MSTAT(R.st,R.ef).t,color:(R.st==='ok'||R.st==='ptcOk')?'#00aa55':'#cc8800',detail:null};});}catch(e){}
+  var nx=mgOrder().map(function(i){return MCG.units[i];}).filter(function(u){return !u.res&&!u.gone;})[0];MCG.sel=nx?nx.pid:pid;mcDraw();};
+window.mfMgClr=function(pid){var x=MCG.units.filter(function(u){return u.pid===pid;})[0];if(!x||x.res)return;x.brk=false;x.pin=false;mcDraw();};
+window.mfMgRoll=function(pid){mfMgDr(pid,2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6));};
+window.mfMgAll=function(){mgOrder().forEach(function(i){var x=MCG.units[i];if(!x.res&&!x.gone)mfMgRoll(x.pid);});};
+window.mfMgWound=function(pid,dr){var x=MCG.units.filter(function(u){return u.pid===pid;})[0];if(!x||!x.needWound)return;dr=dr||1+Math.floor(Math.random()*6);var w=dr+(x.wnd?1:0);
+  x.needWound=false;x.wdr=dr;if(w<=4){x.wnd=true;x.log.push('負傷判定 dr'+w+': 負傷');if(x.brokeNow)mgLL('LLTC',x);}else{x.gone=true;x.log.push('負傷判定 dr'+w+': 除去');mgLL('LLMC',x);}mcDraw();};
+window.mfMgLL=function(li,pid,dr){if(!mgAllDone()){toast('LLMC/LLTC は、この攻撃の MC・PTC がすべて終わってから(A10.2)');return;}var e=MCG.ll[li],x=MCG.units.filter(function(u){return u.pid===pid;})[0];if(!e||!x||e.done[pid])return;dr=dr||2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var sp=mgSplit(dr);
+  var m={ptc:e.k==='LLTC',type:'NMC',mor:mgMor(x),elr:MCG.elr,ldrImm:!!MCG.ldrImm,ldr:-e.rev,ldrPresent:true,ldrWounded:false,llReverse:true,firerStunPlus1:!!x.stun,alreadyBroken:x.brk,utype:x.kind==='crew'?'crew':x.kind,rd:sp[0],wd:sp[1]};
+  var R=MJUDGE_COMMON(m);if(!R)return;var keep=x.res;mgApply(x,R,m);e.done[pid]={dr:dr,mod:R.mod,st:R.st,ef:R.ef,log:x.log};x.res=keep;mcDraw();};
+window.mfMgLLAll=function(li){var e=MCG.ll[li];mgLLTargets(e).forEach(function(x){if(!e.done[x.pid])mfMgLL(li,x.pid);});};
+function mgStTxt(x){var t=[];if(x.gone)t.push('除去');else{if(x.brk)t.push('混乱');if(x.pin)t.push('PIN');if(x.wnd)t.push('負傷');}return t.join('・')||'統制';}
+function mgSelHTML(){var G=MCG,nat=G.nat,h='';
+  h+='<div class="rmIt" onclick="event.stopPropagation();mfMcClose(1)"><span class="rmIc">'+((window.MF_RM_IC||{}).back||'←')+'</span><span class="rmTx"><span class="rmT">MC・PTC — シナリオのユニットで判定</span><span class="rmSub">地図にカウンターを置かずに、シナリオに出るユニットを数で選びます</span></span></div>';
+  h+=it('判定','',bt(true,'MC・PTC',"0")+bt(false,'クラス低下',"MC.single=true;mfMcDo('MCmode','ef')")+bt(false,'損耗',"MC.single=true;mfMcDo('MCmode','casual')"));
+  h+=it('国籍','',mcNats().map(function(n){return bt(nat===n,NATJ[n]||n,"mfMgNat('"+n+"')");}).join(''));
+  var D=UNITS[nat]||{mmc:[],smc:[]},smc=scenarioSmcListForNat(nat).slice().sort(function(a,b){return b.mor-a.mor;}),all=scenarioMmcListForNat(nat),flt=scenarioUnitLabels(nat);
+  var reg=flt?D.mmc.filter(function(u){return flt.mmc[u.lbl];}):D.mmc.slice(),extra=all.filter(function(u){return !reg.some(function(x){return x.lbl===u.lbl;});});
+  var tl=function(kind,lbl,sub,img){var k=kind+'|'+lbl,n=G.pick[k]||0,src=img===false?null:uSrc(nat,lbl);return '<div class="mgP'+(n?' on':'')+'">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(lbl)+'</span>')+'<span class="mcL">'+esc(sub)+'</span><span class="mgC">'+bt(false,'−',"mfMgPick('"+k.replace(/'/g,"\\'")+"',-1)")+'<b>'+n+'</b>'+bt(false,'＋',"mfMgPick('"+k.replace(/'/g,"\\'")+"',1)")+'</span></div>';};
+  h+=hd2('指揮官','');h+='<div class="mgG">'+smc.map(function(u){return tl('smc',u.lbl,u.lbl+' 士気'+u.mor);}).join('')+'</div>';
+  h+=hd2('分隊・HS','');h+='<div class="mgG">'+reg.slice().sort(function(a,b){return b.mor-a.mor;}).map(function(u){return tl('mmc',u.lbl,u.lbl);}).join('')+'</div>';
+  if(extra.length){h+=hd2('損耗・クラス低下したユニット','');h+='<div class="mgG">'+extra.map(function(u){return tl('mmc',u.lbl,u.lbl);}).join('')+'</div>';}
+  var cm=null;try{cm=resolveCrewMorale({nat:nat});}catch(e){}if(cm!=null){h+=hd2('車両・砲の乗員','');h+='<div class="mgG">'+tl('crew','乗員','乗員 士気'+cm,false)+'</div>';}
+  var n=Object.keys(G.pick).reduce(function(a,k){return a+G.pick[k];},0);
+  h+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfMgGo()" style="margin:10px 6px'+(n?'':';opacity:.45')+'"><span class="rmTx" style="align-items:center"><span class="rmT">判定する('+n+')</span><span class="rmSub">指揮官は士気の高い順に先に判定します</span></span></div>';
+  return h;}
+var MG_EX={'NMC':'NMC: 修正なしの士気チェック','1MC':'1MC: DR に +1 して士気チェック','2MC':'2MC: DR に +2 して士気チェック','3MC':'3MC: DR に +3 して士気チェック','4MC':'4MC: DR に +4 して士気チェック','PTC':'PTC: 釘付け判定(DR が士気を超えたら PIN。混乱しているユニットには効果なし)'};
+function mgLeft(){var G=MCG,h='';
+  h+='<div class="rmIt" onclick="event.stopPropagation();MCG.step=1;mcDraw()"><span class="rmIc">'+((window.MF_RM_IC||{}).back||'←')+'</span><span class="rmTx"><span class="rmT"><span style="color:#ffd24a">'+(NATJ[G.nat]||G.nat)+'</span>: 部隊の MC・PTC</span><span class="rmSub">ユニットの選択に戻る</span></span></div>';
+  h+=it('<b class="mgNo">①</b> チェックの種類','射撃の結果(IFT)に出たチェック',['NMC','1MC','2MC','3MC','4MC','PTC'].map(function(t){return bt(G.type===t,t,"mfMgSet('type','"+t+"')",'min-width:46px');}).join(''),G.type?'':'mcNeed');
+  h+='<div class="rmNote">'+(G.type?esc(MG_EX[G.type]):'NMC=修正なし　1〜4MC=DR に +1〜+4　PTC=釘付け判定')+'</div>';
+  if(!G.ptc&&G.units.some(function(x){return x.kind==='mmc';}))h+=it('ELR',(scenarioElrForNat(G.nat)!=null?'シナリオから ':'シナリオに値がありません。')+'士気+ELR を超えて失敗するとクラス低下(A19.13)',[1,2,3,4,5].map(function(v){return bt(G.elr===v,String(v),"mfMgSet('elr',"+v+")",'min-width:36px');}).join(''),G.elr==null?'mcNeed':'');
+  h+=hd2('② チェックするユニット','指揮官が先(A10.2)');
+  mgOrder().forEach(function(i){var x=G.units[i],mm=mgMor(x),src=x.kind==='crew'?null:uSrc(x.nat,x.lbl),r=x.res;
+    var col=x.gone?'#ff6a5a':r?((r.st==='ok'||r.st==='ptcOk')?'#5fd08a':'#ffb35c'):'#8899aa';
+    h+='<div class="rmIt mgU'+(G.sel===x.pid?' on':'')+'" onclick="event.stopPropagation();mfMgSel('+x.pid+')">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(x.lbl)+'</span>')+'<span class="rmTx"><span class="rmT">'+esc(x.lbl)+' <small>士気 '+(mm!=null?mm:'?')+'</small> <i style="color:'+col+'">'+mgStTxt(x)+'</i></span><span class="rmSub">'+(r?'DR '+r.dr+(r.mod!==r.dr?'→'+r.mod:'')+': '+esc(MSTAT(r.st,r.ef).t)+(x.log&&x.log.length?'　'+esc(x.log.join('・')):''):G.type?esc(mgNeed(mgCheck(x).m).t):'')+'</span></span></div>';});
+  return h;}
+function mgRight(){var G=MCG,h='',x=G.units.filter(function(u){return u.pid===G.sel;})[0];
+  if(!x){var nx=mgOrder().map(function(i){return G.units[i];}).filter(function(u){return !u.res&&!u.gone;})[0];x=nx||G.units[0];G.sel=x&&x.pid;}
+  if(x){var C=mgCheck(x),N=G.type?mgNeed(C.m):null,src=x.kind==='crew'?null:uSrc(x.nat,x.lbl);
+    h+=it(esc(x.lbl)+' の状態',x.res?'判定済み':'判定の前の状態',bt(!x.brk&&!x.pin,'統制',"mfMgClr("+x.pid+")")+bt(!!x.brk,'混乱',"mfMgTog("+x.pid+",'brk')")+bt(!!x.pin,'PIN',"mfMgTog("+x.pid+",'pin')")+(x.kind==='smc'?bt(!!x.wnd,'負傷',"mfMgTog("+x.pid+",'wnd')"):''));
+    h+='<div class="rmIt ij2Sum">'+(src?'<img src="'+src+'" alt="" style="width:40px;height:40px;border-radius:4px;margin-right:8px">':'')+'<span class="rmTx"><span class="rmT">'+esc(x.lbl)+' 士気 <b>'+(C.m.mor!=null?C.m.mor:'?')+'</b>'+(N?' DRM <b>'+sg(N.d)+'</b>':'')+'</span><span class="rmSub">'+(N?esc(N.t):'① でチェックの種類を選んでください')+(C.ld.cmd!=null?'　指揮修正 '+sg(C.ld.cmd)+'('+esc(C.ld.by.lbl)+')':'')+'</span></span></div>';
+    if(x.res){var r=x.res,good=r.st==='ok'||r.st==='ptcOk';h+=okBox(good,MSTAT(r.st,r.ef).t,'DR '+r.dr+(r.mod!==r.dr?' '+sg(r.mod-r.dr)+'→'+r.mod:'')+(r.dr===2&&!G.ptc?'　原 DR2: Heat of Battle(A15.1)':'')+(x.log&&x.log.length?'　'+esc(x.log.join('・')):''));}
+    if(x.needWound)h+=it('負傷判定の dr',(x.wnd?'もう負傷中 +1・':'')+'4 以下で負傷、5 以上で除去(A17.11)',[1,2,3,4,5,6].map(function(v){return bt(false,String(v),"mfMgWound("+x.pid+","+v+")",'min-width:36px');}).join('')+bt(false,'🎲',"mfMgWound("+x.pid+")"));
+    if(!x.res&&!x.gone&&G.type){h+=it('<b class="mgNo">③</b> ダイス','DR(2 つのダイスの合計)を選ぶと判定',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfMgDr("+x.pid+","+v+")",'min-width:34px');}).join(''),'ij2W');
+      h+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfMgRoll('+x.pid+')"><span class="rmTx" style="align-items:center"><span class="rmT">🎲 '+esc(x.lbl)+' を振って判定</span></span></div>';}}
+  if(G.type&&G.units.some(function(u){return !u.res&&!u.gone;}))h+=it('','',bt(false,'🎲 残りを全部振る(指揮官から)',"mfMgAll()"));
+  G.ll.forEach(function(e,li){var T=mgLLTargets(e).concat(Object.keys(e.done).map(function(p){return G.units.filter(function(u){return u.pid===+p;})[0];}).filter(Boolean)).filter(function(v,i,a){return a.indexOf(v)===i;});
+    h+=hd2(e.k+'('+esc(e.lbl)+')',(e.k==='LLMC'?'指揮官が除去':'指揮官が混乱')+'・逆転した指揮修正 +'+e.rev+'・'+(e.k==='LLTC'?'失敗は PIN':'失敗は混乱'));
+    if(!T.length)h+='<div class="rmNote">対象なし(士気が低いユニットがいない)</div>';else if(!mgAllDone())h+='<div class="rmNote" style="color:#ffcc66">この攻撃の MC・PTC がすべて終わってから振ります(A10.2)</div>';
+    T.forEach(function(x){var d=e.done[x.pid];h+=it(esc(x.lbl)+' 士気 '+mgMor(x),d?'DR '+d.dr+'→'+d.mod+': '+MSTAT(d.st,d.ef).t+(d.log&&d.log.length?'　'+d.log.join('・'):''):'',d?'':bt(false,'🎲 振る',"mfMgLL("+li+","+x.pid+")"));});
+    if(T.some(function(x){return !e.done[x.pid];}))h+=it('','',bt(false,'🎲 '+e.k+' を全部振る',"mfMgLLAll("+li+")"));});
+  if(G.units.length&&G.units.every(function(u){return u.res||u.gone;}))h+=it('','',bt(false,'別の部隊を判定 →',"MCG.step=1;MCG.pick={};mcDraw()"));
+  var on=[];if(G.ldrImm)on.push('下線');if(G.comm)on.push('政治委員');if(G.ptype==='none')on.push('指揮官なし');
+  h+='<div class="rmIt ij2MoreS'+(MC.moreOpen?' on':'')+'" onclick="event.stopPropagation();mfMcMore()"><span class="rmTx"><span class="rmT">'+(MC.moreOpen?'▾':'▸')+' その他の修正'+(on.length?' <span style="color:#ffd24a">● '+esc(on.join('・'))+'</span>':'')+'</span><span class="rmSub">士気の下線・政治委員・乗員の +1・1 ユニットずつの判定(旧タブと同じ)</span></span></div>';
+  if(MC.moreOpen){h+=it('士気に下線','クラス低下しない(A19.13)',bt(!G.ldrImm,'なし',"mfMgSet('ldrImm',false)")+bt(!!G.ldrImm,'下線あり',"mfMgSet('ldrImm',true)"));
+    if(typeof ssrCommissarOn==='function'&&ssrCommissarOn())h+=it('政治委員(SSR)','同じヘクスのソ連歩兵は士気 +1',bt(!G.comm,'いない',"mfMgSet('comm',false)")+bt(!!G.comm,'いる',"mfMgSet('comm',true)"));
+    if(x&&x.kind==='crew')h+=it('乗員の +1','前に Stun した(D5.34)',bt(!x.stun,'なし',"mfMgTog("+x.pid+",'stun')")+bt(!!x.stun,'+1',"mfMgTog("+x.pid+",'stun')"));
+    h+=it('1 ユニットずつ','旧タブと同じ形(指揮修正・LLMC を手で選ぶ)',bt(false,'1 ユニットずつの判定へ',"MC.single=true;mcDraw()"));}
+  return h;}
+
+function mgAllDone(){return MCG.units.every(function(u){return u.res||u.gone;})&&!MCG.units.some(function(u){return u.needWound;});}
+window.MF_MG={g:function(){return MCG;},need:function(x){return mgNeed(mgCheck(x).m);},st:function(x){return mgStTxt(x);},tg:function(e){return mgLLTargets(e);}};
+function mgInit(nat){var ns=mcNats();nat=nat||(MCG&&MCG.nat)||S.mc.mcPickNat||ns[0];MCG={nat:nat,pick:{},step:1,elr:scenarioElrForNat(nat),type:null,ptc:false,units:[],ll:[],sel:null};}
 
 /* ---------- v541: スポット判定 歩兵・SW の射撃(旧射撃タブの設定を全部入れる。画面はスポット判定用に新しく作る) ----------
  * 選んだ値は IJ.fx に持つ(絶対値)。A→B・カウンター・フェイズが変わるたびに prep() で射撃の状態を作り直し、applyFx() で IJ.fx を入れる。
@@ -50971,7 +51100,7 @@ function infHTML(L,sa,sb,ph){var X=fx(),F=f(),g0=F.grps[0],R='',mode=F.fireMode;
   if(res){var dr=(F.rd||0)+(F.wd||0);
     R+='<div class="rmIt ij2Res"><span class="rmTx"><span class="rmT">結果: <b style="font-size:20px;color:#ffd24a">'+esc(res.aslSnap?'Snap Shot':'')+esc(res.ift.r||'効果なし')+'</b></span><span class="rmSub">'+esc(res.ift.col)+'列・DR '+F.rd+'+'+F.wd+'='+dr+(res.drm?' '+sg(res.drm):'')+'→'+res.mod+(res.cow?'・畏縮 '+res.cowerCols+'列左(A7.9)':'')+'　目標の MC・結果は盤上で(ライト版)</span></span></div>';
     R+=resDetail(F,res);
-    var mr=/^(NMC|[1-4]MC|PTC)$/.exec(String(res.ift.r||'').trim());if(mr&&sb&&!IJ.terrOnly)R+=it('目標の '+mr[1],'B のユニットで続けて判定','<button class="rmB on" style="width:auto" onclick="event.stopPropagation();mfIjClose();mfMcOpen({nat:\''+sb.nat+'\',type:\''+mr[1]+'\',ptc:'+(mr[1]==='PTC')+'})">'+mr[1]+' を判定 →</button>');}
+    var mr=/^(NMC|[1-4]MC|PTC)$/.exec(String(res.ift.r||'').trim());if(mr&&sb&&!IJ.terrOnly)R+=it('目標の '+mr[1],'B のユニットで続けて判定','<button class="rmB on" style="width:auto" onclick="event.stopPropagation();mfIjClose();mfMcOpen({nat:\''+sb.nat+'\',type:\''+mr[1]+'\',hex:\''+hexOfPx(S_LOS.pxB)+'\',ptc:'+(mr[1]==='PTC')+'})">'+mr[1]+' を判定 →</button>');}
   if(IJ.miss&&IJ.miss.length)R+='<div class="rmNote" style="color:#ffcc66">入力が足りません: '+esc(IJ.miss.join(' / '))+'</div>';
   var ch=F.rofChains&&F.rofActiveUid&&F.rofChains[F.rofActiveUid];
   if(ch)R+=chainHTML(F,ch);
