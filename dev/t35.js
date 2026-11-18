@@ -1,0 +1,20 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1180,height:820}});const E=[];p.on('pageerror',x=>E.push('PAGE '+String(x).slice(0,300)));
+await p.goto('file:///home/claude/aslfull-bv/index.html',{timeout:240000});await p.waitForTimeout(6000);
+await p.evaluate(()=>{SSEL('BV132');});await p.waitForTimeout(1500);await p.evaluate(()=>LosFitWidth());await p.waitForTimeout(800);
+const sh=async(n)=>{await p.waitForTimeout(400);await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui17-'+n+'.png'});};
+const st=()=>p.evaluate(()=>{var s=MF_OB.s();return JSON.stringify({c:s.contact,a:s.access,b:s.b,r:s.r,cv:s.cv,m:s.m&&{st:s.m.st,pos:s.m.pos,hex:s.m.hex,err:s.m.err},msg:s.msg});});
+await p.evaluate(()=>{mfHqOpen();mfHqGo('oba');});await sh('o1');console.log('init',await st());
+await p.evaluate(()=>{mfObCt(7);});console.log('contact',await st());
+await p.evaluate(()=>{mfOb('DRAW',0,'B');});console.log('draw',await st());
+await p.evaluate(()=>{mfOb('AR',0);});await sh('o2');console.log('ar',await st());
+// map pick: tap a hex center
+await p.evaluate(()=>{mfObPick();});await p.waitForTimeout(500);await sh('o3');
+await p.evaluate(()=>{MF_OBA_TAP(S_LOS.boards[0].id,5,4);});await p.waitForTimeout(500);console.log('pos',await st());
+await p.evaluate(()=>{mfObAcc(3);});console.log('acc miss',await st());
+await p.evaluate(()=>{mfObErr('dir',2);mfObErr('dst',3);});console.log('err',await st());await sh('o4');
+await p.evaluate(()=>{mfOb('NEXT',0);mfObCt(6);mfOb('SRACT',0,'convert');mfOb('CD',0,8);mfObAcc(1);});console.log('conv',await st());
+await p.evaluate(()=>{var s=MF_OB.s();s.m.pos={b:S_LOS.boards[0].id,c:5,r:4};s.m.hx={};mfObSet('i',0);});
+await p.waitForTimeout(1500);await p.evaluate(()=>{mfObIft('ir',1);mfObIft('iw',1);mfObIft('ir',4);mfObIft('iw',3);});await sh('o5');
+console.log('ffe',await p.evaluate(()=>{var m=MF_OB.s().m;return JSON.stringify({fp:ASLFULL_OBA_FP(MF_OB.s().cal),cal:MF_OB.s().cal,hx:Object.keys(m.hx||{}).map(k=>m.hx[k].res&&[k,m.hx[k].res.orig,m.hx[k].res.tem,m.hx[k].res.fin,m.hx[k].res.cell,m.hx[k].res.fp])});}));
+console.log('ERR',E.length,E.join('\n'));await b.close();})();
