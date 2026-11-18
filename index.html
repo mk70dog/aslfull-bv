@@ -30990,6 +30990,7 @@ function LosMapClick(ev){
   var canonTileLc=losRotateRawToTile(center.x,center.y,b.rot);
   var gx=Math.round(b.col*LOS_IMG_W+canonTileLc.x),gy=Math.round(b.row*LOS_IMG_H+canonTileLc.y);
   if(window.MF_PROBE){window.MF_PROBE({b:b,cr:cr,gx:gx,gy:gy});return;} /* v538: ヘクスメニューがタップ位置のヘクスを知るため */
+  if(window.MF_RT_TAP&&window.MF_RT_TAP(b.id,cr.col,cr.row))return; /* v548: マルチ判定の潰走 */
 
   losSaveMapScroll();
 
@@ -46359,7 +46360,8 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     return s.u.some(function(x){ return kind(x.t)!=='sw'&&x.n-(x.b||0)>0; }); }
   function adj(s,col,row){ try{ return losHexRangeColRow(s.col,s.row,col,row)===1; }catch(e){ return false; } }
   function hexCost(bd,col,row){ try{ if(battle()&&!playable(String(bd),col,row))return {cost:null,offmap:true}; }catch(eP){} /* v475: プレイできる範囲の外 */ if(blazeAt(bd,col,row))return {cost:null,blaze:true}; var c=hexCost0(bd,col,row); var ph=(S.turn&&S.turn.phase)||''; if(c&&c.cost!=null&&(ph==='mph'||ph==='rtph')&&smokeAt(bd,col,row,true))return {cost:c.cost+1,smoke:true}; return c; } /* v432: B25.4・A24.7 */
-  function hexCost0(bd,col,row){ try{ var g=losColRowToGlobalCanon(bd,col,row); var id=losHexIdentityAtGlobal(g.x,g.y); return losMoveCostForInfo(losHexTerrainInfoGlobal(id)); }catch(e){ return {cost:null,unknown:true}; } }
+  function hexCost0(bd,col,row){ if(TMEMO){ var mk='c'+bd+':'+col+':'+row; if(mk in TMEMO)return TMEMO[mk]; var mv=hexCost00(bd,col,row); TMEMO[mk]=mv; return mv; } return hexCost00(bd,col,row); }
+  function hexCost00(bd,col,row){ try{ var g=losColRowToGlobalCanon(bd,col,row); var id=losHexIdentityAtGlobal(g.x,g.y); return losMoveCostForInfo(losHexTerrainInfoGlobal(id)); }catch(e){ return {cost:null,unknown:true}; } }
   function maxMF(s){ var mmc=s.u.some(function(x){ return kind(x.t)==='mmc'&&x.n-(x.b||0)>0; }), smc=s.u.some(function(x){ return kind(x.t)==='smc'&&x.n-(x.b||0)>0; });
     var wnd=s.u.some(function(x){ return kind(x.t)==='smc'&&x.n-(x.b||0)>0&&(x.w||0)>0; });
     if(s.f&&s.f.berserk)return wnd?3:8; /* v481: A15.431 */
@@ -47102,7 +47104,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     RTLOS[k]=out; return out; }
   function rtOpen(h){ return /^(Open Ground|Dirt Road|Paved Road|PlowedFields)$/.test(hexInfoName(h))&&!smokeAt(h.bd,h.col,h.row); } /* A10.531: FFMO が付く開豁地 */
   function rtCover(h){ return /Woods|Building|MultipleWooden|MultipleStone/.test(hexInfoName(h)); } /* A10.51: 最寄りの森/建物 */
-  function rtRng(t){ var m=0; t.u.forEach(function(x){ if(x.n<=0)return; var k=kind(x.t), r=(k==='mmc')?unitFP(t.side,x.t).rng:(k==='sw'?((swFP(x.t)||{}).rng||0):0); if(r>m)m=r; }); return m; }
+  function rtRng(t){ if(t&&t.rng!=null)return t.rng; var m=0; t.u.forEach(function(x){ if(x.n<=0)return; var k=kind(x.t), r=(k==='mmc')?unitFP(t.side,x.t).rng:(k==='sw'?((swFP(x.t)||{}).rng||0):0); if(r>m)m=r; }); return m; }
   /* v530: A12.11・A10.533 見立て用。? のスタック(隠蔽・ダミー)の中身は見ず、その側のシナリオの OB でいちばん多い分隊(HS・乗員を除く)1 個とみなす(ダルマ選択 2026-10-26) */
   var TYPSQ={};
   function typSquad(side){ var k=sid()+'|'+side; if(TYPSQ[k])return TYPSQ[k]; var sc=scObj(), d=UNITS[side]||{}, mm=d.mmc||[], cnt={}, ord=[];
@@ -48996,7 +48998,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     return h+'</div>'; }
   /* ---------- v309: 士気・回復の判定と結果 ---------- */
   function ldrOf(s){ var best=null; s.u.forEach(function(x){ if(kind(x.t)!=='smc'||x.n-(x.b||0)<=0)return; var m=/^\d+-(\d+)$/.exec(x.t); if(!m)return; var v=-(+m[1])+((x.w>0&&x.w>=x.n)?1:0); if(best==null||v<best)best=v; }); return best; }
-  function hexInfoName(s){ try{ var g=losColRowToGlobalCanon(s.bd,s.col,s.row); var i=losHexTerrainInfoGlobal(losHexIdentityAtGlobal(g.x,g.y)); return (i&&i.name)||''; }catch(e){ return ''; } }
+  var TMEMO=null; /* v548: 潰走の計算の間だけ地形を覚える */
+  function hexInfoName(s){ if(TMEMO){ var mk='n'+s.bd+':'+s.col+':'+s.row; if(mk in TMEMO)return TMEMO[mk]; var mv=hexInfoName0(s); TMEMO[mk]=mv; return mv; } return hexInfoName0(s); }
+  function hexInfoName0(s){ try{ var g=losColRowToGlobalCanon(s.bd,s.col,s.row); var i=losHexTerrainInfoGlobal(losHexIdentityAtGlobal(g.x,g.y)); return (i&&i.name)||''; }catch(e){ return ''; } }
   function mcTypeFromShot(o,s){ var sh=o.shot, r0=shotRes(o); if(!sh||!r0||(sh.tg||[]).indexOf(s.id)<0)return null; var t=String(r0.ift.r||'');
     var m=/(\d)MC/.exec(t); if(m)return {type:m[1]+'MC',note:/K/.test(t)?'K の結果: 先に 1 つ損耗させてから MC':null};
     if(/NMC/.test(t))return {type:'NMC'}; if(/PTC/.test(t))return {ptc:true}; return null; }
@@ -49264,6 +49268,35 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   window.ASLFULL_SOLO_APPGO=appGo;
   window.ASLFULL_SOLO_APPSTART=function(){ ASLFULL_SOLO('start'); appGo(); var t=0; (function wait(){ var o=cur(); if(o&&o.stacks&&o.stacks.length&&battle()){ setTimeout(function(){ appScroll(0); },300); return; } if(++t<60)setTimeout(wait,200); })(); };
   (function(){ var oS=window.ASLFULL_SOLO; window.ASLFULL_SOLO=function(){ var r=oS.apply(this,arguments); if(APPPOP)setTimeout(appPopDraw,0); return r; }; })();
+  /* v548: マルチ判定の潰走(判定モード)から使う。地図に置いた潰走ユニット・敵マーカーで、対戦の潰走と同じ計算(rtPaths・rtIntd・rtExposed、A10.5〜A10.533)。
+   * enemies: [{bd,col,row,lv,rng,intd}] intd=false は阻止できない敵(CX・PIN・Melee・FP なし、A10.532)。戻り値: 行き先(番号)・匍匐・各経路の阻止のヘクス */
+  window.ASLFULL_RT_API={
+    name:function(h){ return hxName(h); }, terr:function(h){ return hexInfoName(h); }, cover:function(h){ return rtCover(h); }, open:function(h){ return rtOpen(h); },
+    plan:function(h0,EN,opt){ TMEMO={}; var oT=window.losHexTerrainInfoGlobal,TM={}; window.losHexTerrainInfoGlobal=function(id){ if(!id)return oT(id); var k=id.boardId+':'+id.col+':'+id.row; if(k in TM)return TM[k]; return TM[k]=oT(id); }; /* 地形は計算の間だけ覚える(LOS の計算が速くなる) */
+      try{ return planX(h0,EN,opt); }finally{ TMEMO=null; window.losHexTerrainInfoGlobal=oT; } } };
+  function planX(h0,EN,opt){ opt=opt||{}; RTST=null; RTLOS={}; h0={bd:h0.bd,col:h0.col,row:h0.row,lv:h0.lv||0};
+      var E=(EN||[]).map(function(e,i){ return {id:'mfE'+i,side:'x',bd:e.bd,col:e.col,row:e.row,lv:e.lv||0,u:[],f:{},rng:e.rng,mfIn:e.intd!==false}; });
+      var C={E:E,KU:E,IN:E.filter(function(t){ return t.mfIn; }),EX:E}, max=opt.max||6;
+      var adjU=E.some(function(t){ return adjL(h0,t)||sameL(h0,t); }), expo=rtExposed(C,h0), inBlz=blazeAt(h0.bd,h0.col,h0.row);
+      var paths=rtPaths(C,h0,max), d0=E.length?nearest(h0,E).d:0, cov0=rtCover(h0);
+      function endOk(n,crawl){ var e=n.end; if(C.KU.some(function(t){ return adjL(e,t)||sameL(e,t); }))return false; if(!crawl&&rtExposed(C,e))return false; return true; }
+      function ign(h){ if(E.length&&nearest(h,E).d<=d0)return true; if(cov0&&(hk(h)===hk(h0)||sameBld(h0,h)))return true; return false; } /* A10.51 EXC: 敵から遠くならない林・建物、始めた建物 */
+      function firstCov(n){ for(var i=1;i<n.path.length;i++)if(rtCover(n.path[i]))return n.path[i]; return null; }
+      var mfTo={}; paths.forEach(function(n){ var e=n.end; if(!rtCover(e)||locKey(e)===locKey(h0))return; var k=locKey(e); if(mfTo[k]==null||n.mf<mfTo[k])mfTo[k]=n.mf; });
+      var m0=null,m1=null; Object.keys(mfTo).forEach(function(k){ var p=k.split(':'), h={bd:p[0],col:+p[1],row:+p[2],lv:p[3]?+p[3].slice(1):0}, v=mfTo[k]; if(m0==null||v<m0)m0=v; if(!ign(h)&&(m1==null||v<m1))m1=v; });
+      var allow={}; Object.keys(mfTo).forEach(function(k){ var p=k.split(':'), h={bd:p[0],col:+p[1],row:+p[2],lv:p[3]?+p[3].slice(1):0}; if(mfTo[k]===m0||(!ign(h)&&mfTo[k]===m1))allow[k]=1; });
+      var best={}, any=Object.keys(allow).length>0;
+      paths.forEach(function(n){ var e=n.end; if(locKey(e)===locKey(h0)||!endOk(n,false))return; if(inBlz&&hk(e)===hk(h0))return;
+        if(any){ if(!rtCover(e))return; var f=firstCov(n); if(!f||!allow[locKey(f)])return; }
+        var k=locKey(e), b=best[k]; if(!b||n.ints<b.ints||(n.ints===b.ints&&n.mf<b.mf))best[k]=n; });
+      var D=Object.keys(best).map(function(k){ return best[k]; });
+      D.sort(function(a,b){ return a.mf-b.mf||a.ints-b.ints||(E.length?nearest(b.end,E).d-nearest(a.end,E).d:0); });
+      function pack(n,low){ var inter=[]; if(!low)n.path.forEach(function(h,i){ if(i>0&&rtIntd(C,h))inter.push(i); }); return {to:n.end,path:n.path,mf:n.mf,inter:inter,low:!!low,name:hxName(n.end)+(n.end.lv?'(レベル'+n.end.lv+')':''),cover:rtCover(n.end)}; }
+      var dests=D.map(function(n){ return pack(n,false); });
+      var crawl=[]; if(!E.some(function(t){ return sameL(h0,t); })){ var firsts={}; if(any)D.forEach(function(n){ firsts[locKey(n.path[1])]=1; });
+        paths.forEach(function(n){ if(n.path.length!==2||!endOk(n,true))return; if(any&&!firsts[locKey(n.end)])return; if(crawl.some(function(c){ return locKey(c.to)===locKey(n.end); }))return; crawl.push(pack(n,true)); }); } /* A10.52 */
+      var red={}; paths.forEach(function(n){ n.path.forEach(function(h,i){ if(i>0&&rtIntd(C,h))red[hk(h)]={bd:h.bd,col:h.col,row:h.row}; }); });
+      return {must:adjU||expo||inBlz,adj:adjU,expo:expo,blaze:inBlz,cover:any,dests:dests,crawl:crawl,red:Object.keys(red).map(function(k){ return red[k]; }),start:hxName(h0)}; }
 })();
 </script>
 
@@ -50143,9 +50176,9 @@ if(document.readyState==='complete')setTimeout(boot,0);else window.addEventListe
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmT{display:block}
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmT *,:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmSub *{display:inline!important}
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmSub{display:block;margin:1px 0 0;color:rgb(136,153,170);font-size:11px;line-height:13.75px}
-:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmBtns{display:flex;align-items:center;justify-content:flex-end;gap:4px}
-:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmB{width:38px;height:28px;margin:0;padding:4px 10px;background-color:rgb(20,23,29);border:0;border-radius:8px;box-shadow:rgb(14,14,12) 0 3px 0 0,rgba(0,0,0,.45) 0 4px 2px 0;color:rgb(232,238,244);font-family:AppFont,AppJP,monospace;font-size:14px;cursor:pointer;white-space:nowrap}
-:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmB[disabled]{opacity:.35;cursor:default}
+:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy,#mfRtB,#mfRtTip) .rmBtns{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy,#mfRtB,#mfRtTip) .rmB{width:38px;height:28px;margin:0;padding:4px 10px;background-color:rgb(20,23,29);border:0;border-radius:8px;box-shadow:rgb(14,14,12) 0 3px 0 0,rgba(0,0,0,.45) 0 4px 2px 0;color:rgb(232,238,244);font-family:AppFont,AppJP,monospace;font-size:14px;cursor:pointer;white-space:nowrap}
+:is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy,#mfRtB,#mfRtTip) .rmB[disabled]{opacity:.35;cursor:default}
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmVal{width:44px;text-align:center;color:rgb(207,227,245);font-size:13px}
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmNote{margin:4px 12px 6px;font-size:11px;line-height:1.5;color:#8899aa}
 :is(#mfRm,#mfIj2,#mfPk,#mfFc,#mfMc,#mfRy) .rmInfo{margin:4px 10px 6px;display:flex;flex-direction:column;gap:4px}
@@ -50374,6 +50407,16 @@ html.mf-ij #main>.mfLosRes{display:none!important}
 :is(#mfMc,#mfRy) .mcCh{display:inline-flex;align-items:center;gap:6px}
 :is(#mfMc,#mfRy) .mcCh img{width:40px;height:40px;border-radius:4px}
 :is(#mfMc,#mfRy) .mcCh b{color:#ffe9a3;font-weight:400;font-size:14px}
+#mfRtB{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9400;width:max-content;max-width:calc(100vw - 90px);background:#0e1620ee;border:1px solid #4a5566;border-radius:10px;padding:5px 10px;color:#dfe8f0;font-size:13px;line-height:1.7;box-shadow:0 6px 20px #000b}
+#mfRtB .rtRow,#mfRtTip .rtRow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0}
+#mfRtB .rmB,#mfRtTip .rmB{height:30px;padding:0 10px;font-size:12px}
+#mfRtB .rtEd{border-top:1px solid #334;padding-top:4px}
+#mfRtTip{position:fixed;right:76px;bottom:64px;z-index:9390;width:min(46vw,360px);max-height:60vh;overflow:auto;background:#0e1620e6;border:1px solid #ff5050aa;border-radius:10px;padding:8px 12px;color:#dfe8f0;font-size:12px;box-shadow:0 6px 20px #000b}
+#mfRtTip .rtTh{display:block;color:#ff8080;font-size:14px;margin:4px 0}
+#mfRtTip .rtTr{display:flex;gap:8px;align-items:flex-start;margin-top:4px}
+#mfRtTip .rtTr>span{flex:0 0 52px;text-align:center;border-radius:5px;padding:0 4px;font-weight:900;color:#111}
+#mfRtTip .rtTr>i{font-style:normal;line-height:1.5}
+#mfRtTip .rtLi{line-height:1.6}
 </style>
 <script id="mfIjUi">
 /* ASLFULL v539: スポット判定(③-1 歩兵・SW の射撃)とカウンター配置。見た目は SK3 v1351 の #nmIj・#btRm を実測。
@@ -51180,11 +51223,125 @@ function ryDraw(){var P=document.getElementById('mfRy');if(!RY.open||!document.d
   if(!P){P=document.createElement('div');P.id='mfRy';P.onclick=function(e){e.stopPropagation();};document.body.appendChild(P);}
   var sc=P.scrollTop,X='<div class="rmXW"><button class="rmX" title="閉じる" onclick="event.stopPropagation();mfRyClose()"><span>✕</span></button></div><div class="rmGrip"><span></span></div>';
   if(RY.mode==='rally'){if(!RYG)ryInit();P.innerHTML=X+(RYG.step===1?rySelHTML():'<div class="ij2Cols"><div>'+ryLeft()+'</div><div>'+ryRight()+'</div></div>');}
+  else if(RY.mode==='rout')P.innerHTML=X+rtPanel();
   else if(RY.mode==='repair')P.innerHTML=X+'<div class="ij2Cols"><div>'+rpLeft()+'</div><div>'+rpRight()+'</div></div>';
   else P.innerHTML=X+'<div class="ij2Cols"><div>'+rvLeft()+'</div><div>'+rvRight()+'</div></div>';
   P.style.maxHeight=(window.innerHeight-70)+'px';P.scrollTop=sc;}
 window.mfRyDraw=ryDraw;
 window.MF_RY={g:function(){return RYG;},need:function(x){return ryNeed(x);},opts:function(x){return ryOpts(x);},rp:function(){return RP;},rv:function(){return RV;}};
+/* ---------- v548: マルチ判定 潰走・阻止(SK3 の潰走マップと同じ流れ。ルールは ASL フル版 A10.5〜A10.533) ----------
+ * ① 地図で潰走するユニットのヘクスをタップ → ② 敵のヘクスをタップして置く(射程・阻止できるか) → 地図に行き先(番号)・匍匐・阻止のヘクスを出す
+ * → ③ 行き先をタップ → 阻止のパネル(阻止のヘクスごとに NMC。旧タブの INTERD_JUDGE と同じ: 原DR12 除去・＜士気 合格・＝士気 PIN・＞士気 損耗、同行の指揮官は失敗で除去)。
+ * 経路の計算は対戦の潰走と同じ(ASLFULL_RT_API = rtPaths・rtIntd・rtExposed)。降伏(A20)は旧タブ。 */
+var RT={on:false};
+function rtDraw(){try{losSaveMapScroll();}catch(e){}try{Draw();}catch(e){}try{losRestoreMapScroll();setTimeout(losRestoreMapScroll,0);}catch(e){}} /* 地図の位置を保ったまま描き直す */
+function rtNats(){return mcNats();}
+function rtEnemyNat(){var n=rtNats();return n.filter(function(x){return x!==RT.nat;})[0]||n[0];}
+function rtDefRng(){var n=rtEnemyNat(),L=[];try{L=scenarioMmcListForNat(n)||[];}catch(e){}var u=L.filter(function(x){return !x.hs&&!/乗員|HS/.test(x.lbl);})[0]||L[0];return (u&&u.rng)||4;}
+function rtKey(h){return h.bd+':'+h.col+':'+h.row;}
+function rtNm(h){var a=window.ASLFULL_RT_API;return h?(String(h.bd)+(a?a.name(h):''))+(h.lv?'(L'+h.lv+')':''):'';}
+function rtCalc(){RT.R=null;if(!RT.h0||!window.ASLFULL_RT_API)return;try{RT.R=ASLFULL_RT_API.plan(RT.h0,RT.E,{max:RT.wnd?3:6});}catch(e){RT.R=null;RT.err=String(e&&e.message||e);}
+  if(RT.pick&&RT.R){var k=RT.pick.low?'c':'d',L=RT.pick.low?RT.R.crawl:RT.R.dests,f=L.filter(function(P){return rtKey(P.to)===rtKey(RT.pick.to)&&(P.to.lv||0)===(RT.pick.to.lv||0);})[0];RT.pick=f||null;}else RT.pick=null;
+  rtIntReset();}
+function rtIntReset(){RT.I={res:[],hin:{}};}
+function rtRedraw(){rtCalc();rtDraw();rtBanner();rtTip();if(RY.open&&RY.mode==='rout')ryDraw();}
+window.mfRtStart=function(){RY.open=false;ryDraw();var ns=rtNats();RT={on:true,step:1,nat:RT.nat&&ns.indexOf(RT.nat)>=0?RT.nat:ns[0],h0:null,E:[],sel:null,R:null,pick:null,wnd:false,tip:'p',I:{res:[],hin:{}},u:null,ldr:null};
+  try{if(typeof S!=='undefined'&&S.tab!=='los')NAVTAB('los');}catch(e){}
+  try{Promise.all((S_LOS.boards||[]).map(function(b){return losLoadBoard(b.id);})).then(function(){if(RT.on&&RT.h0)rtRedraw();});}catch(e){}
+  rtDraw();rtBanner();rtTip();};
+window.mfRtEnd=function(back){RT.on=false;['mfRtB','mfRtTip'].forEach(function(i){var e=document.getElementById(i);if(e)e.remove();});if(RY.mode==='rout'){RY.open=false;ryDraw();}rtDraw();if(back)mfHqOpen();};
+window.mfRtReset=function(){var n=RT.nat;mfRtStart();RT.nat=n;rtBanner();};
+window.mfRtNat=function(){var ns=rtNats();if(ns.length<2)return;RT.nat=ns[(ns.indexOf(RT.nat)+1)%ns.length];RT.u=null;RT.ldr=null;rtIntReset();rtBanner();if(RY.open&&RY.mode==='rout')ryDraw();};
+window.MF_RT_TAP=function(bd,col,row){if(!RT.on)return false;var h={bd:String(bd),col:col,row:row,lv:0},k=rtKey(h);
+  if(RT.step===1){RT.h0=h;RT.step=2;rtRedraw();return true;}
+  if(RT.h0&&k===rtKey(RT.h0)){toast('潰走するユニットのヘクスです');return true;}
+  var R=RT.R;if(R){var P=R.dests.filter(function(x){return rtKey(x.to)===k;})[0]||R.crawl.filter(function(x){return rtKey(x.to)===k;})[0];
+    if(P&&!RT.E.some(function(e){return rtKey(e)===k;})){RT.pick=P;RT.sel=null;rtIntReset();rtDraw();rtBanner();return true;}}
+  var i=-1;RT.E.forEach(function(e,j){if(rtKey(e)===k)i=j;});
+  if(i>=0){RT.sel=RT.sel===i?null:i;rtDraw();rtBanner();return true;}
+  RT.E.push({bd:h.bd,col:col,row:row,lv:0,rng:rtDefRng(),intd:true});RT.sel=RT.E.length-1;rtRedraw();return true;};
+window.mfRtE=function(k,v){var e=RT.E[RT.sel];if(!e)return;if(k==='del'){RT.E.splice(RT.sel,1);RT.sel=null;}else if(k==='rng')e.rng=Math.max(0,Math.min(16,e.rng+v));else if(k==='lv')e.lv=v;else e[k]=v;rtRedraw();};
+window.mfRtH0=function(k,v){if(!RT.h0)return;if(k==='lv')RT.h0.lv=v;else RT[k]=v;rtRedraw();};
+window.mfRtTipTab=function(t){RT.tip=t;rtTip();};
+window.mfRtInt=function(){RY.open=true;RY.mode='rout';ryDraw();};
+/* ---- 地図の重ね描き ---- */
+function rtPt(h,dl){var g=losColRowToGlobalCanon(h.bd,h.col,h.row);if(!g)return null;return losCanonicalToDisplay(g.x,g.y,dl);}
+function rtPoly(h,dl,st){var d=rtPt(h,dl);if(!d)return '';return '<polygon points="'+losHexPolygonPoints(d.x,d.y,losBoardRotById(h.bd))+'" '+st+'/>';}
+function rtTxt(d,t,col,sz,bg,r){var rot=-(S_LOS.viewRot||0);return '<g transform="rotate('+rot+' '+d.x+' '+d.y+')">'+(bg?'<circle cx="'+d.x+'" cy="'+d.y+'" r="'+r+'" fill="'+bg+'" stroke="#fff" stroke-width="3"/>':'')+'<text x="'+d.x+'" y="'+(d.y+sz*0.36)+'" text-anchor="middle" font-size="'+sz+'" font-weight="900" fill="'+col+'" style="font-family:sans-serif">'+t+'</text></g>';}
+function rtSVG(dl){if(!RT.on)return '';var h='',W=LOS_GEO_HEX_W,R=RT.R;
+  if(R){R.red.forEach(function(x){h+=rtPoly(x,dl,'fill="rgba(255,70,50,0.28)" stroke="#ff5040" stroke-width="2"');});
+    R.dests.forEach(function(P){h+=rtPoly(P.to,dl,'fill="rgba(80,210,110,0.30)" stroke="#5fe08a" stroke-width="3"');});
+    if(RT.pick){var pts=[RT.h0].concat(RT.pick.path.slice(1)).map(function(x){var d=rtPt(x,dl);return d?d.x+','+d.y:'';}).join(' ');
+      RT.pick.inter.forEach(function(i){h+=rtPoly(RT.pick.path[i],dl,'fill="rgba(255,40,40,0.35)" stroke="#ff2020" stroke-width="6"');});
+      h+=rtPoly(RT.pick.to,dl,'fill="none" stroke="#fff" stroke-width="7"');
+      h+='<polyline points="'+pts+'" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><polyline points="'+pts+'" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>';}
+    R.dests.forEach(function(P,i){var d=rtPt(P.to,dl);if(d)h+=rtTxt(d,String(i+1),'#fff',W*0.42,'#2a9a4a',W*0.3);});
+    R.crawl.forEach(function(P){if(R.dests.some(function(x){return rtKey(x.to)===rtKey(P.to);}))return;var d=rtPt(P.to,dl);if(d)h+=rtTxt(d,'匍','#fff',W*0.34,'#24507a',W*0.27);});}
+  RT.E.forEach(function(e,i){h+=rtPoly(e,dl,'fill="rgba(255,150,30,0.55)" stroke="'+(RT.sel===i?'#fff':'#ff8a1a')+'" stroke-width="'+(RT.sel===i?7:4)+'"');var d=rtPt(e,dl);if(d)h+=rtTxt(d,'敵 '+e.rng+(e.intd?'':'×'),'#111',W*0.3,null,0);});
+  if(RT.h0){h+=rtPoly(RT.h0,dl,'fill="rgba(255,210,74,0.25)" stroke="#ffd24a" stroke-width="7"');var d0=rtPt(RT.h0,dl);if(d0)h+=rtTxt(d0,'潰走','#111',W*0.3,'#ffd24a',W*0.32);}
+  return h;}
+var oW2=window.losWreckHexOverlaySVG;if(typeof oW2==='function'&&!oW2.__rt){window.losWreckHexOverlaySVG=function(dl){var h=oW2.apply(this,arguments);try{h+=rtSVG(dl);}catch(e){}return h;};window.losWreckHexOverlaySVG.__rt=1;}
+/* ---- 帯(上)と注意(右下) ---- */
+function rtB(t,f,on,ex){return '<button class="rmB'+(on?' on':'')+'" style="width:auto;'+(ex||'')+'" onclick="event.stopPropagation();'+f+'">'+t+'</button>';}
+function rtBanner(){var b=document.getElementById('mfRtB');if(!RT.on){if(b)b.remove();return;}if(!b){b=document.createElement('div');b.id='mfRtB';b.onclick=function(e){e.stopPropagation();};document.body.appendChild(b);}
+  var nat='<button class="rmB" style="width:auto;background:'+((UNITS[RT.nat]&&UNITS[RT.nat].col)||'#e0a830')+';color:#000;font-weight:900" onclick="event.stopPropagation();mfRtNat()">'+(NATJ[RT.nat]||RT.nat)+' ⇄</button>',h='',R=RT.R;
+  if(RT.step===1)h='<div class="rtRow">'+nat+'<b style="flex:1;color:#ffd24a">潰走・阻止 ① 潰走するユニットのヘクスをタップ</b>'+rtB('中止','mfRtEnd(1)')+'</div>';
+  else{h='<div class="rtRow">'+nat+'<b style="color:#ffd24a">潰走 '+esc(rtNm(RT.h0))+'</b><span style="color:#8899aa;font-size:11px">'+esc(ASLFULL_RT_API.terr(RT.h0)||'')+'</span><span style="flex:1"></span>'
+      +rtB('⚠ 阻止のMC','mfRtInt()',false,RT.pick&&RT.pick.inter.length?'color:#ff8a70':'')+rtB('やり直し','mfRtReset()')+rtB('終了','mfRtEnd(1)')+'</div>';
+    h+='<div class="rtRow">'+rtB('地上','mfRtH0(\'lv\',0)',!RT.h0.lv)+rtB('上の階','mfRtH0(\'lv\',1)',RT.h0.lv===1)+rtB('負傷(3MF)','mfRtH0(\'wnd\','+(!RT.wnd)+')',RT.wnd)+'<span style="font-size:11px;color:#8899aa">敵のヘクスをタップで置く(射程は '+(NATJ[rtEnemyNat()]||'')+'の分隊)。緑の番号=行き先、匍=匍匐、赤=阻止される開豁地</span></div>';
+    if(RT.sel!=null&&RT.E[RT.sel]){var e=RT.E[RT.sel];h+='<div class="rtRow rtEd"><b style="color:#ff9a3a">敵 '+esc(rtNm(e))+'</b>'+rtB('−','mfRtE(\'rng\',-1)')+'<span>射程 <b>'+e.rng+'</b></span>'+rtB('＋','mfRtE(\'rng\',1)')
+      +rtB('阻止できる','mfRtE(\'intd\',true)',e.intd)+rtB('阻止できない','mfRtE(\'intd\',false)',!e.intd)+rtB('地上','mfRtE(\'lv\',0)',!e.lv)+rtB('上の階','mfRtE(\'lv\',1)',e.lv===1)+rtB('消す','mfRtE(\'del\')',false,'color:#ff8a70')+'</div>';}
+    if(R){var t=[];if(R.must)t.push('<b style="color:#ff8a70">潰走しなければならない</b>('+(R.adj?'敵に隣接':R.expo?'開豁地で敵の LOS・Normal Range':'Blaze')+')');else t.push('DM のときだけ潰走(A10.62)');
+      if(RT.pick)t.push('<b style="color:#5fe08a">'+(RT.pick.low?'匍匐 ':'行き先 ')+esc(rtNm(RT.pick.to))+'</b> '+RT.pick.mf+'MF・'+(RT.pick.low?'阻止なし':RT.pick.inter.length?'<b style="color:#ff8a70">阻止 '+RT.pick.inter.length+' か所</b>':'阻止なし'));
+      else t.push(R.dests.length?'行き先は '+R.dests.length+' か所'+(R.cover?'(林・建物)':'(林・建物に届かない)')+'。番号をタップで経路':'<b style="color:#ff8a70">行ける所がない: 潰走できなければ除去か降伏(A10.5・A20.21)</b>');
+      h+='<div class="rtRow" style="font-size:12px">'+t.join('　')+'</div>';}
+    else h+='<div class="rtRow" style="font-size:12px;color:#8899aa">計算中…(地図の地形を読み込んでいます)</div>';}
+  b.innerHTML=h;}
+function rtTip(){var p=document.getElementById('mfRtTip');if(!RT.on||RT.step===1){if(p)p.remove();return;}if(!p){p=document.createElement('div');p.id='mfRtTip';p.onclick=function(e){e.stopPropagation();};document.body.appendChild(p);}
+  var row=function(tag,col,t){return '<div class="rtTr"><span style="background:'+col+'">'+tag+'</span><i>'+t+'</i></div>';};
+  var h='<div class="rtRow">'+rtB('阻止されたら','mfRtTipTab(\'p\')',RT.tip==='p')+rtB('阻止できる敵','mfRtTipTab(\'u\')',RT.tip==='u')+rtB('注意','mfRtTipTab(\'n\')',RT.tip==='n')+'</div>';
+  if(RT.tip==='u')h+='<b class="rtTh">⚠ 阻止できる敵(A10.532)</b>'+row('○','#6fe08a','統制の敵。LOS が通り、Normal Range(16 まで)の中')+row('×','#ff6060','CX・PIN・混乱・Melee 中・FP のない指揮官。妨害・TEM のある所は阻止なし');
+  else if(RT.tip==='n')h+='<b class="rtTh">⚠ 注意</b><div class="rtLi">・DM のない混乱ユニットは潰走しなくてよい(敵に隣接・開豁地で敵の LOS と Normal Range なら必ず DM で潰走)<br>・敵から遠くならない林・建物、始めた建物の別のヘクスは無視してよい(A10.51)<br>・林・建物に入ったら、続けて林・建物に入るときだけ進める<br>・匍匐は 1 Location・阻止なし(A10.52)<br>・行けなければ除去か降伏(A20.21、降伏は旧タブ)</div>';
+  else h+='<b class="rtTh">⚠ 阻止されたら NMC(混乱状態の士気)</b>'+row('合格','#6fe08a','DR が士気より小さい: 潰走を続ける')+row('PIN','#ffd040','DR が士気と同じ: そこで止まる')+row('失敗','#ff6060','損耗(HS は潰走を続ける)・同行の指揮官は除去')+row('12','#ff6060','原 DR12: 除去');
+  p.innerHTML=h;}
+window.MF_RT={s:function(){return RT;},R:function(){return RT.R;}};
+/* ---- 阻止のパネル(#mfRy の中) ---- */
+function rtUnits(){var nat=RT.nat,D=UNITS[nat]||{mmc:[],smc:[]},all=[];try{all=scenarioMmcListForNat(nat).concat(scenarioSmcListForNat(nat).map(function(u){return {lbl:u.lbl,mor:u.mor,bm:u.bm,smc:true,cmd:u.cmd};}));}catch(e){}return all;}
+function rtU(lbl){return rtUnits().filter(function(u){return u.lbl===lbl;})[0]||null;}
+window.mfRtSet=function(k,v){RT[k]=v;rtIntReset();ryDraw();};
+window.mfRtHin=function(i){RT.I.hin[i]=!RT.I.hin[i];RT.I.res=[];ryDraw();};
+window.mfRtDr=function(k,dr){var I=RT.I,P=RT.pick;if(!P)return;var L=rtLegs();if(I.res[k]||(k>0&&!I.res[k-1]))return;var prev=k>0?I.res[k-1]:null;if(prev&&prev.stop)return;
+  if(!dr)dr=2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var lbl=prev?prev.after:RT.u,u=rtU(lbl);if(!u)return;var smc=!!u.smc,bm=(u.bm!=null?u.bm:u.mor)-(smc&&RT.uWnd?1:0);
+  var L0=RT.ldr&&!(prev&&prev.ldrGone)?rtU(RT.ldr):null,ld=L0?((L0.cmd||0)+(RT.ldrWnd?1:0)):0,mod=dr+ld,r={dr:dr,mod:mod,ld:ld,bm:bm,ldrGone:prev&&prev.ldrGone};
+  if(dr===12){r.st='elim';r.txt='原 DR12: 除去';r.after=null;r.stop=true;}
+  else if(mod<bm){r.st='ok';r.txt='合格: 潰走を続ける';r.after=lbl;}
+  else if(mod===bm){r.st='pin';r.txt='PIN: このヘクスで止まる';r.after=lbl;r.stop=true;}
+  else{r.st='cas';if(smc){r.txt='失敗: 損耗(負傷判定)';r.after=lbl;r.stop=true;}else{var to=(CASUAL_MAP[RT.nat]||{})[lbl];r.after=to||null;r.txt='失敗: 損耗 '+(to?lbl+' → '+to+'(潰走を続ける)':'(除去)');if(!to)r.stop=true;}}
+  if(r.st!=='ok'&&r.st!=='pin'&&L0&&!r.ldrGone){r.txt+='・同行の指揮官 '+L0.lbl+' 除去';r.ldrGone=true;}
+  I.res[k]=r;try{logResult(function(){return {tabLbl:T('阻止NMC'),text:lbl+' '+L[k].nm+' DR'+dr+(ld?sg(ld)+'='+mod:'')+' 士気'+bm+' : '+r.txt,color:r.st==='ok'?'#00aa55':(r.st==='pin'?'#c8a032':'#cc3333'),detail:null};});}catch(e){}ryDraw();};
+function rtLegs(){var P=RT.pick;if(!P||P.low)return [];return P.inter.filter(function(i){return !RT.I.hin[i];}).map(function(i){return {i:i,h:P.path[i],nm:rtNm(P.path[i])};});}
+function rtPanel(){var P=RT.pick,h='',I=RT.I;
+  h+=ryHead('<span style="color:#ff8a70">⚠ 阻止の NMC</span>','潰走のマップに戻る',"RY.open=false;ryDraw()");
+  if(!P){h+='<div class="rmNote">先に地図で行き先(緑の番号)か匍匐を選んでください</div>';return '<div>'+h+'</div>';}
+  h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">'+esc(rtNm(RT.h0))+' → '+P.path.slice(1).map(rtNm).map(esc).join(' → ')+'</span><span class="rmSub">'+P.mf+' MF・'+(P.low?'匍匐(阻止なし、A10.52)':'阻止のヘクス '+P.inter.length+' か所')+'</span></span></div>';
+  var L=rtLegs();
+  if(!P.low&&P.inter.length){h+=hd2('LOS の妨害・TEM','あれば阻止されない(A10.531)');h+='<div class="rmBtns" style="flex-wrap:wrap;justify-content:flex-start;margin:0 12px 6px">'+P.inter.map(function(i){return bt(!!I.hin[i],esc(rtNm(P.path[i]))+(I.hin[i]?' 妨害あり':''),"mfRtHin("+i+")");}).join('')+'</div>';}
+  var units=rtUnits(),nat=RT.nat;
+  h+=hd2('潰走するユニット','混乱状態の士気で判定');h+='<div class="mcG">'+units.map(function(u){return '<button class="rmB mcT'+(RT.u===u.lbl?' on':'')+'" onclick="event.stopPropagation();mfRtSet(\'u\',\''+u.lbl.replace(/'/g,"\\'")+'\')">'+(uSrc(nat,u.lbl)?'<img src="'+uSrc(nat,u.lbl)+'" alt="">':'<span class="mcTx">'+esc(u.lbl)+'</span>')+'<span class="mcL">'+esc(u.lbl)+' 混乱士気'+(u.bm!=null?u.bm:u.mor)+'</span></button>';}).join('')+'</div>';
+  var cu=rtU(RT.u);if(cu&&cu.smc)h+=it('負傷中','士気 −1',bt(!RT.uWnd,'いいえ',"mfRtSet('uWnd',false)")+bt(!!RT.uWnd,'はい',"mfRtSet('uWnd',true)"));
+  var LL=units.filter(function(u){return u.smc&&u.lbl!==RT.u;});
+  if(LL.length){h+=it('同行する指揮官','RtPh の初めにスタックしていた統制の指揮官(A10.711)。指揮修正を足す。失敗で除去',bt(!RT.ldr,'なし',"mfRtSet('ldr',null)")+LL.map(function(u){return bt(RT.ldr===u.lbl,esc(u.lbl),"mfRtSet('ldr','"+u.lbl.replace(/'/g,"\\'")+"')");}).join(''));
+    if(RT.ldr)h+=it('その指揮官','負傷中は指揮修正 +1',bt(!RT.ldrWnd,'負傷なし',"mfRtSet('ldrWnd',false)")+bt(!!RT.ldrWnd,'負傷中',"mfRtSet('ldrWnd',true)"));}
+  var left='<div>'+h+'</div>';h=hd2('阻止のヘクスごとに NMC','1 ヘクス 1 回(A10.532)');
+  if(P.low||!L.length)h+=okBox(true,'阻止なし',P.low?'匍匐は阻止されない(A10.52)':'この経路で阻止の NMC はありません');
+  else if(!RT.u)h+='<div class="rmNote" style="color:#ffcc66">潰走するユニットを選んでください</div>';
+  else L.forEach(function(g,k){var r=I.res[k],prev=k?I.res[k-1]:null,lock=k>0&&(!prev||prev.stop);var lbl=prev?prev.after:RT.u,u=rtU(lbl),bm=u?(u.bm!=null?u.bm:u.mor)-(u.smc&&RT.uWnd?1:0):null,L0=RT.ldr&&!(prev&&prev.ldrGone)?rtU(RT.ldr):null,ld=L0?(L0.cmd||0)+(RT.ldrWnd?1:0):0;
+    h+=hd2('阻止 '+(k+1)+': '+esc(g.nm),lbl?esc(lbl)+' 混乱士気 '+bm+(ld?'・指揮 '+sg(ld):''):'');
+    if(r)h+=okBox(r.st==='ok',esc(r.txt),'DR '+r.dr+(r.ld?' '+sg(r.ld)+'→'+r.mod:'')+'　士気 '+r.bm);
+    else if(lock)h+='<div class="rmNote">'+(prev&&prev.stop?'前の阻止で止まった(除去)ので不要':'前の阻止を先に')+'</div>';
+    else if(bm!=null){var okMax=bm-1-ld;h+=it('DR','緑=合格・黄=PIN',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){var m=v+ld,c=v===12?'color:#ff8a70':m<bm?'color:#5fd08a':m===bm?'color:#ffd24a':'';return bt(false,String(v),"mfRtDr("+k+","+v+")",'min-width:34px;'+c);}).join('')+bt(false,'🎲',"mfRtDr("+k+",0)",'min-width:34px'),'ij2W');}});
+  if(I.res.length)h+=it('','',bt(false,'やり直し',"RT.I.res=[];ryDraw()"));
+  return '<div class="ij2Cols">'+left+'<div>'+h+'</div></div>';}
 
 /* ---------- v541: スポット判定 歩兵・SW の射撃(旧射撃タブの設定を全部入れる。画面はスポット判定用に新しく作る) ----------
  * 選んだ値は IJ.fx に持つ(絶対値)。A→B・カウンター・フェイズが変わるたびに prep() で射撃の状態を作り直し、applyFx() で IJ.fx を入れる。
@@ -51709,7 +51866,7 @@ var SECS=[
   ['回復','回復',"mfHqGo('rally')",''],
   ['修理','修理',"mfHqGo('repair')",''],
   ['回収','修理',"mfHqGo('recover')",'new'],
-  ['潰走・阻止','潰走・阻止',"mfHqGo('rout')",'old'],
+  ['潰走・阻止','潰走・阻止',"mfHqGo('rout')",''],
   ['MC・PTC','MC・PTC',"mfHqGo('mc')",'old'],
   ['白兵戦','白兵戦',"mfHqGo('aphcc')",'old'],
   ['PAATC(歩兵が車両へ)','PAATC（歩兵が車両へ）',"mfHqGo('aphcc')",'old']]],
@@ -51730,6 +51887,7 @@ window.mfHqGo=function(k){mfHqClose();
   if(k==='resid'){mfIjOpen();try{if(window.MF_IJ){MF_IJ.fx=MF_IJ.fx||{};}}catch(e){}return;}
   if(k==='mc'){mfMcOpen();return;}
   if(k==='rally'||k==='repair'||k==='recover'){mfRyOpen(k);return;}
+  if(k==='rout'){mfRtStart();return;}
   mfOld(k);};
 })();
 </script>
