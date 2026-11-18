@@ -1,0 +1,20 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1180,height:820}});const E=[];p.on('pageerror',x=>E.push('PAGE '+String(x).slice(0,300)));
+await p.goto('file:///home/claude/aslfull-bv/index.html',{timeout:240000});await p.waitForTimeout(6000);
+await p.evaluate(()=>{SSEL('BV130');});await p.waitForTimeout(1500);await p.evaluate(()=>LosFitWidth());await p.waitForTimeout(800);
+await p.click('#mfTools button[title="マルチ判定"]');await p.waitForTimeout(500);
+await p.evaluate(()=>{[...document.querySelectorAll('#mfHq .hqT')].find(x=>/MC・PTC/.test(x.textContent)).click();});await p.waitForTimeout(800);
+console.log(await p.evaluate(()=>JSON.stringify({nat:S.mc.mcPickNat,mode:S.mc.mode,elr:S.mc.elr,av:Object.keys(MF_IJ?{}:{}).length})));
+await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui11-1.png'});
+await p.evaluate(()=>{mfMcDo('MC_SetPickNat','GER');var l=scenarioMmcListForNat('GER')[0].lbl;mfMcDo('MC_PickUnit','mmc',l);mfMcDo('MS','type','2MC');mfMcDo('MS','ldr',-1);mfMcDo('MS','ldrPresent',true);if(S.mc.elr==null)mfMcDo('MS','elr',3);mfMcDie('rd',4);mfMcDie('wd',5);});await p.waitForTimeout(500);
+console.log(await p.evaluate(()=>JSON.stringify({lbl:S.mc.mcPickLabel,mor:S.mc.mor,elr:S.mc.elr,res:S.mc.res,miss:null})));
+await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui11-2.png'});
+await p.evaluate(()=>{mfMcDie('rd',6);mfMcDie('wd',6);});await p.waitForTimeout(400);
+console.log(await p.evaluate(()=>JSON.stringify(S.mc.res)));
+await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui11-3.png'});
+// SMC 12 → wound
+await p.evaluate(()=>{var l=scenarioSmcListForNat('GER')[0].lbl;mfMcDo('MC_PickUnit','smc',l);mfMcDie('rd',6);mfMcDie('wd',6);mfMcDo('MWdR',3);});await p.waitForTimeout(400);
+console.log(await p.evaluate(()=>JSON.stringify({res:S.mc.res,ll:S.mc.llStep,pend:S.mc.llPendingLeader})));
+await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui11-4.png'});
+await p.evaluate(()=>{mfMcMore();});await p.waitForTimeout(300);await p.evaluate(()=>{var e=document.getElementById('mfMc');e.scrollTop=e.scrollHeight;});await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui11-5.png'});
+console.log('ERR',E.length,E.join('\n'));await b.close();})();
