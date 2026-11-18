@@ -50038,7 +50038,7 @@ function toolsHTML(){
   var h='';
   h+=tb('nb mfMenuB','メインメニュー',"mfMenu(this)",IC.tb['編成・他のタブ']);
   h+='<div class="mfGrp">';
-  h+=tb('fa g dis','マルチ判定',"mfLater(5,'マルチ判定ボード')",IC.tb['マルチ判定']);
+  h+=tb('fa g','マルチ判定',"mfHqOpen()",IC.tb['マルチ判定']);
   h+=tb('fa g dis','部隊の準備',"mfLater(2,'部隊の準備')",IC.tb['部隊の準備'],' style="flex-direction:column"');
   h+=tb('fa g'+(undoOk?'':' dis'),'直前の操作を中止',"if(UNDO_STACK.length){UndoLast();}",IC.tb['直前の操作を中止'],' style="flex-direction:column;gap:1px"');
   h+=tb('fa g dis','やり直す',"toast_none()",IC.tb['やり直す'],' style="flex-direction:column;gap:1px"');
@@ -51201,6 +51201,66 @@ window.mfSync=function(){var r=_sync.apply(this,arguments);try{var k=abKey(),R=S
   if(!k)IJ.closedKey=null; /* A→B を消したら、同じ組をもう一度選んだ時も開く */
   if(IJ.open&&k!==IJ.lastKey){if(!k){IJ.open=false;}else{IJ.lastKey=k;IJ.prepKey=null;IJ.dirty=true;}}
   if(IJ.open)draw();else draw();}catch(e){window.MF_IJ_ERR=String(e&&e.stack||e);}return r;};
+})();
+</script>
+<style id="mfHqCss">
+#mfHq{position:fixed;z-index:9450;left:8px;top:64px;width:min(480px,94vw);max-height:calc(100vh - 140px);overflow:auto;background:radial-gradient(circle,rgba(0,0,0,.667) 1px,transparent 1.35px) 0 0/4px 4px,radial-gradient(circle at 50% 70%,rgba(255,255,255,.08) 1px,transparent 1.4px) 0 0/4px 4px,rgb(28,31,39);border:1px solid rgb(74,85,102);border-radius:14px;padding:10px;box-shadow:rgba(0,0,0,.867) 0 10px 36px;font-family:AppFont,AppJP,monospace;color:rgb(232,238,244)}
+#mfHq .hqH{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+#mfHq .hqH b{font-size:17px;color:#e8eef4;font-weight:700}
+#mfHq .hqX{width:34px;height:34px;padding:0;margin:0;border-radius:17px;background:#14171d;border:1px solid #4a5566;box-shadow:0 3px 0 #0e0e0c,0 4px 2px rgba(0,0,0,.45);display:inline-flex;align-items:center;justify-content:center;color:#e8eef4;font-size:18px;cursor:pointer}
+#mfHq .hqS{display:flex;align-items:baseline;gap:8px;margin:10px 0 4px}
+#mfHq .hqS b{font-size:13px;color:#9fb2c8}
+#mfHq .hqS span{font-size:11px;color:#6f8090}
+#mfHq .hqG{display:grid;gap:6px}
+#mfHq .hqT{position:relative;margin:0;height:54px;padding:2px 3px;line-height:1.15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;font-size:12px;font-family:inherit;color:rgb(232,238,244);background:rgb(20,23,29);border:0;border-radius:8px;box-shadow:rgb(14,14,12) 0 3px 0 0,rgba(0,0,0,.45) 0 4px 2px 0,rgb(42,47,58) 0 0 0 .5px;cursor:pointer}
+#mfHq .hqT.two{font-size:10.5px}
+#mfHq .hqT.two .hqI{flex:0 0 20px;height:20px;border-radius:7px}
+#mfHq .hqT:active{transform:translateY(2px);box-shadow:rgb(14,14,12) 0 1px 0 0,rgb(42,47,58) 0 0 0 .5px}
+#mfHq .hqI{flex:0 0 26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;border:1px solid #4a5566;background:#1b222c;color:#e6ecf2}
+#mfHq .hqT .hqNew{position:absolute;top:3px;right:4px;font-size:9px;line-height:1;padding:2px 4px;border-radius:6px;background:#3a2f12;color:#ffd24a;border:1px solid #6a5420}
+#mfHq .hqT .hqOld{position:absolute;top:3px;right:4px;font-size:9px;line-height:1;padding:2px 4px;border-radius:6px;background:#1b222c;color:#8899aa;border:1px solid #4a5566}
+</style>
+<script id="mfHqUi">
+/* ---------- v545: マルチ判定(判定ボード)。SK3 v1351 の nmHq と同じ形(実測値)。中身はフル版の判定につなぐ ---------- */
+(function(){
+var IC={"射撃 A→B": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15l7-2.4 3-.3 1.6-1.7H21v2h-8.4l-1.1 1.3H9l-.9 1.8 1.4 3.6-2.2.8-1.5-3.6L3 17z\" fill=\"currentColor\" stroke=\"none\"></path><path d=\"M19 7l.8 2.2 2.2-.8-1.4 1.9 1.9 1.4-2.3-.1.3 2.3-1.5-1.8-1.5 1.8.3-2.3-2.3.1 1.9-1.4-1.4-1.9 2.2.8z\" fill=\"currentColor\" stroke=\"none\"></path></svg>", "砲撃": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15l7-2.4 3-.3 1.6-1.7H21v2h-8.4l-1.1 1.3H9l-.9 1.8 1.4 3.6-2.2.8-1.5-3.6L3 17z\" fill=\"currentColor\" stroke=\"none\"></path><path d=\"M19 7l.8 2.2 2.2-.8-1.4 1.9 1.9 1.4-2.3-.1.3 2.3-1.5-1.8-1.5 1.8.3-2.3-2.3.1 1.9-1.4-1.4-1.9 2.2.8z\" fill=\"currentColor\" stroke=\"none\"></path></svg>", "車両 AFV": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"13\" width=\"18\" height=\"5\" rx=\"2.5\"></rect><path d=\"M6 13l1.6-4h7l1.4 4\"></path><path d=\"M14.6 10.5H22\"></path></svg>", "軽対戦車兵器": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15l7-2.4 3-.3 1.6-1.7H21v2h-8.4l-1.1 1.3H9l-.9 1.8 1.4 3.6-2.2.8-1.5-3.6L3 17z\" fill=\"currentColor\" stroke=\"none\"></path><path d=\"M19 7l.8 2.2 2.2-.8-1.4 1.9 1.9 1.4-2.3-.1.3 2.3-1.5-1.8-1.5 1.8.3-2.3-2.3.1 1.9-1.4-1.4-1.9 2.2.8z\" fill=\"currentColor\" stroke=\"none\"></path></svg>", "残留火力": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15l7-2.4 3-.3 1.6-1.7H21v2h-8.4l-1.1 1.3H9l-.9 1.8 1.4 3.6-2.2.8-1.5-3.6L3 17z\" fill=\"currentColor\" stroke=\"none\"></path><path d=\"M19 7l.8 2.2 2.2-.8-1.4 1.9 1.9 1.4-2.3-.1.3 2.3-1.5-1.8-1.5 1.8.3-2.3-2.3.1 1.9-1.4-1.4-1.9 2.2.8z\" fill=\"currentColor\" stroke=\"none\"></path></svg>", "爆薬": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 15l7-2.4 3-.3 1.6-1.7H21v2h-8.4l-1.1 1.3H9l-.9 1.8 1.4 3.6-2.2.8-1.5-3.6L3 17z\" fill=\"currentColor\" stroke=\"none\"></path><path d=\"M19 7l.8 2.2 2.2-.8-1.4 1.9 1.9 1.4-2.3-.1.3 2.3-1.5-1.8-1.5 1.8.3-2.3-2.3.1 1.9-1.4-1.4-1.9 2.2.8z\" fill=\"currentColor\" stroke=\"none\"></path></svg>", "ボグ判定": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"4.5\" r=\"2\"></circle><path d=\"M8 8.5l-2.5 4 2.5 1 1 5M8 8.5l5 1.5 2 3M11.5 14l3 2 .5 4\"></path></svg>", "人力移動": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"4.5\" r=\"2\"></circle><path d=\"M8 8.5l-2.5 4 2.5 1 1 5M8 8.5l5 1.5 2 3M11.5 14l3 2 .5 4\"></path></svg>", "回復": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4v16M4 12h16\"></path><circle cx=\"12\" cy=\"12\" r=\"9\"></circle></svg>", "修理": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4v16M4 12h16\"></path><circle cx=\"12\" cy=\"12\" r=\"9\"></circle></svg>", "潰走・阻止": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l7 3v5c0 4.6-3 8-7 10-4-2-7-5.4-7-10V6z\"></path><path d=\"M12 8v5M12 16v.5\"></path></svg>", "MC・PTC": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l7 3v5c0 4.6-3 8-7 10-4-2-7-5.4-7-10V6z\"></path><path d=\"M12 8v5M12 16v.5\"></path></svg>", "白兵戦": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4l10 10M9 4H4v5\"></path><path d=\"M20 4L10 14M15 4h5v5\"></path><path d=\"M6 20l3-3M18 20l-3-3\"></path></svg>", "PAATC（歩兵が車両へ）": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4l10 10M9 4H4v5\"></path><path d=\"M20 4L10 14M15 4h5v5\"></path><path d=\"M6 20l3-3M18 20l-3-3\"></path></svg>", "車両が目標のAFVへ（停止できる？）": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"4.5\" r=\"2\"></circle><path d=\"M8 8.5l-2.5 4 2.5 1 1 5M8 8.5l5 1.5 2 3M11.5 14l3 2 .5 4\"></path></svg>", "早見表": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5C7 4 10 4.2 12 6c2-1.8 5-2 8-.5V19c-3-1.5-6-1.3-8 .5-2-1.8-5-2-8-.5z\"></path><path d=\"M12 6v13.5\"></path></svg>", "ユニット": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5C7 4 10 4.2 12 6c2-1.8 5-2 8-.5V19c-3-1.5-6-1.3-8 .5-2-1.8-5-2-8-.5z\"></path><path d=\"M12 6v13.5\"></path></svg>", "シナリオ": "<svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5C7 4 10 4.2 12 6c2-1.8 5-2 8-.5V19c-3-1.5-6-1.3-8 .5-2-1.8-5-2-8-.5z\"></path><path d=\"M12 6v13.5\"></path></svg>"};
+/* tiles: [ラベル, アイコン名, 実行, 状態('spot'=スポット判定/'old'=旧タブ・作り直す予定/'new'=フル版で増やした)] */
+var SECS=[
+ ['射撃','',3,[
+  ['射撃 A→B','射撃 A→B',"mfHqGo('spot')",''],
+  ['砲撃','砲撃',"mfHqGo('spot')",''],
+  ['車両 AFV','車両 AFV',"mfHqGo('spot')",''],
+  ['軽対戦車兵器','軽対戦車兵器',"mfHqGo('spot')",''],
+  ['残留火力','残留火力',"mfHqGo('resid')",''],
+  ['爆薬(配置・起動)','爆薬',"mfHqGo('dc')",'old'],
+  ['盤外砲兵支援 OBA','砲撃',"mfHqGo('oba')",'new']]],
+ ['移動・士気・近接','',4,[
+  ['ボグ判定','ボグ判定',"mfHqGo('move')",'old'],
+  ['人力移動','人力移動',"mfHqGo('move')",'old'],
+  ['煙幕を置く','人力移動',"mfHqGo('move')",'new'],
+  ['回復','回復',"mfHqGo('rally')",'old'],
+  ['修理','修理',"mfHqGo('rally')",'old'],
+  ['回収','修理',"mfHqGo('rally')",'new'],
+  ['潰走・阻止','潰走・阻止',"mfHqGo('rout')",'old'],
+  ['MC・PTC','MC・PTC',"mfHqGo('mc')",'old'],
+  ['白兵戦','白兵戦',"mfHqGo('aphcc')",'old'],
+  ['PAATC(歩兵が車両へ)','PAATC（歩兵が車両へ）',"mfHqGo('aphcc')",'old']]],
+ ['調べる','',4,[
+  ['早見表','早見表',"mfHqGo('ref')",''],
+  ['ユニット','ユニット',"mfHqGo('unit')",''],
+  ['シナリオ','シナリオ',"mfHqGo('scen')",''],
+  ['カウンター','ユニット',"mfHqGo('cnt')",'']]]];
+function html(){var h='<div class="hqH"><b>マルチ判定</b><button class="hqX" title="閉じる" aria-label="閉じる" onclick="mfHqClose()">✕</button></div>';
+  SECS.forEach(function(s){h+='<div class="hqS"><b>'+s[0]+'</b>'+(s[1]?'<span>'+s[1]+'</span>':'')+'</div><div class="hqG" style="grid-template-columns:repeat('+s[2]+',1fr)">';
+    s[3].forEach(function(t){var two=t[0].length>8;h+='<button class="hqT'+(two?' two':'')+'" onclick="'+t[2]+'"><span class="hqI">'+(IC[t[1]]||'')+'</span><span>'+t[0].replace('(','<br>(')+'</span>'+(t[3]==='new'?'<i class="hqNew">フル版</i>':'')+'</button>';});
+    h+='</div>';});
+  return h;}
+window.mfHqOpen=function(){var e=document.getElementById('mfHq');if(e){e.remove();return;}e=document.createElement('div');e.id='mfHq';e.innerHTML=html();document.body.appendChild(e);};
+window.mfHqClose=function(){var e=document.getElementById('mfHq');if(e)e.remove();};
+window.mfHqGo=function(k){mfHqClose();
+  if(k==='spot'){mfIjOpen();return;}
+  if(k==='resid'){mfIjOpen();try{if(window.MF_IJ){MF_IJ.fx=MF_IJ.fx||{};}}catch(e){}return;}
+  mfOld(k);};
 })();
 </script>
 </body>
