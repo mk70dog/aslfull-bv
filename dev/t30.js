@@ -25,4 +25,6 @@ const r4=await p.evaluate(()=>{mfCcOpen('veh');var G=MF_CC.g();mfCcNat('A','SOV'
 console.log('ccv',r4);await p.waitForTimeout(300);await p.screenshot({path:'samples/sample-ui14-v1.png'});
 const r6=await p.evaluate(()=>{mfCcOpen('pa');mfPaNat('GER');mfPaPick('4-6-7[1]',2);mfPaSet('ldr','9-1');var P=MF_CC.pa();mfPaDr(P.units[0].pid,8);mfPaDr(P.units[1].pid,9);return JSON.stringify(P.units.map(u=>u.res));});
 console.log('pa',r6);await p.waitForTimeout(300);await p.screenshot({path:'samples/sample-ui14-p1.png'});
+const r7=await p.evaluate(()=>{mfHqOpen();mfHqGo('ve');mfVeSet('an','GER');var a=MF_CC.afvs('GER');var g=a.find(v=>/SPW 251\/10|PSW/.test(v.lbl))||a[0];mfVeSet('v',g.id);mfVeSet('tn','GER');mfVeSet('t',a[0].id);return document.getElementById('mfRy').innerText.replace(/\n/g,'|').slice(0,600);});
+console.log('ve',r7);await p.waitForTimeout(300);await p.screenshot({path:'samples/sample-ui14-e1.png'});
 console.log('ERR',E.length,E.join('\n'));await b.close();})();
