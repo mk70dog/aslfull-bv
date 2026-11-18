@@ -47173,7 +47173,7 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
     var IN=KU.filter(function(t){ var f=t.f||{}; return !f.cx&&!f.pin&&stackFP(t)>0&&!guardOver(t)&&!inMelee(o,t); }); /* A11.15: Melee の部隊は妨害できない */ /* A10.532: CX・Pin・SW のない指揮官は妨害できない。A20.52: 捕虜の多い護衛も妨害できない */
     return {E:E,KU:KU,IN:IN,EX:E.filter(function(t){ return !inMelee(o,t); })}; }
   function rtExposed(C,h){ return rtOpen(h)&&(C.EX||C.E).some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t); }); }
-  function rtIntd(C,h){ return rtOpen(h)&&C.IN.some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t)&&!l.hin; }); }
+  function rtIntd(C,h){ return rtOpen(h)&&C.IN.some(function(t){ var l=rtLos(t,h); return !!l&&l.range<=rtRng(t)&&!l.hin&&(!t.mfOk||t.mfOk(h)); }); } /* v549: mfOk=マルチ判定の潰走の射界(砲・車両)と LOS 妨害マーカー */
   function rtNb(a){ var la=lvOf(a), out=[]; /* v453: 潰走の隣の Location(B23.4・B23.25・B23.422) */
     nbrs(a.bd,a.col,a.row).forEach(function(n){ var c=hexCost(n.bd,n.col,n.row); if(c.cost==null)return; if(la>0&&!(sameBld(a,n)&&lvMax(n)>=la))return; out.push({bd:n.bd,col:n.col,row:n.row,lv:la,mc:c.cost+(RTST?ovrMF(RTST.o,RTST.s,n.bd,n.col,n.row):0)}); });
     if(stairAt(a)&&!blazeAt(a.bd,a.col,a.row)){ if(la+1<=lvMax(a))out.push({bd:a.bd,col:a.col,row:a.row,lv:la+1,mc:1}); if(la>0)out.push({bd:a.bd,col:a.col,row:a.row,lv:la-1,mc:1}); }
@@ -49271,11 +49271,18 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
   /* v548: マルチ判定の潰走(判定モード)から使う。地図に置いた潰走ユニット・敵マーカーで、対戦の潰走と同じ計算(rtPaths・rtIntd・rtExposed、A10.5〜A10.533)。
    * enemies: [{bd,col,row,lv,rng,intd}] intd=false は阻止できない敵(CX・PIN・Melee・FP なし、A10.532)。戻り値: 行き先(番号)・匍匐・各経路の阻止のヘクス */
   window.ASLFULL_RT_API={
+    adj:function(a,b){ return nbrs(a.bd,a.col,a.row).some(function(n){ return String(n.bd)===String(b.bd)&&n.col===b.col&&n.row===b.row; }); },
     name:function(h){ return hxName(h); }, terr:function(h){ return hexInfoName(h); }, cover:function(h){ return rtCover(h); }, open:function(h){ return rtOpen(h); },
     plan:function(h0,EN,opt){ TMEMO={}; var oT=window.losHexTerrainInfoGlobal,TM={}; window.losHexTerrainInfoGlobal=function(id){ if(!id)return oT(id); var k=id.boardId+':'+id.col+':'+id.row; if(k in TM)return TM[k]; return TM[k]=oT(id); }; /* 地形は計算の間だけ覚える(LOS の計算が速くなる) */
       try{ return planX(h0,EN,opt); }finally{ TMEMO=null; window.losHexTerrainInfoGlobal=oT; } } };
   function planX(h0,EN,opt){ opt=opt||{}; RTST=null; RTLOS={}; h0={bd:h0.bd,col:h0.col,row:h0.row,lv:h0.lv||0};
-      var E=(EN||[]).map(function(e,i){ return {id:'mfE'+i,side:'x',bd:e.bd,col:e.col,row:e.row,lv:e.lv||0,u:[],f:{},rng:e.rng,mfIn:e.intd!==false}; });
+      var HM=(opt.hin||[]), cv=function(h){ return losColRowToGlobalCanon(h.bd,h.col,h.row); }, c11=cv({bd:h0.bd,col:1,row:1}), c12=cv({bd:h0.bd,col:1,row:2}), HW=c11&&c12?Math.hypot(c11.x-c12.x,c11.y-c12.y):60;
+      function okFor(e){ return function(h){ var a=cv(e), b=cv(h); if(!a||!b)return true;
+          if(e.fac!=null){ var bd=(S_LOS.boards||[]).filter(function(x){ return x.id===e.bd; })[0], br=Math.atan2(b.x-a.x,-(b.y-a.y))*180/Math.PI, ce=e.fac*60+((bd&&bd.rot)||0)+30, df=Math.abs(((br-ce)%360+540)%360-180); if(df>30.5)return false; } /* A10.532: 砲・車両は CA を変えないと撃てない所は阻止できない */
+          for(var i=0;i<HM.length;i++){ var m=HM[i]; if(m.bd===e.bd&&m.col===e.col&&m.row===e.row)continue; var c=cv(m); if(!c)continue; if(m.bd===h.bd&&m.col===h.col&&m.row===h.row)return false;
+            var vx=b.x-a.x, vy=b.y-a.y, L2=vx*vx+vy*vy, t=L2?((c.x-a.x)*vx+(c.y-a.y)*vy)/L2:0; if(t<=0||t>=1)continue; var px=a.x+t*vx-c.x, py=a.y+t*vy-c.y; if(Math.hypot(px,py)<HW*0.5)return false; } /* LOS 妨害マーカーが線の上にあれば阻止なし(A10.531) */
+          return true; }; }
+      var E=(EN||[]).map(function(e,i){ return {id:'mfE'+i,side:'x',bd:e.bd,col:e.col,row:e.row,lv:e.lv||0,u:[],f:{},rng:e.rng,mfIn:e.intd!==false,mfOk:(e.fac!=null||HM.length)?okFor(e):null}; });
       var C={E:E,KU:E,IN:E.filter(function(t){ return t.mfIn; }),EX:E}, max=opt.max||6;
       var adjU=E.some(function(t){ return adjL(h0,t)||sameL(h0,t); }), expo=rtExposed(C,h0), inBlz=blazeAt(h0.bd,h0.col,h0.row);
       var paths=rtPaths(C,h0,max), d0=E.length?nearest(h0,E).d:0, cov0=rtCover(h0);
@@ -49296,7 +49303,9 @@ window.ASLFULL_VASL_CNT={"imgs":{"ge/ge838S.gif":"data:image/png;base64,iVBORw0K
       var crawl=[]; if(!E.some(function(t){ return sameL(h0,t); })){ var firsts={}; if(any)D.forEach(function(n){ firsts[locKey(n.path[1])]=1; });
         paths.forEach(function(n){ if(n.path.length!==2||!endOk(n,true))return; if(any&&!firsts[locKey(n.end)])return; if(crawl.some(function(c){ return locKey(c.to)===locKey(n.end); }))return; crawl.push(pack(n,true)); }); } /* A10.52 */
       var red={}; paths.forEach(function(n){ n.path.forEach(function(h,i){ if(i>0&&rtIntd(C,h))red[hk(h)]={bd:h.bd,col:h.col,row:h.row}; }); });
-      return {must:adjU||expo||inBlz,adj:adjU,expo:expo,blaze:inBlz,cover:any,dests:dests,crawl:crawl,red:Object.keys(red).map(function(k){ return red[k]; }),start:hxName(h0)}; }
+      var pre={}; paths.forEach(function(n){ var k=''; n.path.forEach(function(h,i){ k+=(i?'>':'')+locKey(h); if(i>0&&!pre[k])pre[k]={}; }); var q=pre[k]; q.end=true; q.mf=n.mf; q.ok=endOk(n,false); q.cov=rtCover(n.end); }); /* 手で引く経路の確認用(A10.5 の合法な道の頭) */
+      var intd={}; Object.keys(red).forEach(function(k){ intd[k]=1; });
+      return {must:adjU||expo||inBlz,adj:adjU,expo:expo,blaze:inBlz,cover:any,dests:dests,crawl:crawl,red:Object.keys(red).map(function(k){ return red[k]; }),start:hxName(h0),pre:pre,lk:function(h){ return locKey(h); },hk:function(h){ return hk(h); },intd:intd}; }
 })();
 </script>
 
@@ -50407,10 +50416,16 @@ html.mf-ij #main>.mfLosRes{display:none!important}
 :is(#mfMc,#mfRy) .mcCh{display:inline-flex;align-items:center;gap:6px}
 :is(#mfMc,#mfRy) .mcCh img{width:40px;height:40px;border-radius:4px}
 :is(#mfMc,#mfRy) .mcCh b{color:#ffe9a3;font-weight:400;font-size:14px}
+#mfRy .ccSt{display:flex;gap:4px;margin:6px 6px 8px}#mfRy .ccSt>div{flex:1;text-align:center;padding:6px 4px;border-radius:8px;font-size:12px;line-height:1.3;border:1px solid #33404f;color:#8fa6bd}#mfRy .ccSt>div small{display:block;font-size:10px;font-weight:400}#mfRy .ccSt>div.on{background:#c8a032;color:#000;font-weight:900;border-color:#c8a032}#mfRy .ccSt>div.done{border-color:#3ca878;color:#3ca878}
+#mfRy .ccSds{display:flex;flex-direction:column;gap:10px;margin:0 6px}#mfRy .ccSd{border:2px solid #4a90d0;border-radius:12px;padding:8px}#mfRy .ccSdD{border-color:#e08a3a}#mfRy .ccSdH{display:flex;gap:6px;align-items:baseline;font-size:15px}#mfRy .ccSdA .ccSdH b{color:#6ab0f0}#mfRy .ccSdD .ccSdH b{color:#f0a050}#mfRy .ccSdH span{font-size:12px;color:#ffd070}
+#mfRy .ccAk{border-top:1px solid #2a3442;margin-top:8px;padding-top:6px}#mfRy .ccAkH{display:flex;align-items:center;justify-content:space-between}#mfRy .ccAkH b{color:#ffd070}#mfRy .ccAkH .rmB{width:auto;height:30px;font-size:12px;padding:0 10px}
+#mfRy .ccGs{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 4px}#mfRy .rmB.ccG{width:auto;height:auto;min-height:40px;padding:3px 6px;display:inline-flex;gap:3px;align-items:center}#mfRy .rmB.ccG[disabled]{opacity:.35}#mfRy .rmB.ccG small{font-size:10px;color:#8fa6bd}#mfRy .ccG .mcCh img{width:30px;height:30px}
+#mfRy .ccBand{display:flex;gap:3px;margin:6px 0 2px}#mfRy .ccB{flex:1 0 26px;min-width:0;height:34px;border-radius:6px;border:1px solid #33404f;font-weight:800;font-size:13px;cursor:pointer}#mfRy .ccB.e{background:#5a1a1a;color:#ffb0b0}#mfRy .ccB.c{background:#5a3510;color:#ffc080}#mfRy .ccB.n{background:#1a222c;color:#8fa6bd}#mfRy .ccB.r{background:#18202a;color:#fff}#mfRy .ccB.on{outline:3px solid #ffd070}#mfRy .ccB[disabled]{cursor:default}
 #mfRtB{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:9400;width:max-content;max-width:calc(100vw - 90px);background:#0e1620ee;border:1px solid #4a5566;border-radius:10px;padding:5px 10px;color:#dfe8f0;font-size:13px;line-height:1.7;box-shadow:0 6px 20px #000b}
 #mfRtB .rtRow,#mfRtTip .rtRow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0}
 #mfRtB .rmB,#mfRtTip .rmB{height:30px;padding:0 10px;font-size:12px}
 #mfRtB .rtEd{border-top:1px solid #334;padding-top:4px}
+#mfRtB .rtUs{max-height:150px;overflow:auto}#mfRtB .rmB.rtU{height:auto;width:76px;padding:2px;display:inline-flex;flex-direction:column;align-items:center;line-height:1.1}#mfRtB .rtU img{width:40px;height:40px}#mfRtB .rtU small{font-size:9px}
 #mfRtTip{position:fixed;right:76px;bottom:64px;z-index:9390;width:min(46vw,360px);max-height:60vh;overflow:auto;background:#0e1620e6;border:1px solid #ff5050aa;border-radius:10px;padding:8px 12px;color:#dfe8f0;font-size:12px;box-shadow:0 6px 20px #000b}
 #mfRtTip .rtTh{display:block;color:#ff8080;font-size:14px;margin:4px 0}
 #mfRtTip .rtTr{display:flex;gap:8px;align-items:flex-start;margin-top:4px}
@@ -51224,6 +51239,10 @@ function ryDraw(){var P=document.getElementById('mfRy');if(!RY.open||!document.d
   var sc=P.scrollTop,X='<div class="rmXW"><button class="rmX" title="閉じる" onclick="event.stopPropagation();mfRyClose()"><span>✕</span></button></div><div class="rmGrip"><span></span></div>';
   if(RY.mode==='rally'){if(!RYG)ryInit();P.innerHTML=X+(RYG.step===1?rySelHTML():'<div class="ij2Cols"><div>'+ryLeft()+'</div><div>'+ryRight()+'</div></div>');}
   else if(RY.mode==='rout')P.innerHTML=X+rtPanel();
+  else if(RY.mode==='ccm')P.innerHTML=X+ccMenu();
+  else if(RY.mode==='cc')P.innerHTML=X+ccDraw();
+  else if(RY.mode==='pa')P.innerHTML=X+paHTML();
+  else if(RY.mode==='ve')P.innerHTML=X+veHTML();
   else if(RY.mode==='repair')P.innerHTML=X+'<div class="ij2Cols"><div>'+rpLeft()+'</div><div>'+rpRight()+'</div></div>';
   else P.innerHTML=X+'<div class="ij2Cols"><div>'+rvLeft()+'</div><div>'+rvRight()+'</div></div>';
   P.style.maxHeight=(window.innerHeight-70)+'px';P.scrollTop=sc;}
@@ -51240,12 +51259,12 @@ function rtEnemyNat(){var n=rtNats();return n.filter(function(x){return x!==RT.n
 function rtDefRng(){var n=rtEnemyNat(),L=[];try{L=scenarioMmcListForNat(n)||[];}catch(e){}var u=L.filter(function(x){return !x.hs&&!/乗員|HS/.test(x.lbl);})[0]||L[0];return (u&&u.rng)||4;}
 function rtKey(h){return h.bd+':'+h.col+':'+h.row;}
 function rtNm(h){var a=window.ASLFULL_RT_API;return h?(String(h.bd)+(a?a.name(h):''))+(h.lv?'(L'+h.lv+')':''):'';}
-function rtCalc(){RT.R=null;if(!RT.h0||!window.ASLFULL_RT_API)return;try{RT.R=ASLFULL_RT_API.plan(RT.h0,RT.E,{max:RT.wnd?3:6});}catch(e){RT.R=null;RT.err=String(e&&e.message||e);}
-  if(RT.pick&&RT.R){var k=RT.pick.low?'c':'d',L=RT.pick.low?RT.R.crawl:RT.R.dests,f=L.filter(function(P){return rtKey(P.to)===rtKey(RT.pick.to)&&(P.to.lv||0)===(RT.pick.to.lv||0);})[0];RT.pick=f||null;}else RT.pick=null;
+function rtCalc(){RT.R=null;if(!RT.h0||!window.ASLFULL_RT_API)return;try{RT.R=ASLFULL_RT_API.plan(RT.h0,RT.E,{max:RT.wnd?3:6,hin:RT.H||[]});}catch(e){RT.R=null;RT.err=String(e&&e.message||e);}
+  if(RT.pick&&RT.pick.man&&RT.R){rtManPick();}else if(RT.pick&&RT.R){var k=RT.pick.low?'c':'d',L=RT.pick.low?RT.R.crawl:RT.R.dests,f=L.filter(function(P){return rtKey(P.to)===rtKey(RT.pick.to)&&(P.to.lv||0)===(RT.pick.to.lv||0);})[0];RT.pick=f||null;}else RT.pick=null;
   rtIntReset();}
 function rtIntReset(){RT.I={res:[],hin:{}};}
 function rtRedraw(){rtCalc();rtDraw();rtBanner();rtTip();if(RY.open&&RY.mode==='rout')ryDraw();}
-window.mfRtStart=function(){RY.open=false;ryDraw();var ns=rtNats();RT={on:true,step:1,nat:RT.nat&&ns.indexOf(RT.nat)>=0?RT.nat:ns[0],h0:null,E:[],sel:null,R:null,pick:null,wnd:false,tip:'p',I:{res:[],hin:{}},u:null,ldr:null};
+window.mfRtStart=function(){RY.open=false;ryDraw();var ns=rtNats();RT={on:true,step:1,nat:RT.nat&&ns.indexOf(RT.nat)>=0?RT.nat:ns[0],h0:null,E:[],H:[],man:null,mode:'e',sel:null,R:null,pick:null,wnd:false,tip:'p',I:{res:[],hin:{}},u:null,ldr:null};
   try{if(typeof S!=='undefined'&&S.tab!=='los')NAVTAB('los');}catch(e){}
   try{Promise.all((S_LOS.boards||[]).map(function(b){return losLoadBoard(b.id);})).then(function(){if(RT.on&&RT.h0)rtRedraw();});}catch(e){}
   rtDraw();rtBanner();rtTip();};
@@ -51254,13 +51273,33 @@ window.mfRtReset=function(){var n=RT.nat;mfRtStart();RT.nat=n;rtBanner();};
 window.mfRtNat=function(){var ns=rtNats();if(ns.length<2)return;RT.nat=ns[(ns.indexOf(RT.nat)+1)%ns.length];RT.u=null;RT.ldr=null;rtIntReset();rtBanner();if(RY.open&&RY.mode==='rout')ryDraw();};
 window.MF_RT_TAP=function(bd,col,row){if(!RT.on)return false;var h={bd:String(bd),col:col,row:row,lv:0},k=rtKey(h);
   if(RT.step===1){RT.h0=h;RT.step=2;rtRedraw();return true;}
+  if(RT.mode==='h'){var j=-1;(RT.H||[]).forEach(function(m,q){if(rtKey(m)===k)j=q;});if(j>=0)RT.H.splice(j,1);else RT.H.push(h);rtRedraw();return true;} /* LOS 妨害マーカー: タップで置く・もう一度で消す */
+  if(RT.mode==='r'){rtManTap(h);return true;}
   if(RT.h0&&k===rtKey(RT.h0)){toast('潰走するユニットのヘクスです');return true;}
   var R=RT.R;if(R){var P=R.dests.filter(function(x){return rtKey(x.to)===k;})[0]||R.crawl.filter(function(x){return rtKey(x.to)===k;})[0];
-    if(P&&!RT.E.some(function(e){return rtKey(e)===k;})){RT.pick=P;RT.sel=null;rtIntReset();rtDraw();rtBanner();return true;}}
+    if(P&&!RT.E.some(function(e){return rtKey(e)===k;})){RT.pick=P;RT.man=null;RT.sel=null;rtIntReset();rtDraw();rtBanner();return true;}}
   var i=-1;RT.E.forEach(function(e,j){if(rtKey(e)===k)i=j;});
   if(i>=0){RT.sel=RT.sel===i?null:i;rtDraw();rtBanner();return true;}
-  RT.E.push({bd:h.bd,col:col,row:row,lv:0,rng:rtDefRng(),intd:true});RT.sel=RT.E.length-1;rtRedraw();return true;};
+  RT.E.push({bd:h.bd,col:col,row:row,lv:0,rng:rtDefRng(),intd:true,kind:'inf',lbl:null,fac:null});RT.sel=RT.E.length-1;rtRedraw();return true;};
+/* 手で経路を引く(SK3 の「経路」): 隣のヘクスを順にタップ。対戦の潰走の計算で合法な道だけ(A10.5〜A10.51) */
+function rtManKey(P){var R=RT.R;return P.map(function(h){return R.lk(h);}).join('>');}
+function rtManPick(){var R=RT.R,P=RT.man;if(!R||!P||P.length<2){RT.pick=null;return;}var q=R.pre[rtManKey(P)];if(!q){RT.man=null;RT.pick=null;return;}
+  var inter=[];P.forEach(function(h,i){if(i>0&&R.intd[R.hk(h)])inter.push(i);});RT.pick={to:P[P.length-1],path:P.slice(),mf:q.mf,inter:inter,low:false,man:true,endOk:!!(q.end&&q.ok),cov:q.cov};}
+function rtManTap(h){var R=RT.R;if(!R)return;var P=RT.man||[RT.h0],last=P[P.length-1];
+  if(P.length>1&&rtKey(last)===rtKey(h)){P.pop();RT.man=P.length>1?P:null;rtManPick();rtDraw();rtBanner();return;}
+  if(rtKey(h)===rtKey(RT.h0)){RT.man=null;RT.pick=null;rtDraw();rtBanner();return;}
+  var nx=P.concat([{bd:h.bd,col:h.col,row:h.row,lv:last.lv||0}]);if(!R.pre[rtManKey(nx)]){var a=null;try{a=ASLFULL_RT_API.adj(last,h);}catch(e){}toast(a===false?'隣のヘクスを順にタップしてください':'そこへは潰走できません(敵に近づく・敵に隣接・移動力が足りない・林・建物に着いたら止まる、A10.51)');return;}
+  RT.man=nx;rtManPick();rtIntReset();rtDraw();rtBanner();}
+window.mfRtMode=function(m){RT.mode=m;RT.sel=null;rtDraw();rtBanner();};
 window.mfRtE=function(k,v){var e=RT.E[RT.sel];if(!e)return;if(k==='del'){RT.E.splice(RT.sel,1);RT.sel=null;}else if(k==='rng')e.rng=Math.max(0,Math.min(16,e.rng+v));else if(k==='lv')e.lv=v;else e[k]=v;rtRedraw();};
+function rtEUnits(nat){var o={inf:[],sw:[],gun:[],veh:[]};try{scenarioMmcListForNat(nat).forEach(function(u){o.inf.push({lbl:u.lbl,rng:u.rng||4,img:uSrc(nat,u.lbl)});});}catch(e){}
+  try{natSws(nat).forEach(function(t){if(/^(dc|ft|atr|piat|bzk|psk|pf)/i.test(t.id))return;var m=String(t.lbl).match(/(\d+)-(\d+)\s*$/);if(!m)return;o.sw.push({lbl:t.lbl,rng:Math.min(16,+m[2]),img:swSrc(nat,t.lbl)});});}catch(e){}
+  try{gunsOf(nat).forEach(function(g){o.gun.push({lbl:g.lbl,rng:16,img:vSrc('gun',g.id,nat,g.lbl),fac:true});});}catch(e){}
+  try{afvsOf(nat).forEach(function(v){o.veh.push({lbl:v.lbl,rng:16,img:vSrc('afv',v.id,nat,v.lbl),fac:true,tur:!!v.turretType});});}catch(e){}return o;}
+window.mfRtEPick=function(t,i){var e=RT.E[RT.sel];if(!e)return;var it=rtEUnits(rtEnemyNat())[t][i];if(!it)return;e.kind=t;e.lbl=it.lbl;e.rng=it.rng;e.fac=it.fac?(e.fac!=null?e.fac:0):null;e.tur=!!it.tur;rtRedraw();};
+window.mfRtETab=function(t){RT.etab=t;rtBanner();};
+function rtDirAng(e,k){var bd=(S_LOS.boards||[]).filter(function(x){return x.id===e.bd;})[0];return k*60+((bd&&bd.rot)||0)+30+(S_LOS.viewRot||0);}
+
 window.mfRtH0=function(k,v){if(!RT.h0)return;if(k==='lv')RT.h0.lv=v;else RT[k]=v;rtRedraw();};
 window.mfRtTipTab=function(t){RT.tip=t;rtTip();};
 window.mfRtInt=function(){RY.open=true;RY.mode='rout';ryDraw();};
@@ -51277,7 +51316,12 @@ function rtSVG(dl){if(!RT.on)return '';var h='',W=LOS_GEO_HEX_W,R=RT.R;
       h+='<polyline points="'+pts+'" fill="none" stroke="#000" stroke-opacity=".55" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><polyline points="'+pts+'" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>';}
     R.dests.forEach(function(P,i){var d=rtPt(P.to,dl);if(d)h+=rtTxt(d,String(i+1),'#fff',W*0.42,'#2a9a4a',W*0.3);});
     R.crawl.forEach(function(P){if(R.dests.some(function(x){return rtKey(x.to)===rtKey(P.to);}))return;var d=rtPt(P.to,dl);if(d)h+=rtTxt(d,'匍','#fff',W*0.34,'#24507a',W*0.27);});}
-  RT.E.forEach(function(e,i){h+=rtPoly(e,dl,'fill="rgba(255,150,30,0.55)" stroke="'+(RT.sel===i?'#fff':'#ff8a1a')+'" stroke-width="'+(RT.sel===i?7:4)+'"');var d=rtPt(e,dl);if(d)h+=rtTxt(d,'敵 '+e.rng+(e.intd?'':'×'),'#111',W*0.3,null,0);});
+  (RT.H||[]).forEach(function(m){h+=rtPoly(m,dl,'fill="rgba(160,170,190,0.55)" stroke="#dfe6f0" stroke-width="4" stroke-dasharray="10 6"');var d=rtPt(m,dl);if(d)h+=rtTxt(d,'妨害','#111',W*0.28,null,0);});
+  if(RT.mode==='r'&&R){var P=RT.man||[RT.h0],kp=rtManKey(P);Object.keys(R.pre).forEach(function(k){if(k.indexOf(kp+'>')!==0)return;var rest=k.slice(kp.length+1);if(rest.indexOf('>')>=0)return;var q=rest.split(':'),hh={bd:q[0],col:+q[1],row:+q[2]},d=rtPt(hh,dl);if(d)h+='<circle cx="'+d.x+'" cy="'+d.y+'" r="'+W*0.13+'" fill="#7ec8ff" stroke="#fff" stroke-width="3"/>';});}
+  RT.E.forEach(function(e,i){h+=rtPoly(e,dl,'fill="rgba(255,150,30,0.55)" stroke="'+(RT.sel===i?'#fff':'#ff8a1a')+'" stroke-width="'+(RT.sel===i?7:4)+'"');var d=rtPt(e,dl);if(!d)return;
+    if(e.fac!=null){var g=losColRowToGlobalCanon(e.bd,e.col,e.row),bd=(S_LOS.boards||[]).filter(function(x){return x.id===e.bd;})[0],a=(e.fac*60+((bd&&bd.rot)||0)+30)*Math.PI/180,t=losCanonicalToDisplay(g.x+Math.sin(a)*W*0.75,g.y-Math.cos(a)*W*0.75,dl);
+      h+='<line x1="'+d.x+'" y1="'+d.y+'" x2="'+t.x+'" y2="'+t.y+'" stroke="#000" stroke-width="12" stroke-linecap="round"/><line x1="'+d.x+'" y1="'+d.y+'" x2="'+t.x+'" y2="'+t.y+'" stroke="#ffd24a" stroke-width="6" stroke-linecap="round"/>';}
+    h+=rtTxt(d,(e.lbl?String(e.lbl).replace(/\s*\(.*$/,'').slice(0,8):'敵')+' '+e.rng+(e.intd?'':'×'),'#111',W*0.24,null,0);});
   if(RT.h0){h+=rtPoly(RT.h0,dl,'fill="rgba(255,210,74,0.25)" stroke="#ffd24a" stroke-width="7"');var d0=rtPt(RT.h0,dl);if(d0)h+=rtTxt(d0,'潰走','#111',W*0.3,'#ffd24a',W*0.32);}
   return h;}
 var oW2=window.losWreckHexOverlaySVG;if(typeof oW2==='function'&&!oW2.__rt){window.losWreckHexOverlaySVG=function(dl){var h=oW2.apply(this,arguments);try{h+=rtSVG(dl);}catch(e){}return h;};window.losWreckHexOverlaySVG.__rt=1;}
@@ -51288,11 +51332,17 @@ function rtBanner(){var b=document.getElementById('mfRtB');if(!RT.on){if(b)b.rem
   if(RT.step===1)h='<div class="rtRow">'+nat+'<b style="flex:1;color:#ffd24a">潰走・阻止 ① 潰走するユニットのヘクスをタップ</b>'+rtB('中止','mfRtEnd(1)')+'</div>';
   else{h='<div class="rtRow">'+nat+'<b style="color:#ffd24a">潰走 '+esc(rtNm(RT.h0))+'</b><span style="color:#8899aa;font-size:11px">'+esc(ASLFULL_RT_API.terr(RT.h0)||'')+'</span><span style="flex:1"></span>'
       +rtB('⚠ 阻止のMC','mfRtInt()',false,RT.pick&&RT.pick.inter.length?'color:#ff8a70':'')+rtB('やり直し','mfRtReset()')+rtB('終了','mfRtEnd(1)')+'</div>';
-    h+='<div class="rtRow">'+rtB('地上','mfRtH0(\'lv\',0)',!RT.h0.lv)+rtB('上の階','mfRtH0(\'lv\',1)',RT.h0.lv===1)+rtB('負傷(3MF)','mfRtH0(\'wnd\','+(!RT.wnd)+')',RT.wnd)+'<span style="font-size:11px;color:#8899aa">敵のヘクスをタップで置く(射程は '+(NATJ[rtEnemyNat()]||'')+'の分隊)。緑の番号=行き先、匍=匍匐、赤=阻止される開豁地</span></div>';
-    if(RT.sel!=null&&RT.E[RT.sel]){var e=RT.E[RT.sel];h+='<div class="rtRow rtEd"><b style="color:#ff9a3a">敵 '+esc(rtNm(e))+'</b>'+rtB('−','mfRtE(\'rng\',-1)')+'<span>射程 <b>'+e.rng+'</b></span>'+rtB('＋','mfRtE(\'rng\',1)')
-      +rtB('阻止できる','mfRtE(\'intd\',true)',e.intd)+rtB('阻止できない','mfRtE(\'intd\',false)',!e.intd)+rtB('地上','mfRtE(\'lv\',0)',!e.lv)+rtB('上の階','mfRtE(\'lv\',1)',e.lv===1)+rtB('消す','mfRtE(\'del\')',false,'color:#ff8a70')+'</div>';}
+    h+='<div class="rtRow">'+rtB('敵','mfRtMode(\'e\')',RT.mode==='e')+rtB('LOS 妨害','mfRtMode(\'h\')',RT.mode==='h')+rtB('経路を手で','mfRtMode(\'r\')',RT.mode==='r')+'<span style="font-size:11px;color:#8899aa">'+({e:'敵のヘクスをタップで置く・もう一度で選ぶ',h:'LOS 妨害のヘクスをタップ(線の上にあれば阻止なし)',r:'潰走ヘクスから隣のヘクスを順にタップ(青い点が行ける所。最後をもう一度で戻す)'}[RT.mode])+'</span></div>';
+    h+='<div class="rtRow">'+rtB('地上','mfRtH0(\'lv\',0)',!RT.h0.lv)+rtB('上の階','mfRtH0(\'lv\',1)',RT.h0.lv===1)+rtB('負傷(3MF)','mfRtH0(\'wnd\','+(!RT.wnd)+')',RT.wnd)+'<span style="font-size:11px;color:#8899aa">緑の番号=行き先・匍=匍匐・赤=阻止される開豁地</span></div>';
+    if(RT.sel!=null&&RT.E[RT.sel]&&RT.mode==='e'){var e=RT.E[RT.sel],U=rtEUnits(rtEnemyNat()),tab=RT.etab||e.kind||'inf';if(!U[tab]||!U[tab].length)tab=['inf','sw','gun','veh'].filter(function(x){return U[x].length;})[0]||'inf';
+      h+='<div class="rtRow rtEd"><b style="color:#ff9a3a">敵 '+esc(rtNm(e))+(e.lbl?' '+esc(e.lbl):' (ユニット未選択)')+'</b>'+rtB('−','mfRtE(\'rng\',-1)')+'<span>射程 <b>'+e.rng+'</b></span>'+rtB('＋','mfRtE(\'rng\',1)')
+      +rtB('阻止できる','mfRtE(\'intd\',true)',e.intd)+rtB('阻止できない','mfRtE(\'intd\',false)',!e.intd)+rtB('地上','mfRtE(\'lv\',0)',!e.lv)+rtB('上の階','mfRtE(\'lv\',1)',e.lv===1)+rtB('消す','mfRtE(\'del\')',false,'color:#ff8a70')+'</div>';
+      h+='<div class="rtRow">'+['inf','sw','gun','veh'].filter(function(x){return U[x].length;}).map(function(x){return rtB({inf:'歩兵',sw:'SW',gun:'砲',veh:'車両'}[x],"mfRtETab('"+x+"')",x===tab);}).join('')+'<span style="font-size:11px;color:#8899aa">ユニットを選ぶと射程が入る(砲・車両は 16 まで、A10.532)</span></div>';
+      h+='<div class="rtRow rtUs">'+U[tab].map(function(it,i){var on=e.kind===tab&&e.lbl===it.lbl;return '<button class="rmB rtU'+(on?' on':'')+'" onclick="event.stopPropagation();mfRtEPick(\''+tab+'\','+i+')">'+(it.img?'<img src="'+it.img+'" alt="">':'')+'<small>'+esc(it.lbl)+'<br>射程'+it.rng+'</small></button>';}).join('')+'</div>';
+      if(e.fac!=null)h+='<div class="rtRow"><span style="font-size:12px">'+(e.kind==='veh'?(e.tur?'砲塔の向き(TCA)':'車体の向き(VCA)'):'砲の向き(CA)')+'</span>'+[0,1,2,3,4,5].map(function(k){return rtB('<span style="display:inline-block;transform:rotate('+Math.round(rtDirAng(e,k))+'deg)">↑</span>','mfRtE(\'fac\','+k+')',e.fac===k);}).join('')+'<span style="font-size:11px;color:#8899aa">CA を変えないと撃てない所は阻止できない(A10.532)</span></div>';}
     if(R){var t=[];if(R.must)t.push('<b style="color:#ff8a70">潰走しなければならない</b>('+(R.adj?'敵に隣接':R.expo?'開豁地で敵の LOS・Normal Range':'Blaze')+')');else t.push('DM のときだけ潰走(A10.62)');
-      if(RT.pick)t.push('<b style="color:#5fe08a">'+(RT.pick.low?'匍匐 ':'行き先 ')+esc(rtNm(RT.pick.to))+'</b> '+RT.pick.mf+'MF・'+(RT.pick.low?'阻止なし':RT.pick.inter.length?'<b style="color:#ff8a70">阻止 '+RT.pick.inter.length+' か所</b>':'阻止なし'));
+      if(RT.pick&&RT.pick.man&&!RT.pick.endOk)t.push('<b style="color:#ffd24a">経路 '+esc(rtNm(RT.pick.to))+' '+RT.pick.mf+'MF: まだここでは止まれません(林・建物か、行ける所まで)</b>');
+      if(RT.pick)t.push('<b style="color:#5fe08a">'+(RT.pick.man?'手で引いた経路 ':RT.pick.low?'匍匐 ':'行き先 ')+esc(rtNm(RT.pick.to))+'</b> '+RT.pick.mf+'MF・'+(RT.pick.low?'阻止なし':RT.pick.inter.length?'<b style="color:#ff8a70">阻止 '+RT.pick.inter.length+' か所</b>':'阻止なし'));
       else t.push(R.dests.length?'行き先は '+R.dests.length+' か所'+(R.cover?'(林・建物)':'(林・建物に届かない)')+'。番号をタップで経路':'<b style="color:#ff8a70">行ける所がない: 潰走できなければ除去か降伏(A10.5・A20.21)</b>');
       h+='<div class="rtRow" style="font-size:12px">'+t.join('　')+'</div>';}
     else h+='<div class="rtRow" style="font-size:12px;color:#8899aa">計算中…(地図の地形を読み込んでいます)</div>';}
@@ -51305,6 +51355,315 @@ function rtTip(){var p=document.getElementById('mfRtTip');if(!RT.on||RT.step===1
   else h+='<b class="rtTh">⚠ 阻止されたら NMC(混乱状態の士気)</b>'+row('合格','#6fe08a','DR が士気より小さい: 潰走を続ける')+row('PIN','#ffd040','DR が士気と同じ: そこで止まる')+row('失敗','#ff6060','損耗(HS は潰走を続ける)・同行の指揮官は除去')+row('12','#ff6060','原 DR12: 除去');
   p.innerHTML=h;}
 window.MF_RT={s:function(){return RT;},R:function(){return RT.R;}};
+/* ---------- v549: マルチ判定 白兵戦・PAATC(画面は新規。旧「突撃/不意打ち/白兵戦」タブでできたことは全部) ----------
+ * 白兵戦 → 歩兵どうし / 歩兵が車両を / 車両が歩兵を。部隊はシナリオのユニットを数で選ぶ(SK3 と同じ)。
+ *   歩兵どうし: 不意打ち(A11.4、旧 CAMBJUDGE と同じ drm)→ 両軍の攻撃(同時。不意打ち成功なら成功した側が先に全部解決し、残りが反撃)。
+ *     1 回の攻撃は旧 CJUDGE_COMMON(比・除去#・DRM、HtH・捕獲 A20.22・Withdraw・TI・超過は旧と同じ値)。
+ *     FP: 分隊/HS/乗員は印刷の FP、指揮官 1、PIN は半分、混乱は攻撃しない、相手が全部隠蔽なら半分(A11.19)。
+ *     指揮修正は MMC と一緒に攻撃する Pin でない統制の指揮官の一番良いもの(A11.141)。CX/相手 CX・相手が全部混乱は旧と同じ DRM。
+ *     結果: 除去 → 相手全部、損耗 → 1 ユニット(選ぶ/無作為)。原 DR2 で MMC が攻撃していれば指揮官誕生(1:1 未満 −1)。
+ *   歩兵が車両を: 旧 ccvCalc・CVJUDGE と同じ CCV と DRM。原 DR2 は追加 dr、原 DR12 は攻撃側全部が損耗。
+ *   車両が歩兵を: 旧 VA_calcFp と CJUDGE_COMMON(相手の CCV が防御の値)。
+ * PAATC(A11.6): 車両の Location に入る MMC ごとに DR+修正 ≤ 士気で合格、失敗は PIN。指揮官は受けない。 */
+var CCG=null,PAG=null;
+function ccNat2(n){var ns=mcNats();return ns.filter(function(x){return x!==n;})[0]||n;}
+function ccInit(kind){var ns=mcNats();CCG={kind:kind||'inf',step:1,aNat:ns[0],dNat:ccNat2(ns[0]),pA:{},pD:{},A:[],D:[],amb:{on:false},atk:[],o:{},veh:null,vs:{}};}
+window.mfCcOpen=function(kind){RY.open=true;RY.miss=null;RY.moreOpen=false;if(!kind){RY.mode='ccm';ryDraw();return;}if(kind==='pa'){RY.mode='pa';if(!PAG)paInit();ryDraw();return;}if(!CCG||CCG.kind!==kind)ccInit(kind);RY.mode='cc';ryDraw();};
+function ccMenu(){var h=ryHead('白兵戦','どの白兵戦を判定しますか?');
+  var it2=function(t,s,f){return '<div class="rmIt" onclick="event.stopPropagation();'+f+'"><span class="rmIc">⚔</span><span class="rmTx"><span class="rmT">'+t+'</span><span class="rmSub">'+s+'</span></span></div>';};
+  h+=it2('歩兵どうし','分隊・指揮官どうし。不意打ち(A11.4)から両軍の攻撃まで',"mfCcOpen('inf')");
+  h+=it2('車両を攻撃','歩兵が車両を白兵戦で攻撃(CCV、A11.5)',"mfCcOpen('veh')");
+  h+=it2('車両が歩兵を','車両が車載機銃で歩兵を攻撃(A11.62)',"mfCcOpen('va')");
+  h+=it2('PAATC','歩兵が車両の Location に入る前の判定(A11.6)',"mfCcOpen('pa')");
+  h+=it2('車両が相手の AFV のヘクスへ','入れるか(D2.6: LOS の外か、原 DR 5 で撃破・Shock)',"RY.mode='ve';ryDraw()");
+  h+=it2('捕虜・降伏(A20)','捕虜の扱い・降伏・No Quarter は旧タブ',"mfRyClose();mfOld('aphcc');S.aphccSub='a20';Draw()");
+  return h;}
+/* ---- 選択 ---- */
+function ccTiles(side){var G=CCG,nat=side==='A'?G.aNat:G.dNat,P=side==='A'?G.pA:G.pD,h='';
+  var smc=scenarioSmcListForNat(nat).slice().sort(function(a,b){return b.mor-a.mor;}),mmc=scenarioMmcListForNat(nat);
+  var tl=function(kind,lbl,sub){var k=kind+'|'+lbl,n=P[k]||0,src=uSrc(nat,lbl),q=k.replace(/'/g,"\\'");return '<div class="mgP'+(n?' on':'')+'">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(lbl)+'</span>')+'<span class="mcL">'+esc(sub)+'</span><span class="mgC">'+bt(false,'−',"mfCcPick('"+side+"','"+q+"',-1)")+'<b>'+n+'</b>'+bt(false,'＋',"mfCcPick('"+side+"','"+q+"',1)")+'</span></div>';};
+  h+='<div class="mgG">'+mmc.map(function(u){return tl('mmc',u.lbl,u.lbl+' FP'+(u.fp!=null?u.fp:'?'));}).join('')+smc.map(function(u){return tl('smc',u.lbl,u.lbl+' FP1');}).join('')+'</div>';return h;}
+window.mfCcPick=function(side,k,d){var P=side==='A'?CCG.pA:CCG.pD,c=Math.max(0,(P[k]||0)+d);if(c)P[k]=c;else delete P[k];ryDraw();};
+window.mfCcNat=function(side,n){if(side==='A'){CCG.aNat=n;CCG.pA={};if(CCG.dNat===n){CCG.dNat=ccNat2(n);CCG.pD={};}}else{CCG.dNat=n;CCG.pD={};}CCG.veh=null;ryDraw();};
+function ccMk(P,nat,side,id0){var U=[],id=id0;Object.keys(P).forEach(function(k){var p=k.split('|');for(var i=0;i<P[k];i++)U.push({pid:++id,side:side,kind:p[0],lbl:p.slice(1).join('|'),nat:nat,brk:false,pin:false,cx:false,conc:false,gone:false,wnd:false,log:[]});});return U;}
+window.mfCcGo=function(){var G=CCG;G.A=ccMk(G.pA,G.aNat,'A',0);G.D=G.kind==='inf'||G.kind==='va'?ccMk(G.pD,G.dNat,'D',100):[];
+  if(G.kind!=='va'&&!G.A.length){toast('攻撃する部隊を選んでください');return;}if(G.kind==='inf'&&!G.D.length){toast('相手の部隊を選んでください');return;}
+  if(G.kind==='veh'&&!G.veh){toast('目標の車両を選んでください');return;}if(G.kind==='va'&&(!G.veh||!G.D.length)){toast('車両と相手の部隊を選んでください');return;}
+  G.A.concat(G.D).forEach(function(x){x.lbl0=x.lbl;});G.step=2;G.amb={on:false};G.pair={A:{},D:{}};G.promo=[];G.vres=null;ccResetAtk();if(G.kind==='veh'){var m1=G.A.filter(function(x){return x.kind!=='smc';})[0],s1=G.A.filter(function(x){return x.kind==='smc';})[0];(m1?[m1,s1]:[s1]).forEach(function(x){if(x)x.use=true;});}RY.miss=null;ryDraw();};
+function ccSelHTML(){var G=CCG,h='',ns=mcNats(),T1={inf:'白兵戦 — 歩兵どうし',veh:'白兵戦 — 歩兵が車両を攻撃',va:'白兵戦 — 車両が歩兵を攻撃'}[G.kind];
+  h+=ryHead(T1,'白兵戦のメニューに戻る',"RY.mode='ccm';ryDraw()");
+  var natRow=function(side,cur){return ns.map(function(n){return bt(cur===n,NATJ[n]||n,"mfCcNat('"+side+"','"+n+"')");}).join('');};
+  var L='',R='';
+  if(G.kind!=='va'){L+=it('<b class="mgNo">①</b> 攻撃側','',natRow('A',G.aNat));L+=ccTiles('A');}
+  else{L+=it('<b class="mgNo">①</b> 攻撃する車両','',natRow('A',G.aNat));L+='<div class="mcG">'+afvsOf(G.aNat).map(function(v){var img=vSrc('afv',v.id,G.aNat,v.lbl);return '<button class="rmB mcT'+(G.veh===v.id?' on':'')+'" onclick="event.stopPropagation();CCG.veh=\''+v.id+'\';ryDraw()">'+(img?'<img src="'+img+'" alt="">':'<span class="mcTx">'+esc(v.lbl)+'</span>')+'<span class="mcL">'+esc(v.lbl)+'</span></button>';}).join('')+'</div>';}
+  if(G.kind==='veh'){R+=it('<b class="mgNo">②</b> 目標の車両','',natRow('D',G.dNat));R+='<div class="mcG">'+afvsOf(G.dNat).map(function(v){var img=vSrc('afv',v.id,G.dNat,v.lbl);return '<button class="rmB mcT'+(G.veh===v.id?' on':'')+'" onclick="event.stopPropagation();CCG.veh=\''+v.id+'\';ryDraw()">'+(img?'<img src="'+img+'" alt="">':'<span class="mcTx">'+esc(v.lbl)+'</span>')+'<span class="mcL">'+esc(v.lbl)+'</span></button>';}).join('')+'</div>';}
+  else{R+=it('<b class="mgNo">②</b> 防御側','',natRow('D',G.dNat));R+=ccTiles('D');}
+  var n=G.A.length;h+='<div class="ij2Cols"><div>'+L+'</div><div>'+R+'</div></div>';
+  h+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfCcGo()" style="margin:10px 6px"><span class="rmTx" style="align-items:center"><span class="rmT">白兵戦を判定する</span><span class="rmSub">次の画面で各ユニットの状態(PIN・CX・混乱・隠蔽)を決めます</span></span></div>';
+  return h;}
+/* ---- 部隊の値 ---- */
+function ccUD(x){return mgUnitData(x.nat,x.kind,x.lbl);}
+function ccFP(x){if(x.kind==='smc')return 1;var u=ccUD(x);return u&&u.fp!=null?u.fp:0;}
+function ccMor(x){var u=ccUD(x);return u?u.mor:null;}
+function ccCmd(x){return mgCmd(x)+(x.wnd?1:0);}
+function ccU(pid){return CCG.A.concat(CCG.D).filter(function(x){return x.pid===pid;})[0];}
+function ccSide(s){return s==='A'?CCG.A:CCG.D;}
+function ccOp(s){return s==='A'?'D':'A';}
+function ccNm(s){return s==='A'?'攻撃側('+(NATJ[CCG.aNat]||CCG.aNat)+')':'防御側('+(NATJ[CCG.dNat]||CCG.dNat)+')';}
+function ccHtH(){var m=S.cc.cc_mode;S.cc.cc_mode='inf';var r=aslHtH();S.cc.cc_mode=m;return r;}
+function ccOdds(c){var a=(c.cc_atkPin?(c.af*0.5+(c.afGood||0)):c.af)*(c.cc_defConc?0.5:1),d=c.df;if(!(a>0&&d>0))return null;var r=a/d,i;
+  if(r>10)i=13;else if(r>=10)i=12;else if(r>=8)i=11;else if(r>=6)i=10;else if(r>=4)i=9;else if(r>=3)i=8;else if(r>=2)i=7;else if(r>=1.5)i=6;else if(r>=1)i=5;else if(r>=0.5)i=4;else if(r>=1/4)i=3;else if(r>=1/6)i=2;else if(r>=1/8)i=1;else i=0;
+  return {a:a,d:d,r:CCT_R[i],k:CCT_N[i]+(c.cc_mode==='inf'&&ccHtH()?2:0),low:r<1};}
+function ccDrm(c){var amb=c.cc_ambush==='success'?-1:c.cc_ambush==='victim'?1:0;return (c.cc_ldrPresent?c.cc_ldr:0)+(c.cc_cx?1:0)+(c.cc_def_cx?-1:0)+(c.cc_broken?-2:0)+amb+(window.ASLFULL_CAP20_DRM?ASLFULL_CAP20_DRM(c):0);}
+/* ---- 組み分け(A11.14): 指揮官は上に乗る MMC と一緒に攻撃・防御。付け先が決まっていなければ単独(SK3 と同じ) ---- */
+function ccHost(s,x){if(x.kind!=='smc')return x.pid;var v=(CCG.pair[s]||{})[x.pid];if(!v)return x.pid;var h=ccU(v);return h&&!h.gone&&h.kind!=='smc'?v:x.pid;}
+function ccGroups(s){var L=ccSide(s).filter(function(x){return !x.gone;}),G=[];L.forEach(function(x){if(ccHost(s,x)===x.pid){var g=[x];L.forEach(function(y){if(y!==x&&ccHost(s,y)===x.pid)g.push(y);});G.push(g);}});return G;}
+window.mfCcPair=function(s,pid,host){CCG.pair[s]=CCG.pair[s]||{};CCG.pair[s][pid]=host;ccResetAtk();ryDraw();};
+/* ---- 攻撃 1 つの計算 ---- */
+function ccAmbFor(s){var r=CCG.amb.res;return r==='atk'?(s==='A'?'success':'victim'):r==='def'?(s==='D'?'success':'victim'):'none';}
+function ccCalc(s,k){var A=k.a.map(ccU).filter(function(x){return x&&!x.gone&&!x.brk;}),D=k.t.map(ccU).filter(function(x){return x&&!x.gone;});if(!A.length||!D.length)return null;
+  var pinS=0,goodS=0;A.forEach(function(x){var f=ccFP(x);if(x.pin)pinS+=f;else goodS+=f;});
+  var mmc=A.some(function(x){return x.kind!=='smc';}),L=A.filter(function(x){return x.kind==='smc'&&!x.pin;}).map(ccCmd).sort(function(a,b){return a-b;})[0],O=k.o||{};
+  var c={cc_mode:'inf',af:pinS?pinS:goodS,afGood:pinS?goodS:0,cc_atkPin:pinS>0,cc_defConc:D.every(function(x){return x.conc;}),df:D.reduce(function(a,x){return a+ccFP(x);},0),
+    cc_ldrPresent:mmc&&L!=null,cc_ldr:mmc&&L!=null?L:0,cc_cx:A.some(function(x){return x.cx;}),cc_def_cx:D.every(function(x){return x.cx;}),cc_broken:D.every(function(x){return x.brk;}),
+    cc_ambush:ccAmbFor(s),ccHasMmc:mmc,cap20:!!O.cap20,cap20inexp:!!O.cap20inexp,cap20ber:!!O.cap20ber,cc_defWd:!!O.wd,cc_defWdStay:O.wdStay||0,cc_ti:!!O.ti,cc_defTi:!!O.defTi,cc_os:O.os||0,cc_defOs:O.defOs||0};
+  var od=ccOdds(c);if(!od)return null;var drm=ccDrm(c),p=[];
+  if(c.cc_ldrPresent)p.push('指揮 '+sg(c.cc_ldr));if(c.cc_cx)p.push('CX +1');if(c.cc_def_cx)p.push('相手 CX −1');if(c.cc_broken)p.push('目標が全員混乱 −2');if(c.cc_ambush!=='none')p.push(c.cc_ambush==='success'?'不意打ち −1':'不意打ちされた +1');
+  var ex=window.ASLFULL_CAP20_DRM?ASLFULL_CAP20_DRM(c):0;if(ex)p.push('捕獲など '+sg(ex));
+  return {c:c,od:od,drm:drm,p:p,A:A,D:D};}
+function ccRes(s,k){var Z=ccCalc(s,k);if(!Z||!k.dr)return null;var sp=rySplit(k.dr);Z.c.rd=sp[0];Z.c.wd=sp[1];var hm=S.cc.cc_mode;S.cc.cc_mode='inf';var R=CJUDGE_COMMON(Z.c);S.cc.cc_mode=hm;return R;}
+/* ---- 段階: 1 不意打ち 2 攻撃(不意打ち成功なら 2 先攻 3 後攻) 最後に反映 ---- */
+function ccSeqSides(){var r=CCG.amb.res;return r==='atk'?['A','D']:r==='def'?['D','A']:null;}
+function ccResetAtk(){var G=CCG;G.atk={A:[],D:[]};G.done1=false;G.applied=false;G.log=[];['A','D'].forEach(function(s){var a=ccSide(s).filter(function(x){return !x.gone&&!x.brk;}).map(function(x){return x.pid;});if(a.length&&ccSide(ccOp(s)).some(function(x){return !x.gone;}))G.atk[s]=[{a:[],t:[],dr:0,cr:null,o:{}}];});}
+window.mfCcSimple=function(){var G=CCG;['A','D'].forEach(function(s){var sq=ccSeqSides();if(sq&&G.done1&&s===sq[0])return;var a=ccSide(s).filter(function(x){return !x.gone&&!x.brk;}).map(function(x){return x.pid;}),t=ccSide(ccOp(s)).filter(function(x){return !x.gone;}).map(function(x){return x.pid;});G.atk[s]=a.length&&t.length?[{a:a,t:t,dr:0,cr:null,o:{}}]:[];});G.applied=false;ryDraw();};
+window.mfCcAdd=function(s){CCG.atk[s].push({a:[],t:[],dr:0,cr:null,o:{}});ryDraw();};
+window.mfCcDel=function(s,j){CCG.atk[s].splice(j,1);ryDraw();};
+window.mfCcTg=function(s,j,role,pid){var G=CCG,k=G.atk[s][j];if(!k)return;var side=role==='a'?s:ccOp(s),g=ccGroups(side).filter(function(g){return g.some(function(x){return x.pid===pid;});})[0]||[];
+  var ids=g.map(function(x){return x.pid;}),L=k[role],on=ids.some(function(i){return L.indexOf(i)>=0;});
+  if(!on){if(G.atk[s].some(function(o,q){return q!==j&&ids.some(function(i){return o[role].indexOf(i)>=0;});}))return;if(role==='a'){ids=ids.filter(function(i){return !ccU(i).brk;});if(!ids.length)return;}ids.forEach(function(i){if(L.indexOf(i)<0)L.push(i);});}
+  else ids.forEach(function(i){var p=L.indexOf(i);if(p>=0)L.splice(p,1);});k.dr=0;k.cr=null;ryDraw();};
+window.mfCcDr=function(s,j,dr){var k=CCG.atk[s][j];if(!k||!ccCalc(s,k))return;k.dr=dr||2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);k.cr=null;ryDraw();};
+window.mfCcCr=function(s,j,pid){var k=CCG.atk[s][j];if(k){k.cr=k.cr===pid?null:pid;}ryDraw();};
+window.mfCcO=function(s,j,key,v){var k=CCG.atk[s][j];if(!k)return;k.o=k.o||{};k.o[key]=v;if(key!=='more')k.dr=0;ryDraw();};
+/* 反映: 指定した側の攻撃をまとめて結果に */
+function ccApplySide(s,log){var G=CCG,eff=[];G.atk[s].forEach(function(k,j){var Z=ccCalc(s,k),R=ccRes(s,k);if(!Z||!R)return;var cap=Z.c.cap20&&!Z.c.cap20ber;k.R=R;k.Z={od:Z.od,drm:Z.drm};
+    log.push(ccNm(s)+' 攻撃'+(j+1)+' '+Z.od.r+' DR'+k.dr+'→'+R.mod+': '+({elim:cap?'全部捕虜':'目標を全部除去',cas:cap?'1 ユニット捕虜':'1 ユニット損耗',miss:'効果なし'}[R.st]));
+    try{logResult(function(){return {tabLbl:T('白兵戦'),text:ccNm(s)+' 攻撃'+(j+1)+' '+Z.od.r+' DR'+k.dr+'→'+R.mod+'(除去#'+R.elim+') : '+({elim:'除去',cas:'損耗',miss:'効果なし'}[R.st]),color:R.st==='elim'?'#cc3333':(R.st==='cas'?'#c8a032':'#8899aa'),detail:null};});}catch(e){}
+    if(R.st==='elim')Z.D.forEach(function(x){eff.push({x:x,gone:true,t:cap?'捕虜':'除去'});});
+    if(R.st==='cas'){var tg=k.cr?ccU(k.cr):Z.D[Math.floor(Math.random()*Z.D.length)];eff.push({x:tg,cr:true,cap:cap});}
+    if(R.pro){var mm=Z.A.filter(function(x){return x.kind!=='smc';}).sort(function(a,b){return (ccMor(b)||0)-(ccMor(a)||0);})[0];if(mm)G.promo.push({s:s,pid:mm.pid,low:Z.od.low,dr:0});}
+    if(R.st==='elim'&&!cap)log.push('除去した部隊の SW・砲: この DR の赤の dr が 1 なら、ごとに dr を振り黒の除去# '+(R.elim-(ccHtH()?2:0))+' 以下で除去(A11.13)');});
+  return eff;}
+function ccDoEff(E){E.forEach(function(e){var x=e.x;if(!x||x.gone)return;if(e.gone){x.gone=true;x.log.push(e.t);return;}
+  if(x.kind==='smc'){if(e.cap){x.gone=true;x.log.push('捕虜');}else{x.needWound=true;x.log.push('損耗(負傷判定)');}return;}
+  var to=(CASUAL_MAP[x.nat]||{})[x.lbl];x.log.push((e.cap?'捕虜: ':'損耗: ')+x.lbl+(to?' → '+to:' 除去'));if(to)x.lbl=to;else x.gone=true;});}
+window.mfCcApply=function(){var G=CCG,sq=ccSeqSides();G.promo=G.promo||[];
+  if(sq&&!G.done1){var e=ccApplySide(sq[0],G.log);ccDoEff(e);G.done1=true;var s2=sq[1];G.atk[s2]=[];var a=ccSide(s2).filter(function(x){return !x.gone&&!x.brk;});if(a.length&&ccSide(sq[0]).some(function(x){return !x.gone;}))G.atk[s2]=[{a:[],t:[],dr:0,cr:null,o:{}}];ryDraw();return;}
+  var E=[];(sq?[sq[1]]:['A','D']).forEach(function(s){E=E.concat(ccApplySide(s,G.log));});ccDoEff(E);G.applied=true;try{saveState();}catch(e){}ryDraw();}; /* 同時: 両方の結果をまとめて(A11.12 除去されても攻撃する) */
+window.mfCcWound=function(pid,dr){var x=ccU(pid);if(!x||!x.needWound)return;dr=ryRoll(dr);var w=dr+(x.wnd?1:0);x.needWound=false;x.wdr=dr;if(w<=4){x.wnd=true;x.log.push('負傷判定 dr'+w+': 負傷');}else{x.gone=true;x.log.push('負傷判定 dr'+w+': 除去');}ryDraw();};
+window.mfCcPromo=function(i,dr){var p=CCG.promo[i];if(!p)return;p.dr=ryRoll(dr);ryDraw();};
+window.mfCcT=function(pid,k){var x=ccU(pid);if(!x||CCG.applied)return;x[k]=!x[k];if(k==='brk'&&x.brk)x.pin=false;ryDraw();};
+window.mfCcHtH=function(v){S.cc.cc_hth=v;ryDraw();};
+window.mfCcNext=function(){var G=CCG;G.A.concat(G.D).forEach(function(x){x.log=[];x.wdr=0;});G.amb={on:false,mel:true};G.promo=[];ccResetAtk();ryDraw();}; /* 混戦の次の CCPh */
+/* ---- 不意打ち ---- */
+function ccAmbSide(s){var G=CCG,L=ccSide(s).filter(function(x){return !x.gone;}),a=G.amb,m=a[s]||{},d=0,p=[];
+  var ld=L.filter(function(x){return x.kind==='smc'&&!x.brk&&!x.pin;}).map(ccCmd).sort(function(x,y){return x-y;})[0];
+  var add=function(v,t){if(v){d+=v;p.push(t+' '+sg(v));}};
+  add((m.green||m.lax)?1:0,m.lax?'Lax':'未熟兵');add(L.length&&L.every(function(x){return x.conc;})?-2:0,'隠蔽');add(L.some(function(x){return x.brk;})?1:0,'混乱');
+  add(L.some(function(x){return x.pin;})?1:0,'PIN');add(L.some(function(x){return x.cx;})?1:0,'CX');add(m.afv?2:0,'車両・トーチカ');add(m.afvBu?1:0,'BU');
+  add(ld!=null?ld:0,'指揮');add(ambSsrLabel()&&m.ssr?-1:0,'SSR');add(m.stealth?-1:0,'ステルス');return {d:d,p:p};}
+window.mfCcAmb=function(k,v){var a=CCG.amb;if(k==='on'){CCG.amb={on:v,mel:a.mel};}else if(k==='res'){a.res=v;a.manual=true;}else if(k.indexOf('.')>0){var q=k.split('.');a[q[0]]=a[q[0]]||{};a[q[0]][q[1]]=v;if(!a.manual)a.res=null;}else{a[k]=v;if(!a.manual)a.res=null;}ccResetAtk();ryDraw();};
+window.mfCcAmbDr=function(s,v){var a=CCG.amb;a[s+'dr']=v||1+Math.floor(Math.random()*6);a.manual=false;a.res=null;
+  if(a.Adr&&a.Ddr){var A=ccAmbSide('A'),D=ccAmbSide('D'),am=a.Adr+A.d,dm=a.Ddr+D.d,diff=am-dm,n=aslAmbNight({ambLit:a.lit});a.res=diff<=-(n?2:3)?'atk':diff>=3?'def':'none';a.am=am;a.dm=dm;
+    try{logResult(function(){return {tabLbl:T('不意打ち'),text:'dr'+am+' vs '+dm+' : '+({atk:'攻撃側が不意打ち成功',def:'防御側が不意打ち成功',none:'不意打ちなし'}[a.res]),color:a.res==='none'?'#8899aa':'#c8a032',detail:null};});}catch(e){}}
+  ccResetAtk();ryDraw();};
+function ccAmbHTML(){var G=CCG,a=G.amb,h='';
+  if(a.mel)return it('<b class="mgNo">①</b> 不意打ち','継続中の混戦: 不意打ちはない(A11.4)',bt(false,'混戦をやめる',"CCG.amb.mel=false;ryDraw()"));
+  h+=it('<b class="mgNo">①</b> 不意打ち(A11.4)','林・建物へ突撃したとき、隠蔽した部隊がいる・隠蔽で入ったとき。増援の突撃ではない',bt(!a.on,'起きない',"mfCcAmb('on',false)")+bt(!!a.on,'判定する',"mfCcAmb('on',true)"));
+  if(!a.on)return h;
+  ['A','D'].forEach(function(s){var m=a[s]||{},S2=ccAmbSide(s),nm=s==='A'?'攻撃側':'防御側';
+    h+=it(nm+' の drm <b style="color:#ffd24a">'+sg(S2.d)+'</b>',esc(S2.p.join('・')||'なし')+'(部隊の状態から)',bt(!!m.green,'未熟 +1',"mfCcAmb('"+s+".green',"+!m.green+")")+bt(!!m.lax,'Lax +1',"mfCcAmb('"+s+".lax',"+!m.lax+")")+bt(!!m.stealth,'ステルス −1',"mfCcAmb('"+s+".stealth',"+!m.stealth+")")+bt(!!m.afv,'車両 +2',"mfCcAmb('"+s+".afv',"+!m.afv+")")+(m.afv?bt(!!m.afvBu,'BU +1',"mfCcAmb('"+s+".afvBu',"+!m.afvBu+")"):'')+(ambSsrLabel()?bt(!!m.ssr,'SSR −1',"mfCcAmb('"+s+".ssr',"+!m.ssr+")"):''));
+    h+=it(nm+' の dr','',ryD6(a[s+'dr']||0,"mfCcAmbDr('"+s+"',",null,null));});
+  if(window.ASLFULL_NIGHT_NVR&&ASLFULL_NIGHT_NVR()!=null)h+=it('夜(E1.77)','照明されていなければ差 2 で成功',bt(!a.lit,'照明なし',"mfCcAmb('lit',false)")+bt(!!a.lit,'照明あり',"mfCcAmb('lit',true)"));
+  h+=it('結果を手で選ぶ','',bt(a.res==='none','なし',"mfCcAmb('res','none')")+bt(a.res==='atk','攻撃側が成功',"mfCcAmb('res','atk')")+bt(a.res==='def','防御側が成功',"mfCcAmb('res','def')"));
+  if(a.res)h+=okBox(a.res!=='none',{atk:'攻撃側が不意打ち成功',def:'防御側が不意打ち成功',none:'不意打ちなし'}[a.res],(a.manual?'手で選んだ':'dr '+a.Adr+'('+sg(ccAmbSide('A').d)+')='+a.am+' 対 '+a.Ddr+'('+sg(ccAmbSide('D').d)+')='+a.dm)+(a.res!=='none'?'・成功した側が先に攻撃(攻撃 −1・相手 +1)。Withdraw してもよい(A11.4)':''));
+  return h;}
+/* ---- 画面 ---- */
+function ccChip(x){var src=uSrc(x.nat,x.lbl);return '<span class="mcCh">'+(src?'<img src="'+src+'" alt="">':'')+'<b>'+esc(x.lbl)+'</b></span>';}
+function ccUnitRow(x){var src=uSrc(x.nat,x.lbl),st=x.gone?'<i style="color:#ff6a5a">'+esc(x.log[x.log.length-1]||'除去')+'</i>':(x.log.length?'<i style="color:#ffb35c">'+esc(x.log.join('・'))+'</i>':'');
+  var tg=function(k,t){return bt(!!x[k],t,"mfCcT("+x.pid+",'"+k+"')");};
+  return '<div class="rmIt mgU" style="cursor:default'+(x.gone?';opacity:.55':'')+'">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(x.lbl)+'</span>')+'<span class="rmTx"><span class="rmT">'+esc(x.lbl)+' <small>FP'+ccFP(x)+(x.kind==='smc'?' 指揮'+sg(mgCmd(x)):'')+'</small> '+st+'</span>'+(x.gone||CCG.applied?'':'<span class="rmSub" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">'+tg('pin','PIN')+tg('cx','CX')+tg('brk','混乱')+tg('conc','隠蔽')+(x.kind==='smc'?tg('wnd','負傷'):'')+'</span>')+'</span></div>';}
+function ccPairHTML(s){var L=ccSide(s).filter(function(x){return !x.gone;}),M=L.filter(function(x){return x.kind!=='smc';}),Sm=L.filter(function(x){return x.kind==='smc';});if(!M.length||!Sm.length)return '';var P=CCG.pair[s]||{},un=Sm.some(function(x){return P[x.pid]===undefined;});
+  var h='<div class="rmNote" style="margin-bottom:2px">組み分け: 指揮官を付ける MMC(A11.14)'+(un?' <b style="color:#ff9a9a">付け先を選んでください(未選択は単独)</b>':'')+'</div>';
+  Sm.forEach(function(x){h+=it(esc(x.lbl),'',M.map(function(m){return bt(P[x.pid]===m.pid,esc(m.lbl)+'#'+m.pid%100,"mfCcPair('"+s+"',"+x.pid+","+m.pid+")");}).join('')+bt(P[x.pid]===0,'単独',"mfCcPair('"+s+"',"+x.pid+",0)"));});return h;}
+function ccAtkCard(s,j,k){var G=CCG,o=ccOp(s),h='',Z=ccCalc(s,k),R=Z&&k.dr?ccRes(s,k):null,lock=G.applied||(ccSeqSides()&&G.done1&&ccSeqSides()[0]===s);
+  h+='<div class="ccAk"><div class="ccAkH"><b>攻撃 '+(j+1)+'</b>'+(lock?'':bt(false,'この攻撃を消す',"mfCcDel('"+s+"',"+j+")"))+'</div>';
+  var grp=function(side,role){var used=function(g){return G.atk[s].some(function(o2,q){return q!==j&&g.some(function(x){return o2[role].indexOf(x.pid)>=0;});});};
+    return ccGroups(side).map(function(g){var on=g.some(function(x){return k[role].indexOf(x.pid)>=0;}),u=used(g),brk=role==='a'&&g.every(function(x){return x.brk;});
+      return '<button class="rmB ccG'+(on?' on':'')+'"'+(lock||(!on&&(u||brk))?' disabled':'')+' onclick="event.stopPropagation();mfCcTg(\''+s+'\','+j+',\''+role+'\','+g[0].pid+')">'+g.map(ccChip).join('')+(brk?'<small>(混乱)</small>':(u&&!on?'<small>(他の攻撃)</small>':''))+'</button>';}).join('');};
+  h+='<div class="rmNote">攻撃する組</div><div class="ccGs">'+grp(s,'a')+'</div>';
+  h+='<div class="rmNote">目標の組('+ccNm(o)+')　<span style="color:#e09a9a">指揮官だけは選べません</span></div><div class="ccGs">'+grp(o,'t')+'</div>';
+  if(!Z)return h+'<div class="rmNote" style="color:#ffcc66">'+(k.a.length&&k.t.length?'攻撃できません':'攻撃する組と目標の組を選んでください')+'</div></div>';
+  var od=Z.od,kk=od.k-Z.drm;
+  h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">FP <b>'+od.a+'</b> 対 <b>'+od.d+'</b>　→ <b style="color:#ffd24a;font-size:18px">'+od.r+'</b>　除去# <b>'+od.k+'</b>　DRM <b>'+sg(Z.drm)+'</b></span><span class="rmSub">'+esc(Z.p.join('・')||'修正なし')+(Z.c.cc_atkPin?'・PIN の FP は半分':'')+(Z.c.cc_defConc?'・目標が隠蔽で FP 半分(A11.19)':'')+(ccHtH()?'・Hand-to-Hand(除去# +2)':'')+'</span></span></div>';
+  h+='<div class="ccBand">'+[2,3,4,5,6,7,8,9,10,11,12].map(function(v){var c=v<kk?'e':v===kk?'c':'n';return '<button class="ccB '+c+(k.dr===v?' on':'')+'"'+(lock?' disabled':'')+' onclick="event.stopPropagation();mfCcDr(\''+s+'\','+j+','+v+')">'+v+'</button>';}).join('')+(lock?'':'<button class="ccB r" onclick="event.stopPropagation();mfCcDr(\''+s+'\','+j+',0)">🎲</button>')+'</div><div class="rmNote">赤=目標を全部除去・橙=1 ユニット損耗・灰=効果なし(原 DR)</div>';
+  if(R){var cap=Z.c.cap20&&!Z.c.cap20ber;h+=okBox(R.st!=='miss',{elim:cap?'目標を全部捕虜':'目標を全部除去',cas:cap?'目標の 1 ユニットを捕虜':'目標の 1 ユニットが損耗',miss:'効果なし'}[R.st],'DR '+k.dr+' ('+sg(R.atkDRM)+') → '+R.mod+'　除去# '+R.elim+(R.pro?'・原 DR2: 反映後に指揮官誕生':''));
+    if(R.st==='cas'&&Z.D.length>1&&!lock)h+=it('損耗させるユニット','選ばなければ無作為(A7.302)',Z.D.map(function(x){return bt(k.cr===x.pid,esc(x.lbl),"mfCcCr('"+s+"',"+j+","+x.pid+")");}).join(''));}
+  if(!lock){var O=k.o||{},on=[];if(O.cap20)on.push('捕獲');if(O.wd)on.push('Withdraw');if(O.ti)on.push('TI');if(O.defTi)on.push('相手TI');if(O.os)on.push('超過+'+O.os);if(O.defOs)on.push('相手超過−'+O.defOs);
+    h+='<div class="rmIt ij2MoreS'+(O.more?' on':'')+'" onclick="event.stopPropagation();mfCcO(\''+s+'\','+j+',\'more\','+!O.more+')"><span class="rmTx"><span class="rmT">'+(O.more?'▾':'▸')+' 捕獲・Withdraw・TI・積み重ね超過'+(on.length?' <span style="color:#ffd24a">● '+esc(on.join('・'))+'</span>':'')+'</span><span class="rmSub">A20.22・A11.2・A4.8・A5.12</span></span></div>';
+    if(O.more){var f=function(key,v){return "mfCcO('"+s+"',"+j+",'"+key+"',"+v+")";};
+      h+=it('捕獲を試みる(A20.22)','攻撃の前に宣言。未熟兵の相手は −1、狂乱がいれば不可',bt(!O.cap20,'しない',f('cap20',false))+bt(!!O.cap20,'する +1',f('cap20',true))+(O.cap20?bt(!!O.cap20inexp,'相手が未熟兵 −1',f('cap20inexp',!O.cap20inexp))+bt(!!O.cap20ber,'狂乱がいる',f('cap20ber',!O.cap20ber)):''));
+      h+=it('目標が Withdraw する(A11.2)','−2。残る味方 1 つごとに +1',bt(!O.wd,'しない',f('wd',false))+bt(!!O.wd,'する −2',f('wd',true))+(O.wd?[0,1,2,3].map(function(v){return bt((O.wdStay||0)===v,'残り'+v,f('wdStay',v));}).join(''):''));
+      h+=it('TI(A4.8)','',bt(!!O.ti,'自分 TI +1',f('ti',!O.ti))+bt(!!O.defTi,'相手 TI −1',f('defTi',!O.defTi)));
+      h+=it('積み重ねの超過(A5.12)','分隊相当',[0,1,2].map(function(v){return bt((O.os||0)===v,'自分+'+v,f('os',v));}).join('')+[0,1,2].map(function(v){return bt((O.defOs||0)===v,'相手−'+v,f('defOs',v));}).join(''));}}
+  return h+'</div>';}
+function ccSideCard(s){var G=CCG,sq=ccSeqSides(),h='',first=sq&&sq[0]===s;
+  h+='<div class="ccSd ccSd'+s+'"><div class="ccSdH"><b>'+ccNm(s)+' の攻撃</b>'+(sq?'<span>← '+(first?'先攻':'後攻')+'</span>':'')+'</div>';
+  if(sq&&!first&&!G.done1)return h+'<div class="rmNote">先攻の結果を反映すると、生き残った部隊で攻撃を指定できます</div></div>';
+  if(sq&&first&&G.done1)return h+'<div class="rmNote">解決済み</div></div>';
+  if(!G.applied)h+=ccPairHTML(s);
+  if(!G.atk[s].length)h+='<div class="rmNote">攻撃なし'+(G.applied?'':'(下の「＋ 攻撃を追加」で指定)')+'</div>';
+  G.atk[s].forEach(function(k,j){h+=ccAtkCard(s,j,k);});
+  if(!G.applied)h+='<div class="rmBtns" style="justify-content:flex-start;margin:6px 0">'+bt(false,'＋ 攻撃を追加',"mfCcAdd('"+s+"')")+'</div>';
+  return h+'</div>';}
+function ccLeft(){var G=CCG,h='';
+  h+=ryHead('<span style="color:#ffd24a">白兵戦</span>: '+(NATJ[G.aNat]||G.aNat)+' → '+(NATJ[G.dNat]||G.dNat),'ユニットの選択に戻る',"CCG.step=1;ryDraw()");
+  h+=hd2('攻撃側('+(NATJ[G.aNat]||G.aNat)+')','状態を押して切り替え');G.A.forEach(function(x){h+=ccUnitRow(x);});
+  h+=hd2('防御側('+(NATJ[G.dNat]||G.dNat)+')','');G.D.forEach(function(x){h+=ccUnitRow(x);});
+  h+=it('Hand-to-Hand(J2.31)','攻撃側が宣言・不意打ちされていないとき。除去# +2',bt(S.cc.cc_hth==null,'自動',"mfCcHtH(null)")+bt(S.cc.cc_hth===true,'する',"mfCcHtH(true)")+bt(S.cc.cc_hth===false,'しない',"mfCcHtH(false)"));
+  return h;}
+function ccStages(){var G=CCG,sq=ccSeqSides(),any=['A','D'].some(function(s){return G.atk[s].some(function(k){return k.dr;});}),st;
+  var L=sq?[['① 不意打ち','林・建物への突撃'],['② 先攻の攻撃','不意打ち成功側'],['③ 後攻の攻撃','生き残りだけ'],['④ 結果を反映','']]:[['① 不意打ち','林・建物への突撃'],['② 攻撃の指定と DR','攻撃ごと'],['③ 結果を反映','']];
+  st=sq?(G.applied?4:(G.done1?3:2)):(G.applied?3:(any||G.amb.res||G.amb.mel?2:1));
+  return '<div class="ccSt">'+L.map(function(t,i){var n=i+1;return '<div class="'+(n===st?'on':(n<st?'done':''))+'">'+(n<st?'✓ ':'')+t[0]+'<small>'+t[1]+'</small></div>';}).join('')+'</div>';}
+function ccRight(){var G=CCG,h=ccStages();
+  if(!G.applied)h+=ccAmbHTML();
+  if(G.amb.on&&!G.amb.res&&!G.amb.mel)return h+'<div class="rmNote" style="color:#ffcc66">不意打ちの dr を両方入れるか、結果を手で選んでください</div>';
+  if(G.applied){h+=okBox(true,'結果を反映しました','');h+='<div class="rmNote">'+G.log.map(esc).join('<br>')+'</div>';
+    G.A.concat(G.D).forEach(function(x){if(x.needWound||x.wdr)h+=it(esc(x.lbl)+' の負傷判定','dr 4 以下で負傷・5 以上で除去'+(x.wnd&&!x.wdr?'(負傷中 +1)':''),ryD6(x.wdr||0,"mfCcWound("+x.pid+",",0));});
+    (G.promo||[]).forEach(function(p,i){var x=ccU(p.pid),pd=promoCalc(x.nat,ccMor(x)||7,false)-(p.low?1:0);h+=it('指揮官誕生(原 DR2)',esc(x.lbl0)+'・drm '+sg(pd)+(p.low?'(1:1 未満 −1 込み)':''),ryD6(p.dr||0,"mfCcPromo("+i+",",null,null));if(p.dr){var Lp=promoResult(p.dr,pd);h+=okBox(!!Lp,Lp?'指揮官誕生: '+Lp:'誕生なし','dr '+p.dr+' ('+sg(pd)+')');}});
+    var a=G.A.some(function(x){return !x.gone;}),d=G.D.some(function(x){return !x.gone;});
+    h+='<div class="rmNote">'+(a&&d?'両軍が残ったので混戦(Melee、A11.15)。次の CCPh にまた白兵戦':'白兵戦は終わり')+'。Infiltration: 原 DR2 を出した部隊・原 DR12 で攻撃された部隊は離れられる(A11.22)</div>';
+    h+='<div class="rmBtns" style="justify-content:flex-start;margin:6px 0">'+(a&&d?bt(false,'次の CCPh(混戦を続ける)',"mfCcNext()"):'')+bt(false,'車両との白兵戦へ',"ccToVeh()")+'</div>';return h+ryMiss();}
+  h+='<div class="ccSds">'+ccSideCard('A')+ccSideCard('D')+'</div>';
+  h+='<div class="rmBtns" style="justify-content:flex-start;margin:6px 0">'+bt(false,'⟲ かんたん: 全員で 1 つの攻撃にまとめる',"mfCcSimple()")+'</div><div class="rmNote">1 ユニットは 1 回だけ攻撃・攻撃される。指定しないユニットは攻撃しない(A11.12)</div>';
+  var sq=ccSeqSides(),sides=sq?(G.done1?[sq[1]]:[sq[0]]):['A','D'],ready=sides.every(function(s){return G.atk[s].every(function(k){return !ccCalc(s,k)||k.dr;});})&&sides.some(function(s){return G.atk[s].some(function(k){return k.dr;});});
+  var lab=sq?(G.done1?'後攻の結果を反映':'先攻の結果を反映 → 後攻の攻撃へ'):'結果を反映(同時)';
+  h+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();'+(ready?'mfCcApply()':'')+'" style="margin:8px 6px'+(ready?'':';opacity:.45')+'"><span class="rmTx" style="align-items:center"><span class="rmT">'+lab+'</span><span class="rmSub">'+(ready?'除去・損耗を部隊に反映します':'指定した攻撃の DR が全部出たら反映できます')+'</span></span></div>';
+  return h+ryMiss();}
+window.ccToVeh=function(){var G=CCG,an=G.aNat,dn=G.dNat,pA={};G.A.forEach(function(x){if(!x.gone&&!x.brk){var k=x.kind+'|'+x.lbl;pA[k]=(pA[k]||0)+1;}});ccInit('veh');CCG.aNat=an;CCG.dNat=dn;CCG.pA=pA;ryDraw();};
+/* ---- 歩兵が車両を(CCV) ---- */
+function ccvType(L){var t=['squad','crew','hs','smc'],best='smc';L.forEach(function(x){var k=x.kind==='smc'?'smc':/乗員/.test(x.lbl)?'crew':((ccUD(x)||{}).hs||/HS/.test(x.lbl)?'hs':'squad');if(t.indexOf(k)<t.indexOf(best))best=k;});return best;}
+window.mfCvUse=function(pid){var x=ccU(pid);if(!x)return;if(!x.use){var U=CCG.A.filter(function(y){return y.use;});if(U.length>=2){toast('車両への攻撃は 2 ユニットまで(A11.5)');return;}if(U.length===1&&U[0].kind!=='smc'&&x.kind!=='smc'){toast('2 ユニットで組むときは片方が指揮官(A11.5)');return;}}x.use=!x.use;CCG.vres=null;ryDraw();};
+function ccvCtx(){var G=CCG,V=G.vs,att=G.A.filter(function(x){return !x.gone&&!x.brk&&x.use;}),tp=ccvType(att),smcJ=tp!=='smc'&&att.some(function(x){return x.kind==='smc';});
+  var mmc=att.some(function(x){return x.kind!=='smc';}),L=att.filter(function(x){return x.kind==='smc'&&!x.pin;}).map(ccCmd).sort(function(a,b){return a-b;})[0];
+  var c={ccv_unitType:tp,ccv_smcJoin:smcJ,ccv_halved:V.halved!=null?V.halved:(att.some(function(x){return x.pin;})?1:0),ccv_inexp:!!V.inexp,ccv_ae:!!V.ae,ccv_ssr24:!!V.ssr24};
+  var ccv=ccvCalc(c),amb=G.amb.res==='atk'?-1:G.amb.res==='def'?1:0,ld=mmc&&L!=null?L:0;
+  var drm=ld+(att.some(function(x){return x.cx;})?1:0)+(V.motion?2:0)+(V.immob?-1:0)+(V.ce?-1:0)+(V.nomg?-1:0)+(V.ot?-2:0)+(V.unarm?-3:0)+(V.escort||0)+amb+aslAtmmDrm();
+  return {att:att,c:c,ccv:ccv,drm:drm,ld:ld,mmc:mmc,amb:amb};}
+window.mfCvV=function(k,v){CCG.vs[k]=v;CCG.vres=null;ryDraw();};
+window.mfCvDr=function(dr){var X=ccvCtx();if(!X.att.length){RY.miss=['攻撃できる部隊がない'];ryDraw();return;}if(!dr)dr=2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var mod=dr+X.drm,st=mod<X.ccv?'kill':(mod===X.ccv?'immob':'miss');
+  CCG.vres={dr:dr,mod:mod,st:st,ccv:X.ccv,drm:X.drm,ex:0,pro:dr===2&&X.mmc?{dr:0}:null};
+  try{logResult(function(){return {tabLbl:T('対車両CC'),text:'DR'+dr+'→'+mod+'(CCV'+X.ccv+') : '+({kill:'撃破',immob:'走行不能',miss:'効果なし'}[st]),color:st==='kill'?'#cc3333':(st==='immob'?'#c8a032':'#8899aa'),detail:null};});}catch(e){}ryDraw();};
+window.mfCvEx=function(dr){if(!CCG.vres)return;CCG.vres.ex=ryRoll(dr);ryDraw();};
+window.mfCvPro=function(dr){if(!CCG.vres||!CCG.vres.pro)return;CCG.vres.pro.dr=ryRoll(dr);ryDraw();};
+function cvLeft(){var G=CCG,h='',v=afvOf(G.veh)||{},img=vSrc('afv',G.veh,G.dNat,v.lbl);
+  h+=ryHead('<span style="color:#ffd24a">歩兵が車両を攻撃</span>','ユニットの選択に戻る',"CCG.step=1;ryDraw()");
+  h+='<div class="rmIt ij2Sum">'+(img?'<img src="'+img+'" alt="" style="width:44px;height:44px;border-radius:4px;margin-right:8px">':'')+'<span class="rmTx"><span class="rmT">目標: '+esc(v.lbl||G.veh)+'</span><span class="rmSub">'+(NATJ[G.dNat]||G.dNat)+'</span></span></div>';
+  h+=hd2('攻撃する部隊','1 回の攻撃は 2 ユニットまで。組むなら片方は指揮官(A11.5)');G.A.forEach(function(x){h+=bt(!!x.use,(x.use?'✓ 攻撃する: ':'攻撃しない: ')+esc(x.lbl),'mfCvUse('+x.pid+')','margin:4px 12px 0');h+=ccUnitRow(x);});return h;}
+function cvRight(){var G=CCG,V=G.vs,h='';h+=ccAmbHTML();if(G.amb.on&&!G.amb.res)return h+'<div class="rmNote" style="color:#ffcc66">不意打ちの dr を両方入れてください</div>';
+  var tb=function(k,t){return bt(!!V[k],t,"mfCvV('"+k+"',"+!V[k]+")");};
+  h+=it('<b class="mgNo">②</b> 目標の車両','',tb('motion','Motion・動いている +2')+tb('immob','走行不能 −1')+tb('ce','CE −1')+tb('nomg','使える MG なし −1')+tb('ot','OT −2')+tb('unarm','装甲なし −3'));
+  h+=it('護衛の歩兵(A11.51)','壊乱・Pin でない武装の敵。HS・乗員 +1・分隊 +2(BU なら数えない)',[0,1,2,3,4].map(function(v){return bt((V.escort||0)===v,'+'+v,"mfCvV('escort',"+v+")");}).join(''));
+  var X=ccvCtx();
+  h+=it('攻撃の CCV','FP 半減の要因 1 つごとに −1',[0,1,2,3].map(function(v){return bt(X.c.ccv_halved===v,'半減 '+v,"mfCvV('halved',"+v+")");}).join('')+tb('inexp','未熟兵 −1')+tb('ae','Assault Engineer +1')+(S.scen&&S.scen.sel==='S24'?tb('ssr24','SSR +1'):''));
+  var r=G.vres,p=[];if(X.ld)p.push('指揮 '+sg(X.ld));if(X.att.some(function(x){return x.cx;}))p.push('CX +1');if(X.amb)p.push(X.amb<0?'不意打ち −1':'不意打ちされた +1');
+  if(!r){h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">CCV <b style="color:#ffd24a">'+X.ccv+'</b>('+esc(CCV_UNIT_LABELS[X.c.ccv_unitType])+(X.c.ccv_smcJoin?'+SMC':'')+')　DRM <b>'+sg(X.drm)+'</b></span><span class="rmSub">'+esc(p.join('・')||'')+' 修正後 DR が CCV より小さいと撃破・同じで走行不能</span></span></div>';
+    h+=it('<b class="mgNo">③</b> DR','緑=撃破・黄=走行不能',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){var m=v+X.drm,c=m<X.ccv?'color:#5fd08a':m===X.ccv?'color:#ffd24a':'';return bt(false,String(v),"mfCvDr("+v+")",'min-width:34px;'+c);}).join('')+bt(false,'🎲',"mfCvDr(0)",'min-width:34px'),'ij2W');}
+  else{h+=okBox(r.st!=='miss',r.st==='kill'&&r.mod<=Math.floor(r.ccv/2)?'撃破(炎上する残骸)':{kill:'撃破',immob:'走行不能',miss:'効果なし'}[r.st],'DR '+r.dr+' ('+sg(r.drm)+') → '+r.mod+'　CCV '+r.ccv+(r.st==='kill'?'・CCV の半分('+Math.floor(r.ccv/2)+')以下なら Burning Wreck(A11.5)':''));
+    if(r.dr===2){h+=it('原 DR2 の追加 dr','1〜2 撃破・3 走行不能',ryD6(r.ex||0,'mfCvEx(',2,4));if(r.ex)h+=okBox(r.ex<=3,r.ex<=2?'撃破':r.ex===3?'走行不能':'効果なし','dr '+r.ex);}
+    if(r.dr===12)h+='<div class="rmNote" style="color:#ff8a70">原 DR12: 乗員のいる車両が Shock・Stun でなければ、攻撃した部隊が全部損耗(A11.621)</div>';
+    if(r.pro){var mm=X.att.filter(function(x){return x.kind!=='smc';})[0],pd=promoCalc(mm?mm.nat:'GER',mm?ccMor(mm):7,false);h+=it('指揮官誕生(原 DR2・MMC)','drm '+sg(pd),ryD6(r.pro.dr||0,'mfCvPro(',null,null));if(r.pro.dr){var Lp=promoResult(r.pro.dr,pd);h+=okBox(!!Lp,Lp?'指揮官誕生: '+Lp:'誕生なし','dr '+r.pro.dr+sg(pd));}}
+    h+=it('','',bt(false,'やり直し',"CCG.vres=null;ryDraw()"));}
+  h+=ryMiss();return h;}
+/* ---- 車両が歩兵を ---- */
+function vaCtx(){var G=CCG,V=G.vs,veh=afvOf(G.veh)||{},D=G.D.filter(function(x){return !x.gone;}),tp=V.tp||ccvType(D);
+  var c={cc_mode:'vehAtk',va_useCmg:!!V.cmg,va_useRmg:!!V.rmg,va_useAamg:!!V.aamg,va_ce:!!V.ce,va_motion:!!V.motion};var fp=VA_calcFp(c,veh);
+  var amb=G.amb.res==='atk'?'success':G.amb.res==='def'?'victim':'none',cc={cc_mode:'vehAtk',af:fp,afGood:0,cc_atkPin:false,df:CCV_BASE[tp],cc_ambush:amb,ccHasMmc:false};return {veh:veh,fp:fp,tp:tp,c:cc,D:D};}
+window.mfVaDr=function(dr){var X=vaCtx();if(CCG.vs.unctrl){RY.miss=['非統制の車両は攻撃できない'];ryDraw();return;}if(!(X.fp>0)){RY.miss=['使う機銃を選んでください'];ryDraw();return;}if(!dr)dr=2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var sp=rySplit(dr);X.c.rd=sp[0];X.c.wd=sp[1];
+  var hh=S.cc.cc_mode;S.cc.cc_mode='vehAtk';var R=CJUDGE_COMMON(X.c);S.cc.cc_mode=hh;CCG.vres={dr:dr,R:R};
+  try{logResult(function(){return {tabLbl:T('白兵戦'),text:'車両→歩兵 DR'+dr+'→'+R.mod+'(除去#'+R.elim+') : '+({elim:'除去',cas:'損耗',miss:'効果なし'}[R.st]),color:R.st==='elim'?'#cc3333':(R.st==='cas'?'#c8a032':'#8899aa'),detail:null};});}catch(e){}ryDraw();};
+function vaLeft(){var G=CCG,h='',v=afvOf(G.veh)||{},img=vSrc('afv',G.veh,G.aNat,v.lbl);
+  h+=ryHead('<span style="color:#ffd24a">車両が歩兵を攻撃</span>','選択に戻る',"CCG.step=1;ryDraw()");
+  h+='<div class="rmIt ij2Sum">'+(img?'<img src="'+img+'" alt="" style="width:44px;height:44px;border-radius:4px;margin-right:8px">':'')+'<span class="rmTx"><span class="rmT">'+esc(v.lbl||G.veh)+'</span><span class="rmSub">車載機銃の FP で攻撃(A11.62)</span></span></div>';
+  h+=hd2('相手の部隊','');G.D.forEach(function(x){h+=ccUnitRow(x);});return h;}
+function vaRight(){var G=CCG,V=G.vs,h='',X=vaCtx(),mg=X.veh.mg||{},tb=function(k,t){return bt(!!V[k],t,"mfCvV('"+k+"',"+!V[k]+")");};
+  h+=ccAmbHTML();if(G.amb.on&&!G.amb.res)return h+'<div class="rmNote" style="color:#ffcc66">不意打ちの dr を両方入れてください</div>';
+  h+=it('<b class="mgNo">②</b> 車両','',bt(!V.ce,'BU',"mfCvV('ce',false)")+bt(!!V.ce,'CE',"mfCvV('ce',true)")+tb('motion','Motion(FP 半分)')+tb('unctrl','非統制(使えない)'));
+  var mb=[];if(mg.cmg)mb.push(tb('cmg','CMG '+mg.cmg+'FP'));if(mg.rmg)mb.push(tb('rmg','RMG '+mg.rmg+'FP'));if(mg.aamg)mb.push(V.ce?tb('aamg','AAMG '+mg.aamg+'FP'):'<span style="font-size:12px;color:#8899aa">AAMG は CE のときだけ</span>');
+  h+=it('使う機銃','合計 FP で一度に攻撃',mb.join('')||'<span style="font-size:12px;color:#ff8a70">使える機銃がない</span>');
+  h+=it('相手の CCV(防御の値)','',['squad','crew','hs','smc'].map(function(t){return bt(X.tp===t,esc(CCV_UNIT_LABELS[t])+' '+CCV_BASE[t],"mfCvV('tp','"+t+"')");}).join(''));
+  var od=ccOdds(X.c),drm=X.c.cc_ambush==='success'?-1:X.c.cc_ambush==='victim'?1:0,r=G.vres;
+  if(!r){h+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">FP <b>'+X.fp+'</b> 対 CCV <b>'+X.c.df+'</b>　比 <b>'+(od?od.r:'—')+'</b>　除去# <b>'+(od?od.k:'—')+'</b>　DRM <b>'+sg(drm)+'</b></span><span class="rmSub">白兵戦表(CCT)で解決</span></span></div>';
+    if(od)h+=it('<b class="mgNo">③</b> DR','緑=除去・黄=損耗',[2,3,4,5,6,7,8,9,10,11,12].map(function(v){var m=v+drm,c=m<od.k?'color:#5fd08a':m===od.k?'color:#ffd24a':'';return bt(false,String(v),"mfVaDr("+v+")",'min-width:34px;'+c);}).join('')+bt(false,'🎲',"mfVaDr(0)",'min-width:34px'),'ij2W');}
+  else{var R=r.R;h+=okBox(R.st!=='miss',{elim:'相手を全部除去',cas:'相手の 1 ユニットが損耗',miss:'効果なし'}[R.st],'DR '+r.dr+' ('+sg(R.atkDRM)+') → '+R.mod+'　除去# '+R.elim);h+=it('','',bt(false,'やり直し',"CCG.vres=null;ryDraw()"));}
+  h+=ryMiss();return h;}
+/* ---- PAATC ---- */
+function paInit(){var ns=mcNats();PAG={nat:ns[0],pick:{},ldr:null,ldrWnd:false,units:[]};}
+window.mfPaNat=function(n){paInit();PAG.nat=n;ryDraw();};
+window.mfPaPick=function(lbl,d){var c=Math.max(0,(PAG.pick[lbl]||0)+d);if(c)PAG.pick[lbl]=c;else delete PAG.pick[lbl];paSync();ryDraw();};
+function paSync(){var U=[],id=0;Object.keys(PAG.pick).forEach(function(l){for(var i=0;i<PAG.pick[l];i++){var o=PAG.units.filter(function(u){return u.lbl===l&&U.indexOf(u)<0;})[0];U.push(o||{pid:0,lbl:l,green:false,res:null});}});U.forEach(function(u){u.pid=++id;});PAG.units=U;}
+window.mfPaSet=function(k,v){PAG[k]=v;PAG.units.forEach(function(u){u.res=null;});ryDraw();};
+window.mfPaG=function(pid){var u=PAG.units.filter(function(x){return x.pid===pid;})[0];if(u){u.green=!u.green;u.res=null;}ryDraw();};
+function paDrm(u){var L=PAG.ldr?mgUnitData(PAG.nat,'smc',PAG.ldr):null;return (L?(L.cmd||0)+(PAG.ldrWnd?1:0):0)+(u.green||(S.scen&&S.scen.sel==='S44'&&PAG.pol)?1:0);}
+window.mfPaDr=function(pid,dr){var u=PAG.units.filter(function(x){return x.pid===pid;})[0];if(!u||u.res)return;var m=(mgUnitData(PAG.nat,'mmc',u.lbl)||{}).mor;if(m==null)return;if(!dr)dr=2+Math.floor(Math.random()*6)+Math.floor(Math.random()*6);var d=paDrm(u),mod=dr+d;u.res={dr:dr,mod:mod,drm:d,ok:mod<=m,mor:m};
+  try{logResult(function(){return {tabLbl:'PAATC',text:u.lbl+' DR'+dr+'→'+mod+'('+T('士気値')+m+') : '+(u.res.ok?T('成功(ただちに突撃)'):T('失敗(釘付け状態)')),color:u.res.ok?'#00aa55':'#cc3333',detail:null};});}catch(e){}ryDraw();};
+window.mfPaAll=function(){PAG.units.forEach(function(u){if(!u.res)mfPaDr(u.pid);});};
+function paHTML(){var G=PAG,nat=G.nat,h='',L='',R='';
+  L+=ryHead('PAATC(歩兵が車両の Location へ)','白兵戦のメニューに戻る',"RY.mode='ccm';ryDraw()");
+  L+=it('国籍','',mcNats().map(function(n){return bt(nat===n,NATJ[n]||n,"mfPaNat('"+n+"')");}).join(''));
+  L+=hd2('<b class="mgNo">①</b> 入る MMC','相手の車両がいる Location に入る(突撃・CC 対応の移動、A11.6)');
+  L+='<div class="mgG">'+scenarioMmcListForNat(nat).map(function(u){var n=G.pick[u.lbl]||0,src=uSrc(nat,u.lbl),q=u.lbl.replace(/'/g,"\\'");return '<div class="mgP'+(n?' on':'')+'">'+(src?'<img src="'+src+'" alt="">':'<span class="mcTx">'+esc(u.lbl)+'</span>')+'<span class="mcL">'+esc(u.lbl)+' 士気'+u.mor+'</span><span class="mgC">'+bt(false,'−',"mfPaPick('"+q+"',-1)")+'<b>'+n+'</b>'+bt(false,'＋',"mfPaPick('"+q+"',1)")+'</span></div>';}).join('')+'</div>';
+  var sm=scenarioSmcListForNat(nat);L+=it('<b class="mgNo">②</b> 一緒にいる指揮官','指揮官は PAATC を受けない。指揮修正を MMC の DR に',bt(!G.ldr,'なし',"mfPaSet('ldr',null)")+sm.map(function(u){return bt(G.ldr===u.lbl,esc(u.lbl),"mfPaSet('ldr','"+u.lbl.replace(/'/g,"\\'")+"')");}).join(''));
+  if(G.ldr)L+=it('その指揮官','負傷中は +1',bt(!G.ldrWnd,'負傷なし',"mfPaSet('ldrWnd',false)")+bt(!!G.ldrWnd,'負傷中',"mfPaSet('ldrWnd',true)"));
+  if(S.scen&&S.scen.sel==='S44')L+=it('SSR(S44)','ポーランドの MMC +1',bt(!G.pol,'なし',"mfPaSet('pol',false)")+bt(!!G.pol,'+1',"mfPaSet('pol',true)"));
+  L+='<div class="rmNote">PAATC がいらない: 指揮官・Hero・狂乱・その車両の乗員など。未熟兵・伊非エリート・連合/枢軸の中小国は +1(A11.6)</div>';
+  if(!G.units.length)R+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">左で MMC を選ぶと、ここに判定が出ます</span><span class="rmSub">DR+修正 ≤ 士気で合格(ただちに入れる)、失敗は PIN</span></span></div>';
+  G.units.forEach(function(u){var m=(mgUnitData(nat,'mmc',u.lbl)||{}).mor,d=paDrm(u),src=uSrc(nat,u.lbl);
+    R+='<div class="rmIt mgU" style="cursor:default">'+(src?'<img src="'+src+'" alt="">':'')+'<span class="rmTx"><span class="rmT">'+esc(u.lbl)+' <small>士気 '+m+'・DRM '+sg(d)+'</small> '+(u.res?'<i style="color:'+(u.res.ok?'#5fd08a':'#ff8a70')+'">DR '+u.res.dr+'→'+u.res.mod+': '+(u.res.ok?'合格':'失敗 PIN')+'</i>':'<i style="color:#ffd24a">DR '+(m-d)+' 以下で合格</i>')+'</span>'
+      +(u.res?'':'<span class="rmSub" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">'+bt(!!u.green,'未熟 +1',"mfPaG("+u.pid+")")+[2,3,4,5,6,7,8,9,10,11,12].map(function(v){return bt(false,String(v),"mfPaDr("+u.pid+","+v+")",'min-width:30px;'+(v+d<=m?'color:#5fd08a':''));}).join('')+bt(false,'🎲',"mfPaDr("+u.pid+",0)")+'</span>')+'</span></div>';});
+  if(G.units.some(function(u){return !u.res;}))R+='<div class="rmIt ij2Roll" onclick="event.stopPropagation();mfPaAll()" style="margin:8px 6px"><span class="rmTx" style="align-items:center"><span class="rmT">🎲 残りをまとめて振る</span></span></div>';
+  if(G.units.length&&G.units.every(function(u){return u.res;}))R+=it('','',bt(false,'やり直し',"PAG.units.forEach(function(u){u.res=null;});ryDraw()"));
+  return '<div class="ij2Cols"><div>'+L+'</div><div>'+R+'</div></div>';}
+function ccDraw(){var G=CCG;if(G.step===1)return ccSelHTML();if(G.kind==='inf')return '<div class="ij2Cols"><div>'+ccLeft()+'</div><div>'+ccRight()+'</div></div>';if(G.kind==='veh')return '<div class="ij2Cols"><div>'+cvLeft()+'</div><div>'+cvRight()+'</div></div>';return '<div class="ij2Cols"><div>'+vaLeft()+'</div><div>'+vaRight()+'</div></div>';}
+window.ccOddsT=function(c){var o=ccOdds(c);return o&&o.r+'/'+o.k;};window.ccDrm=ccDrm;window.vaCtx_t=vaCtx;
+window.MF_CC={afvs:function(n){return afvsOf(n);},g:function(){return CCG;},calc:function(s,k){return ccCalc(s,k);},res:function(s,k){return ccRes(s,k);},cv:function(){return ccvCtx();},pa:function(){return PAG;}};
+/* ---- v549: 車両が相手の AFV のヘクスへ(D2.6) — SK3 の「車両が目標のAFVへ(停止できる？)」(SK 3.3.2)のフル版。
+ * フル版は「相手の AFV の LOS の外」か「その AFV を原 TK DR(または IFT DR)5 で撃破・Shock できる」ときだけ入れる。
+ * TK は旧タブと同じ表(tkRowFor・resolveHeToKillTK・gunTkFinal・judgeAFVEffects)。射程 0、使い切らない弾(AP・HE)だけ。 */
+var VEG=null;
+window.mfVeOpen=function(){RY.open=true;RY.mode='ve';RY.miss=null;ryDraw();};
+function veInit(){var ns=mcNats();VEG={an:ns[0],tn:ccNat2(ns[0]),v:null,t:null,face:'front',los:true};}
+window.mfVeSet=function(k,v){if(!VEG)veInit();VEG[k]=v;if(k==='an'){VEG.v=null;}if(k==='tn')VEG.t=null;ryDraw();};
+function veCalc(){var V=VEG;if(!V.v||!V.t)return null;var a=afvOf(V.v),T0=afvOf(V.t);if(!a||!T0)return null;var gd=null;try{gd=afvToGunData(a);}catch(e){}var out={rows:[],ok:false,none:!gd};if(!gd)return out;
+  var band=V.face==='front'?T0.afFront:T0.afSide,locs=['hull'];if(band&&band.turret!=null)locs.push('turret');
+  (gd.ammo||[]).forEach(function(am){if(am.deplete!==0)return;var basic=null;if(am.type==='AP'){var r=tkRowFor(gd);basic=r&&r.ap?r.ap[0]:null;}else if(am.type==='HE')basic=resolveHeToKillTK(gd.cal);if(basic==null)return;
+    locs.forEach(function(loc){var af=afvGetAF(T0,V.face,loc),tk=gunTkFinal(basic,false,V.face==='rear',af).final,ef=judgeAFVEffects(loc==='turret'?'TURRET':'HULL',am.type,5,tk).result,ok=ef==='KIA'||ef==='SHOCK';out.rows.push({am:am.lbl||am.type,loc:loc,af:af,tk:tk,ef:ef,ok:ok});if(ok)out.ok=true;});});
+  return out;}
+function veHTML(){if(!VEG)veInit();var V=VEG,ns=mcNats(),L='',Rh='';
+  L+=ryHead('車両が相手の AFV のヘクスへ(D2.6)','白兵戦のメニューに戻る',"RY.mode='ccm';ryDraw()");
+  L+='<div class="rmNote">移動フェイズに車両が相手の AFV のいるヘクスへ入れるのは、その AFV の LOS の外か、入ったヘクスで撃てば原 DR 5 で撃破か Shock にできるときだけ(D2.6)。</div>';
+  var vt=function(nat,cur,key){return '<div class="mcG">'+afvsOf(nat).map(function(v){var img=vSrc('afv',v.id,nat,v.lbl);return '<button class="rmB mcT'+(cur===v.id?' on':'')+'" onclick="event.stopPropagation();mfVeSet(\''+key+'\',\''+v.id+'\')">'+(img?'<img src="'+img+'" alt="">':'<span class="mcTx">'+esc(v.lbl)+'</span>')+'<span class="mcL">'+esc(v.lbl)+'</span></button>';}).join('')+'</div>';};
+  L+=it('<b class="mgNo">①</b> 入る車両','',ns.map(function(n){return bt(V.an===n,NATJ[n]||n,"mfVeSet('an','"+n+"')");}).join(''));L+=vt(V.an,V.v,'v');
+  Rh+=it('<b class="mgNo">②</b> 相手の AFV','',ns.map(function(n){return bt(V.tn===n,NATJ[n]||n,"mfVeSet('tn','"+n+"')");}).join(''));Rh+=vt(V.tn,V.t,'t');
+  Rh+=it('向き(こちらから見た面)','',bt(V.face==='front','正面',"mfVeSet('face','front')")+bt(V.face==='side','側面',"mfVeSet('face','side')")+bt(V.face==='rear','背面 TK+1',"mfVeSet('face','rear')"));
+  Rh+=it('相手の AFV の LOS','入る前の位置から見て',bt(!!V.los,'LOS の中',"mfVeSet('los',true)")+bt(!V.los,'LOS の外',"mfVeSet('los',false)"));
+  if(!V.los)Rh+=okBox(true,'入れる','相手の AFV の LOS の外(D2.6)');
+  else{var C=veCalc();if(!C)Rh+='<div class="rmIt ij2Sum"><span class="rmTx"><span class="rmT">入る車両と相手の AFV を選ぶと、ここに結果が出ます</span></span></div>';
+    else if(C.none)Rh+=okBox(false,'入れない','この車両に主砲がない(MG・IFE の IFT DR 5 は装甲のない相手だけ)');
+    else{Rh+=okBox(C.ok,C.ok?'入れる':'入れない',C.ok?'原 DR 5 で撃破か Shock にできる弾がある':'原 DR 5 では撃破も Shock もできない');
+      Rh+='<div class="rmNote">'+C.rows.map(function(r){return esc(r.am)+'・'+(r.loc==='turret'?'砲塔':'車体')+' AF'+r.af+' → TK# '+r.tk+': '+({KIA:'撃破',SHOCK:'Shock',POSSIBLE_SHOCK:'Shock の可能性(NTC)',IMMOBILIZATION:'走行不能',STUN:'Stun',NO_EFFECT:'効果なし'}[r.ef]||r.ef)+(r.ok?' ✓':'');}).join('<br>')+'</div>';}}
+  return '<div class="ij2Cols"><div>'+L+'</div><div>'+Rh+'</div></div>';}
 /* ---- 阻止のパネル(#mfRy の中) ---- */
 function rtUnits(){var nat=RT.nat,D=UNITS[nat]||{mmc:[],smc:[]},all=[];try{all=scenarioMmcListForNat(nat).concat(scenarioSmcListForNat(nat).map(function(u){return {lbl:u.lbl,mor:u.mor,bm:u.bm,smc:true,cmd:u.cmd};}));}catch(e){}return all;}
 function rtU(lbl){return rtUnits().filter(function(u){return u.lbl===lbl;})[0]||null;}
@@ -51867,9 +52226,9 @@ var SECS=[
   ['修理','修理',"mfHqGo('repair')",''],
   ['回収','修理',"mfHqGo('recover')",'new'],
   ['潰走・阻止','潰走・阻止',"mfHqGo('rout')",''],
-  ['MC・PTC','MC・PTC',"mfHqGo('mc')",'old'],
-  ['白兵戦','白兵戦',"mfHqGo('aphcc')",'old'],
-  ['PAATC(歩兵が車両へ)','PAATC（歩兵が車両へ）',"mfHqGo('aphcc')",'old']]],
+  ['MC・PTC','MC・PTC',"mfHqGo('mc')",''],
+  ['白兵戦','白兵戦',"mfHqGo('cc')",''],
+  ['PAATC(歩兵が車両へ)','PAATC（歩兵が車両へ）',"mfHqGo('pa')",''],['車両が相手のAFVのヘクスへ(D2.6)','車両 AFV',"mfHqGo('ve')",'new']]],
  ['調べる','',4,[
   ['早見表','早見表',"mfHqGo('ref')",''],
   ['ユニット','ユニット',"mfHqGo('unit')",''],
@@ -51888,6 +52247,9 @@ window.mfHqGo=function(k){mfHqClose();
   if(k==='mc'){mfMcOpen();return;}
   if(k==='rally'||k==='repair'||k==='recover'){mfRyOpen(k);return;}
   if(k==='rout'){mfRtStart();return;}
+  if(k==='cc'){mfCcOpen();return;}
+  if(k==='pa'){mfCcOpen('pa');return;}
+  if(k==='ve'){mfVeOpen();return;}
   mfOld(k);};
 })();
 </script>
