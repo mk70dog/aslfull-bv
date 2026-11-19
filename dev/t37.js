@@ -1,0 +1,22 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1180,height:820}});const E=[];p.on('pageerror',x=>E.push('PAGE '+String(x).slice(0,300)));
+await p.goto('file:///home/claude/aslfull-bv/index.html',{timeout:240000});await p.waitForTimeout(6000);
+const sh=async(n)=>{await p.waitForTimeout(500);await p.screenshot({path:'/home/claude/aslfull-bv/samples/sample-ui19-g'+n+'.png'});};
+await p.evaluate(()=>{localStorage.setItem('aslfull_nmMode','judge');SSEL('ASLA');mfModeSet('ai');});await p.waitForTimeout(2500);
+await p.evaluate(()=>{ASLFULL_SOLO('setup');});await p.waitForTimeout(2000);await p.evaluate(()=>{mfBtStart(1);});await p.waitForTimeout(1500);
+await p.evaluate(()=>{var e=document.querySelector('#aslfullAlog .b');if(e)ASLFULL_SOLO('alogclose');mfBtNext();});await p.waitForTimeout(1500);
+await p.evaluate(()=>{if(document.getElementById('aslfullAlog'))ASLFULL_SOLO('alogclose');mfBtRd();});
+const r=await p.evaluate(()=>{var A=ASLFULL_SOLO_API,me=A.side(),L=S.solo.stacks;for(const a of L.filter(x=>x.side===me))for(const t of L.filter(x=>x.side!==me)){var e=ASLFULL_SOLO_EVAL(a.id,t.id);if(e&&!e.blocked&&e.fp>0){mfBtSel(a.id);ASLFULL_SOLO('aim');ASLFULL_SOLO_TAP(t.bd,t.col,t.row);return A.hexNm(a)+'->'+A.hexNm(t);}}return 'none';});console.log('aim',r);
+await p.waitForTimeout(800);await sh('f1');
+await p.evaluate(()=>{ASLFULL_SOLO('pregoo');});await p.waitForTimeout(2000);
+console.log('fire',await p.evaluate(()=>'mf='+document.documentElement.classList.contains('mf-on')+' tab='+S.tab+' pop='+!!document.querySelector('#mfBtCmd .mfBtFire')+' '+JSON.stringify(ASLFULL_SOLO_API.mfp()).slice(0,300)));await sh('f2');
+await p.evaluate(()=>{if(S.sniper&&S.sniper.san){window.__san=JSON.stringify(S.sniper.san);S.sniper.san={axis:null,allied:null};}MF_BT.fr=1;MF_BT.fw=2;mfBtFireDice();});/* 見本の画面に狙撃兵が重ならないよう SAN を一時的に外す */await p.waitForTimeout(1500);
+console.log('res',await p.evaluate(()=>{var q=S.solo.popQ&&S.solo.popQ[0];return JSON.stringify(q&&{res:q.res,dr:q.dr,mod:q.mod,col:q.col,units:q.units.map(u=>u.t+':'+u.txt)})+' pop='+!!document.querySelector('#mfBtRes .fxCard')+' applied='+(S.solo.shot&&S.solo.shot.applied);}));await sh('f3');
+await p.evaluate(()=>{if(window.__san)S.sniper.san=JSON.parse(window.__san);ASLFULL_SOLO('popclose');mfBtRd();});
+// units editor + split
+await p.evaluate(()=>{var me=ASLFULL_SOLO_API.side();var s=S.solo.stacks.filter(x=>x.side===me&&x.u.reduce((p,z)=>p+z.n,0)>1)[0];mfBtSel(s.id);MF_BT.uOpen=true;mfBtRd();});await sh('f4');
+await p.evaluate(()=>{ASLFULL_SOLO('splitopen');ASLFULL_SOLO('splitn',0,1);mfBtRd();});await sh('f5');
+console.log('spl',await p.evaluate(()=>!!document.querySelector('#mfBtCmd .mfBtSec')));
+await p.evaluate(()=>{ASLFULL_SOLO('splitgo');mfBtRd();});
+console.log('after split stacks',await p.evaluate(()=>S.solo.stacks.length));
+console.log('ERR',E.length,E.join('\n'),await p.evaluate(()=>window.MF_BT_ERR||''));await b.close();})();
