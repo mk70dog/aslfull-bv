@@ -4,7 +4,7 @@
 
 ## 0. いまの作業
 - 2026-11-17: SK3 アプリ(mk70dog/aslsk_3-exp1)の今の仕様にフル版を移す作業を開始。まだコードは変えていない。
-- 現在の版: APP_VERSION "ASLFULL-v0.553"。スポット判定は 1〜4 章すべて済み。⑤ マルチ判定のボード・MC・PTC・回復・修理・回収・潰走・阻止・白兵戦・PAATC・D2.6・爆薬・ボグ・人力移動・煙幕・OBA が済み(⑤ マルチ判定はすべて新しい画面)。⑥ 対戦モードは ① 土台が済み(v553)。次は ② 歩兵の進行と判定(旧タブに出ていた臨機射撃・分割などの画面・BV126 の勝利条件と SSR)。方針(ダルマ): SK3 のマルチ判定は SK の全ルールに対応しているので、SK3 に合わせ、フル版で追加・変更されたルールの分を直す。
+- 現在の版: APP_VERSION "ASLFULL-v0.554"。スポット判定は 1〜4 章すべて済み。⑤ マルチ判定のボード・MC・PTC・回復・修理・回収・潰走・阻止・白兵戦・PAATC・D2.6・爆薬・ボグ・人力移動・煙幕・OBA が済み(⑤ マルチ判定はすべて新しい画面)。⑥ 対戦モードは ① 土台(v553)と ② の前半(v554: 射撃パネル・結果カード・分割・指示カード)が済み。次は ② の残り(狙撃兵パネルを SK3 の形に・BV126 の勝利条件と SSR・回復と士気チェックの画面・スタックを選んだ時の地図寄せ)。方針(ダルマ): SK3 のマルチ判定は SK の全ルールに対応しているので、SK3 に合わせ、フル版で追加・変更されたルールの分を直す。
 
 ## 1. ダルマの決定(2026-11-17)
 - 移す範囲: マップ中心の画面・上段の盤・対戦モードまで全部(指示書 3-1 の D)。
@@ -146,6 +146,14 @@
   - MC・PTC のタイルの古い印(old)を外した。
   - 確認(dev/t28〜t31・ページエラー0): 4-6-7 ×2+9-1 対 5-2-7 は 3:2・除去# 6、4-6-7 対 5-2-7 は 1:2・除去# 4、5-2-7 ×2+4-2-6 対 4-6-7 は 3:1・除去# 8(同時に反映)。SPW251/1 の向きで阻止のヘクス 0〜9。妨害マーカーで 15→9。SPW 251/10 の AP は AF1 に TK# 9 で入れる。
 
+- v554(2026-11-19 サンプル sample-ui19 にダルマ「実施」。最初の見本はダルマ「パネルのデザインが SK3 とあっていない」→ SK3 を Playwright で実測して作り直した): ⑥ 対戦モード ② の前半。
+  - 射撃: 旧 mapCard の中の mfp ポップアップ(mf モードでは見えない)の代わりに、指示カード #mfBtCmd の上に SK3 の btFireCardsHTML と同じ 1 行(攻撃のカウンター・★指揮官/!指揮官なし・距離 ▶ 合計 FP → 列 / DRM と内訳 ▶ 目標 ▶ 結果の見込みのバー(iftR で 36 通り)▶ 🎲射撃 / 取消)。2 行目はフル版の追加(MPh の射撃だけ FFMO・FFNAM・危険移動、実物のダイス 赤白、射撃タブ(旧タブ))。値は ASLFULL_SOLO_API.mfp()(mfpData = 旧 mfpHTML と同じ)、振るのは ASLFULL_SOLO('mfroll')、取消は 'mfclose'。対戦モード(MF_BT_MAP)では shootAsk の確認画面(#aslfullSoloPre)を出さずにすぐ射撃(SK3 と同じ)。shoot() も MF_BT_MAP のとき地図のパネル。
+  - 結果: #aslfullSoloPop を隠し、o.popQ の先頭を SK3 の結果カード(#btFx .fxCard B1)と同じ #mfBtRes で出す(赤白のダイス・FP/列/DR・DRM 内訳・国籍の絵 MF_BT_NATIMG(SK3 の BADGE_NAT_IMG をそのまま、<script id="mfBtImg">。独・ソ・米のみ)・大きな結果・ユニットごとの結果(短く、長いものは「詳しく」)・閉じる/次へ・この射撃を取り消す)。
+  - 指示カード: 状態フラグ(FLAGS)・中身を直す(n/b ±)・DC を置く/投げる・Set DC・起爆・Low Crawl・Opportunity Fire・混乱を分ける・分割・白兵戦・フェイズの案内。分割はカードの中(カウンターごとに −/＋、splitn/splitgo)。ボタンは SK3 の btBtn(BT_BS)と同じ .mfBtSb(on=黄・sel=選択中・warn=赤)。
+  - API 追加: mfp・shotRes・pendRes・dcEntry・sdcWhy・sdcDetWhy・hasBroken・turnKey・oppWhy・sameL・hidden・swNote・fgList・stackFP・fpAble・txt()(FLAGS・MC・RL・GUIDE を遅れて読む)。
+  - 対戦中は LOS の結果カード(.mfLosRes)と地点判定パネルの自動表示を出さない。射撃パネルと結果カードは用語の下線を付けない(.noGloss)。
+  - 確認(dev/t37.js・ページエラー0): ASLA PFPh 1J2→1F5 FP6・列6・DRM+2(TEM+3・指揮官−1)、見込み MC28/PTC14/無効58、ダイス 1+2 → 1MC、目標 5 ユニットの MC。分割で 15 スタック。t28・t30・t32〜t36 も 0。
+  - まだ: 狙撃兵(A14)が発動すると旧型のパネルと SNIPER! が結果カードに重なる(見本は SAN を一時的に外して撮影)。BV126 の勝利条件・SSR、回復と士気チェックの画面(旧タブへ飛ぶ)、地図寄せ。
 - v553(2026-11-19 サンプル sample-ui18 にダルマ「実施」): ⑥ 対戦モードの ① 土台。新しい <script id="mfBtUi">(mfHqUi のあと)と <style id="mfBtCss">。画面は SK3 の対戦モードを実測(準備 #btSuPop・下のバー #btFullBot・指示カード .bt-cmdpop)、進行と判定はフル版の対戦(S.solo・ASLFULL_SOLO)。
   - エンジン(S.solo の閉包)に足したもの: SOLO_SCN に BV126、ASLFULL_SOLO('begin')(置いた部隊のまま始める。OB を読み直さない)、window.ASLFULL_SOLO_API(cur・byId・kind・maxMF・canFire・side・hexNm・battle・oppOn・hasWnd・lvOpts・mvuTop・allBroken・bldg・terr・unitFP・inMelee・has・log)。LosMapClick に window.MF_BT_TAP(配置)。
   - 入り方: mfModeSet('ai') を包んで mfBtEnter()(未対応シナリオはトーストで戻す)。localStorage aslfull_nmMode='ai' の間は html.mf-bt。mfSync を包んで btSync()(準備 #mfBtSu・指示カード #mfBtCmd・対戦中は #mfBot を下のバー .mfBtDock に・≡ を mfBtMenu に)。
